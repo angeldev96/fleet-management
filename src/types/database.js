@@ -63,25 +63,6 @@ export const PID_LABELS = {
   throttle_position: "Throttle Position",
 };
 
-/**
- * Severity colors for UI
- */
-export const SEVERITY_COLORS = {
-  info: { bg: "#1A73E8", text: "white" },
-  warning: { bg: "#FB8C00", text: "white" },
-  critical: { bg: "#F44336", text: "white" },
-};
-
-/**
- * Status colors for vehicles
- */
-export const STATUS_COLORS = {
-  online: "#10B981",
-  idle: "#F59E0B",
-  offline: "#9C27B0",
-  alert: "#F44336",
-  warning: "#FFB74D",
-};
 
 /**
  * Service type labels for UI display
@@ -91,33 +72,6 @@ export const SERVICE_TYPE_LABELS = {
   repair: "Repair/Incident",
 };
 
-/**
- * Service status colors for UI
- */
-export const SERVICE_STATUS_COLORS = {
-  pending: { bg: "#FEF3C7", text: "#B45309" },
-  in_progress: { bg: "#EEF2FF", text: "#4338CA" },
-  completed: { bg: "#DCFCE7", text: "#15803D" },
-  overdue: { bg: "#FEE2E2", text: "#B91C1C" },
-};
-
-/**
- * Tailwind class-based severity styles (replaces inline hex colors)
- */
-export const SEVERITY_CLASSES = {
-  info: { badge: "bg-blue-50 text-blue-700", dot: "bg-blue-500" },
-  warning: { badge: "bg-amber-50 text-amber-700", dot: "bg-amber-500" },
-  critical: { badge: "bg-red-50 text-red-700", dot: "bg-red-500" },
-};
-
-/**
- * Tailwind class-based vehicle status styles
- */
-export const STATUS_CLASSES = {
-  online: { badge: "bg-emerald-50 text-emerald-700", dot: "bg-emerald-500" },
-  idle: { badge: "bg-amber-50 text-amber-700", dot: "bg-amber-500" },
-  offline: { badge: "bg-gray-100 text-gray-600", dot: "bg-gray-400" },
-};
 
 /**
  * Tailwind class-based service status styles
@@ -155,24 +109,6 @@ function getDatePartsInTimeZone(date, timeZone) {
 
 function isSameDateParts(a, b) {
   return a.year === b.year && a.month === b.month && a.day === b.day;
-}
-
-/**
- * Get vehicle status. Prefers the pre-calculated status from the
- * vehicles_with_status view. Falls back to last_seen_at + speed
- * calculation only when the status field is not available.
- * @param {string | null} lastSeenAt
- * @param {number} speed
- * @param {string} [status] - Pre-calculated status from view
- * @returns {'online' | 'idle' | 'offline'}
- */
-export function getVehicleStatus(lastSeenAt, speed, status) {
-  if (status) return status;
-  if (!lastSeenAt) return "offline";
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-  if (new Date(lastSeenAt) <= fiveMinutesAgo) return "offline";
-  const currentSpeed = Number(speed) || 0;
-  return currentSpeed > 0 ? "online" : "idle";
 }
 
 /**

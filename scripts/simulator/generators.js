@@ -392,15 +392,8 @@ function createEventOfType(eventType, vehicle, device) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 module.exports = {
-  // GPS simulation
   moveVehicle,
   generateLocationEvent,
-  // PID telemetry
-  generatePidEvents,
   generateSinglePidEvent,
-  // Alert events
-  generateRandomEvent,
   generateRandomEventForVehicle,
-  // Utilities
-  randomBetween,
 };

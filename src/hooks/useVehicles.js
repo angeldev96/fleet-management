@@ -203,5 +203,3 @@ export function useVehicle(vehicleId) {
 
   return { vehicle, loading, error, refetch: fetchVehicle };
 }
-
-export default useVehicles;

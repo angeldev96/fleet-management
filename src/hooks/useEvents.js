@@ -393,5 +393,3 @@ export function useVehicleAlerts(vehicleIds = []) {
 
   return { vehicleAlerts, dtcCounts, loading };
 }
-
-export default useEvents;

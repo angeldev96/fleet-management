@@ -197,5 +197,3 @@ export function exportToPDF(serviceEvents, vehicleName) {
   const prefix = vehicleName ? `service_${vehicleName.replace(/\s+/g, "_")}` : "service_fleet_report";
   doc.save(`${prefix}_${new Date().toISOString().split("T")[0]}.pdf`);
 }
-
-export default exportToCSV;

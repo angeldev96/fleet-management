@@ -40,5 +40,3 @@ export function NotificationProvider({ children }) {
 NotificationProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
-
-export default NotificationContext;

@@ -338,5 +338,3 @@ export async function deleteServiceEvent(eventId) {
     return { error: err };
   }
 }
-
-export default useServiceEvents;

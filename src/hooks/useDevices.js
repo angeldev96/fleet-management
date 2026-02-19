@@ -181,5 +181,3 @@ function mapVehicleStatusToDevice(vehicleStatus, lastSeenAt) {
       return "inactive";
   }
 }
-
-export default useDevices;

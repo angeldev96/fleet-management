@@ -141,5 +141,3 @@ export function useStats({ refreshInterval = 30000 } = {}) {
 
   return { stats, loading, error, refetch: fetchStats };
 }
-
-export default useStats;

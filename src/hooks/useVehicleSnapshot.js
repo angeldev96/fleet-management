@@ -196,5 +196,3 @@ export function useVehicleSnapshot(vehicleId, { refreshInterval = 30000 } = {}) 
 
   return { snapshot, vehicle, loading, error, refetch: fetchSnapshot };
 }
-
-export default useVehicleSnapshot;

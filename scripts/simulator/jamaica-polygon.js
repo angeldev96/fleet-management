@@ -134,9 +134,6 @@ function getRandomLandPoint() {
 }
 
 module.exports = {
-  JAMAICA_POLYGONS,
-  isPointInPolygon,
   isOnLand,
   findNearestLandPoint,
-  getRandomLandPoint,
 };
