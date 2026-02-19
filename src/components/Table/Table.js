@@ -4,16 +4,16 @@ import { cn } from "lib/utils";
 export default function CustomTable({
   tableHead,
   tableData,
-  tableHeaderColor,
-  hover,
-  colorsColls,
-  coloredColls,
-  customCellClasses,
-  customClassesForCells,
-  striped,
+  tableHeaderColor = "gray",
+  hover = false,
+  colorsColls = [],
+  coloredColls = [],
+  customCellClasses = [],
+  customClassesForCells = [],
+  striped = false,
   tableShopping,
-  customHeadCellClasses,
-  customHeadClassesForCells,
+  customHeadCellClasses = [],
+  customHeadClassesForCells = [],
 }) {
   return (
     <div className="w-full overflow-x-auto">
@@ -107,14 +107,3 @@ export default function CustomTable({
   );
 }
 
-CustomTable.defaultProps = {
-  tableHeaderColor: "gray",
-  hover: false,
-  colorsColls: [],
-  coloredColls: [],
-  striped: false,
-  customCellClasses: [],
-  customClassesForCells: [],
-  customHeadCellClasses: [],
-  customHeadClassesForCells: [],
-};

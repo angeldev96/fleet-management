@@ -152,7 +152,7 @@ function Sidebar({
   handleDrawerToggle,
   open,
   color,
-  bgColor,
+  bgColor = "blue",
   miniActive: propMiniActive,
 }) {
   const [hoverExpanded, setHoverExpanded] = React.useState(false);
@@ -197,10 +197,6 @@ function Sidebar({
     </>
   );
 }
-
-Sidebar.defaultProps = {
-  bgColor: "blue",
-};
 
 Sidebar.propTypes = {
   bgColor: PropTypes.oneOf(["white", "black", "blue"]),
