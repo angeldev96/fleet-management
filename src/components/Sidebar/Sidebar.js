@@ -44,8 +44,8 @@ function SidebarContent({ routes, color, miniActive, logo, logoText, onLinkClick
             <button
               onClick={() => toggleCollapse(route.state)}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent",
+                "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150",
+                "text-sidebar-foreground/50 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50",
                 hasActiveChild && "text-sidebar-foreground bg-sidebar-accent/50",
               )}
             >
@@ -73,10 +73,10 @@ function SidebarContent({ routes, color, miniActive, logo, logoText, onLinkClick
                       to={view.layout + view.path}
                       onClick={onLinkClick}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150",
                         active
-                          ? "bg-sidebar-accent text-sidebar-foreground border-l-[3px] border-primary font-semibold"
-                          : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent border-l-[3px] border-transparent",
+                          ? "bg-sidebar-accent text-sidebar-foreground font-semibold"
+                          : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50",
                       )}
                     >
                       <span className="w-4 text-center text-xs">{view.mini}</span>
@@ -97,10 +97,10 @@ function SidebarContent({ routes, color, miniActive, logo, logoText, onLinkClick
           to={route.layout + route.path}
           onClick={onLinkClick}
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150",
             active
-              ? "bg-sidebar-accent text-sidebar-foreground border-l-[3px] border-primary font-semibold"
-              : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent border-l-[3px] border-transparent",
+              ? "bg-sidebar-accent text-sidebar-foreground font-semibold"
+              : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50",
           )}
         >
           {route.icon && <route.icon className="h-4 w-4 flex-shrink-0" />}
@@ -113,8 +113,8 @@ function SidebarContent({ routes, color, miniActive, logo, logoText, onLinkClick
   return (
     <div className="flex flex-col h-full">
       {/* Logo/Brand */}
-      <div className="flex items-center justify-center h-16 px-4 border-b border-sidebar-border">
-        <NavLink to="/admin/dashboard" className="flex items-center gap-2">
+      <div className="flex items-center justify-center h-16 px-4">
+        <NavLink to="/admin/dashboard" className="flex items-center gap-2.5">
           {logo ? (
             <img
               src={logo}
@@ -126,9 +126,11 @@ function SidebarContent({ routes, color, miniActive, logo, logoText, onLinkClick
             />
           ) : (
             <>
-              <Car className="h-6 w-6 text-primary" />
+              <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10">
+                <Car className="h-4 w-4 text-primary" />
+              </div>
               {!miniActive && (
-                <span className="text-lg font-bold text-sidebar-foreground">{logoText || "Entry"}</span>
+                <span className="text-base font-bold text-sidebar-foreground tracking-[-0.02em]">{logoText || "Entry"}</span>
               )}
             </>
           )}
@@ -180,7 +182,7 @@ function Sidebar({
         onMouseEnter={() => setHoverExpanded(true)}
         onMouseLeave={() => setHoverExpanded(false)}
         className={cn(
-          "hidden md:flex flex-col fixed inset-y-0 left-0 z-40 bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-200",
+          "hidden md:flex flex-col fixed inset-y-0 left-0 z-40 bg-sidebar text-sidebar-foreground border-r border-sidebar-border/50 transition-all duration-300 ease-out",
           miniActive ? "w-20" : "w-64",
         )}
       >

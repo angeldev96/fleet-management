@@ -9,20 +9,20 @@ export default function FilterBar({ filters, activeFilter, onFilterChange, class
           key={filter.value}
           onClick={() => onFilterChange(filter.value)}
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+            "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-150 cursor-pointer",
             activeFilter === filter.value
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+              ? "bg-foreground text-background shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted",
           )}
         >
           {filter.label}
           {filter.count != null && (
             <span
               className={cn(
-                "inline-flex items-center justify-center rounded-full px-1.5 min-w-[1.25rem] h-5 text-xs font-semibold",
+                "inline-flex items-center justify-center rounded-full px-1.5 min-w-5 h-5 text-[10px] font-bold tabular-nums",
                 activeFilter === filter.value
-                  ? "bg-primary-foreground/20 text-primary-foreground"
-                  : "bg-background text-muted-foreground",
+                  ? "bg-background/20 text-background"
+                  : "bg-muted-foreground/10 text-muted-foreground",
               )}
             >
               {filter.count}

@@ -27,12 +27,12 @@ export default function HeaderLinks() {
   return (
     <div className="flex items-center">
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent transition-colors outline-none">
-          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground ring-2 ring-primary/20">
-            <User className="h-4 w-4" />
+        <DropdownMenuTrigger className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted/80 transition-all duration-150 outline-none">
+          <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-foreground text-background text-xs font-bold">
+            {(userProfile?.full_name || "U")[0].toUpperCase()}
           </div>
-          <span className="text-sm text-foreground">{userProfile?.full_name || "User"}</span>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">{userProfile?.full_name || "User"}</span>
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/50" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           {user && (

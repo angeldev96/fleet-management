@@ -1,15 +1,8 @@
 import React, { useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
-import { Loader2, Mail, Lock } from "lucide-react";
+import { Loader2, Mail, Lock, Shield } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Button from "components/CustomButtons/Button.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import CardHeader from "components/Card/CardHeader.js";
-import CardFooter from "components/Card/CardFooter.js";
 import Snackbar from "components/Snackbar/Snackbar.js";
 
 // auth
@@ -33,7 +26,7 @@ export default function LoginPage() {
       if (isMounted.current) {
         setCardAnimation("");
       }
-    }, 700);
+    }, 100);
     return function cleanup() {
       isMounted.current = false;
       window.clearTimeout(id);
@@ -70,26 +63,29 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <GridContainer className="w-full justify-center">
-        <GridItem xs={12} sm={6} md={4}>
-          <form onSubmit={handleSubmit}>
-            <Card
-              login
-              className={
-                cardAnimaton === "cardHidden"
-                  ? "translate-y-[-60px] opacity-0 transition-all duration-700"
-                  : "translate-y-0 opacity-100 transition-all duration-700"
-              }
-            >
-              <CardHeader className="text-center" color="rose">
-                <h4 className="text-xl font-semibold text-white m-0 py-1">Log in</h4>
-              </CardHeader>
-              <CardBody>
-                <div className="mb-4 w-full relative">
-                  <label
-                    htmlFor="email"
-                    className="mb-1.5 block text-sm font-medium text-muted-foreground"
-                  >
+      <div className="w-full max-w-sm mx-auto">
+        <form onSubmit={handleSubmit}>
+          <div
+            className={
+              cardAnimaton === "cardHidden"
+                ? "translate-y-8 scale-[0.98] opacity-0 transition-all duration-500 ease-out"
+                : "translate-y-0 scale-100 opacity-100 transition-all duration-500 ease-out"
+            }
+          >
+            <div className="rounded-2xl bg-white/95 backdrop-blur-xl shadow-(--shadow-elevated) border border-white/20 overflow-hidden">
+              {/* Header */}
+              <div className="pt-8 pb-2 px-8 text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-foreground text-background mb-4">
+                  <Shield className="h-5 w-5" />
+                </div>
+                <h1 className="text-lg font-semibold text-foreground tracking-[-0.02em] m-0">Welcome back</h1>
+                <p className="text-sm text-muted-foreground/70 mt-1 m-0">Sign in to your account</p>
+              </div>
+
+              {/* Body */}
+              <div className="px-8 py-6">
+                <div className="mb-5 w-full">
+                  <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-muted-foreground/80">
                     Email
                   </label>
                   <div className="relative">
@@ -101,16 +97,14 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={loading}
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 pr-10 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-11 w-full rounded-xl border border-border/60 bg-background px-3.5 pr-10 text-sm transition-all duration-150 focus:outline-none focus:ring-[3px] focus:ring-primary/10 focus:border-primary/40 placeholder:text-muted-foreground/50 disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder="you@example.com"
                     />
-                    <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
                   </div>
                 </div>
-                <div className="mb-4 w-full relative">
-                  <label
-                    htmlFor="password"
-                    className="mb-1.5 block text-sm font-medium text-muted-foreground"
-                  >
+                <div className="mb-6 w-full">
+                  <label htmlFor="password" className="mb-1.5 block text-xs font-medium text-muted-foreground/80">
                     Password
                   </label>
                   <div className="relative">
@@ -122,21 +116,25 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={loading}
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 pr-10 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:border-ring placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-11 w-full rounded-xl border border-border/60 bg-background px-3.5 pr-10 text-sm transition-all duration-150 focus:outline-none focus:ring-[3px] focus:ring-primary/10 focus:border-primary/40 placeholder:text-muted-foreground/50 disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder="Enter your password"
                     />
-                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
                   </div>
                 </div>
-              </CardBody>
-              <CardFooter className="justify-center border-t-0">
-                <Button color="rose" simple size="lg" block type="submit" disabled={loading}>
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Log in"}
-                </Button>
-              </CardFooter>
-            </Card>
-          </form>
-        </GridItem>
-      </GridContainer>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-11 rounded-xl bg-foreground text-background text-sm font-medium transition-all duration-150 hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-50 shadow-sm"
+                >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Sign in"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
       <Snackbar
         place="tc"
         color="danger"

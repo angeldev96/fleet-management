@@ -60,7 +60,7 @@ export default function Pages(props) {
         className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url(" + getBgImage() + ")" }}
       >
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-linear-to-br from-black/70 via-black/50 to-primary/30 backdrop-blur-xs" />
         <div className="relative z-10 w-full">
           <Switch>
             {getRoutes(routes)}

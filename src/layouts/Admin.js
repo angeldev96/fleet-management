@@ -75,7 +75,7 @@ export default function Dashboard(props) {
       />
       <div
         className={cn(
-          "flex-1 flex flex-col min-h-0 transition-all duration-200",
+          "flex-1 flex flex-col min-h-0 transition-all duration-300 ease-out",
           miniActive ? "md:ml-20" : "md:ml-64",
         )}
       >
@@ -86,8 +86,8 @@ export default function Dashboard(props) {
           handleDrawerToggle={handleDrawerToggle}
           {...rest}
         />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6 max-w-[1400px] mx-auto w-full">
+        <main className="flex-1 overflow-y-auto bg-background">
+          <div className="px-6 py-5 max-w-360 mx-auto w-full">
             <Switch>
               {getRoutes(routes)}
               <Redirect from="/admin" to="/admin/dashboard" />

@@ -29,10 +29,10 @@ export default function Card({
   return (
     <div
       className={cn(
-        "rounded-xl bg-card text-card-foreground border flex flex-col mb-6",
-        !plain && "shadow-sm hover:shadow-md transition-shadow",
+        "rounded-xl bg-card text-card-foreground border border-border/60 flex flex-col mb-6",
+        !plain && "shadow-(--shadow-card) hover:shadow-(--shadow-card-hover) transition-all duration-200",
         plain && "shadow-none border-transparent bg-transparent",
-        raised && "shadow-lg",
+        raised && "shadow-(--shadow-elevated)",
         (profile || testimonial) && "mt-8 text-center",
         chart && "overflow-hidden",
         login && "max-w-md mx-auto",

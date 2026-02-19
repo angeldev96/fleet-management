@@ -16,8 +16,7 @@ import {
   Activity,
   Pencil,
   Camera,
-  MoreHorizontal,
-  Play,
+  ChevronRight,
   Loader2,
 } from "lucide-react";
 
@@ -42,6 +41,7 @@ import {
   formatDateTime,
 } from "types/database";
 import { useVehicleSnapshot } from "hooks/useVehicleSnapshot";
+import { cn } from "lib/utils";
 
 // Mapbox Public Access Token
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
@@ -173,37 +173,42 @@ export default function VehicleDetails() {
     history.push("/admin/vehicles");
   };
 
-  const getStatusInfo = () => {
-    if (!vehicle) return { label: "Unknown", color: "#9C27B0", bg: "#F3F4F6" };
+  const getStatusBadge = () => {
+    if (!vehicle) return null;
 
-    switch (vehicle.status) {
-      case "online":
-        return { label: "Online", color: "#065F46", bg: "#D1FAE5" };
-      case "idle":
-        return { label: "Idle", color: "#92400E", bg: "#FEF3C7" };
-      case "offline":
-      default:
-        return { label: "Offline", color: "#6B21A8", bg: "#F3E8FF" };
-    }
+    const styles = {
+      online: "bg-emerald-500/10 text-emerald-600",
+      idle: "bg-amber-500/10 text-amber-600",
+      offline: "bg-muted text-muted-foreground",
+    };
+
+    const labels = { online: "Online", idle: "Idle", offline: "Offline" };
+    const status = vehicle.status || "offline";
+
+    return (
+      <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ml-3", styles[status] || styles.offline)}>
+        {labels[status] || "Offline"}
+      </span>
+    );
   };
 
   const getSignalInfo = (signalStrength) => {
     if (signalStrength === null || signalStrength === undefined) {
-      return { text: "--", color: "#9CA3AF", quality: "Unknown" };
+      return { text: "--", color: "text-muted-foreground", quality: "Unknown" };
     }
 
     const strength = Number(signalStrength);
 
     if (strength >= 20) {
-      return { text: "Excellent", color: "#10B981", quality: "Excellent" };
+      return { text: "Excellent", color: "text-emerald-600", quality: "Excellent" };
     } else if (strength >= 15) {
-      return { text: "Good", color: "#3B82F6", quality: "Good" };
+      return { text: "Good", color: "text-blue-600", quality: "Good" };
     } else if (strength >= 10) {
-      return { text: "Fair", color: "#F59E0B", quality: "Fair" };
+      return { text: "Fair", color: "text-amber-600", quality: "Fair" };
     } else if (strength >= 0) {
-      return { text: "Poor", color: "#EF4444", quality: "Poor" };
+      return { text: "Poor", color: "text-red-600", quality: "Poor" };
     } else {
-      return { text: "--", color: "#9CA3AF", quality: "Unknown" };
+      return { text: "--", color: "text-muted-foreground", quality: "Unknown" };
     }
   };
 
@@ -261,8 +266,8 @@ export default function VehicleDetails() {
 
   if (vehicleLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center p-16">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/40" />
       </div>
     );
   }
@@ -276,7 +281,7 @@ export default function VehicleDetails() {
           it.
         </p>
         <button
-          className="rounded-lg border border-border bg-white p-2 transition-colors hover:bg-muted/50"
+          className="rounded-lg border border-border/60 bg-background p-2 transition-colors hover:bg-muted"
           onClick={handleBack}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -285,7 +290,6 @@ export default function VehicleDetails() {
     );
   }
 
-  const statusInfo = getStatusInfo();
   const vehicleTitle =
     vehicle.make && vehicle.model
       ? `${vehicle.make} ${vehicle.model}${vehicle.year ? ` (${vehicle.year})` : ""}`
@@ -302,106 +306,108 @@ export default function VehicleDetails() {
       {/* Header */}
       <div className="flex items-center mb-6">
         <button
-          className="mr-4 rounded-lg border border-border bg-white p-2 transition-colors hover:bg-muted/50"
+          className="mr-4 rounded-lg border border-border/60 bg-background p-2 transition-colors hover:bg-muted"
           onClick={handleBack}
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5 text-muted-foreground" />
         </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold text-foreground m-0">
-            {vehicleTitle}
-            <span
-              className="inline-flex items-center rounded-full px-3.5 py-1.5 text-sm font-semibold ml-4"
-              style={{ backgroundColor: statusInfo.bg, color: statusInfo.color }}
-            >
-              {statusInfo.label}
-            </span>
-          </h1>
-          <div className="text-sm text-muted-foreground mt-1">
+          <div className="flex items-center">
+            <h1 className="text-xl font-semibold text-foreground m-0 tracking-[-0.02em]">
+              {vehicleTitle}
+            </h1>
+            {getStatusBadge()}
+          </div>
+          <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">
             {vehicle.name} &bull; {vehicle.plate_number || "No plate"} &bull; Driver:{" "}
             {vehicle.driver_name || "Unassigned"}
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 mb-4">
+      <div className="flex justify-end gap-2.5 mb-5">
         <button
-          className="inline-flex items-center rounded-lg bg-muted px-5 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted"
+          className="inline-flex items-center rounded-lg border border-border/60 bg-background px-4 py-2 text-sm font-medium text-foreground transition-all duration-150 hover:bg-muted"
           onClick={() => setEditModalOpen(true)}
         >
-          <Pencil className="mr-2 h-[18px] w-[18px]" />
+          <Pencil className="mr-1.5 h-4 w-4" />
           Edit Vehicle
         </button>
         <button
-          className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
+          className="inline-flex items-center rounded-lg border border-border/60 bg-background px-4 py-2 text-sm font-medium text-foreground transition-all duration-150 hover:bg-muted"
           onClick={() => history.push(`/admin/vehicle/${vehicleId}/snapshot`)}
         >
-          <Camera className="mr-2 h-[18px] w-[18px]" />
+          <Camera className="mr-1.5 h-4 w-4" />
           Snapshot
         </button>
         <button
-          className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
+          className="inline-flex items-center rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background shadow-sm transition-all duration-150 hover:bg-foreground/90"
           onClick={() => history.push(`/admin/vehicle/${vehicleId}/travel-report`)}
         >
-          <Activity className="mr-2 h-[18px] w-[18px]" />
+          <Activity className="mr-1.5 h-4 w-4" />
           Generate Travel Report
         </button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="flex items-center rounded-xl bg-white p-5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500 mr-4">
-            <Gauge className="h-6 w-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <div className="text-xl font-semibold text-foreground">
-              {vehicle.last_speed !== null && vehicle.last_speed !== undefined
-                ? `${Math.round(parseFloat(vehicle.last_speed))} km/h`
-                : "N/A"}
+        <Card className="mb-0">
+          <CardBody className="p-5 flex items-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 mr-4 shrink-0">
+              <Gauge className="h-5 w-5 text-blue-600" />
             </div>
-            <div className="text-sm text-muted-foreground mt-0.5">Current Speed</div>
-          </div>
-        </div>
-
-        <div className="flex items-center rounded-xl bg-white p-5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500 mr-4">
-            <Crosshair className="h-6 w-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <div className="text-xl font-semibold text-foreground">{formatRelativeTime(vehicle.last_seen_at)}</div>
-            <div className="text-sm text-muted-foreground mt-0.5">Last Seen</div>
-          </div>
-        </div>
-
-        <div className="flex items-center rounded-xl bg-white p-5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500 mr-4">
-            <BatteryMedium className="h-6 w-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <div className="text-xl font-semibold text-foreground">
-              {snapshot?.battery_voltage !== null && snapshot?.battery_voltage !== undefined
-                ? `${Number(snapshot.battery_voltage).toFixed(1)} V`
-                : "--"}
+            <div className="flex-1">
+              <div className="text-lg font-semibold text-foreground tabular-nums">
+                {vehicle.last_speed !== null && vehicle.last_speed !== undefined
+                  ? `${Math.round(parseFloat(vehicle.last_speed))} km/h`
+                  : "N/A"}
+              </div>
+              <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">Current Speed</div>
             </div>
-            <div className="text-sm text-muted-foreground mt-0.5">Battery</div>
-          </div>
-        </div>
+          </CardBody>
+        </Card>
 
-        <div className="flex items-center rounded-xl bg-white p-5">
-          <div
-            className="flex h-12 w-12 items-center justify-center rounded-xl mr-4"
-            style={{ backgroundColor: getSignalInfo(snapshot?.signal_strength).color }}
-          >
-            <Signal className="h-6 w-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <div className="text-xl font-semibold text-foreground">
-              {getSignalInfo(snapshot?.signal_strength).text}
+        <Card className="mb-0">
+          <CardBody className="p-5 flex items-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 mr-4 shrink-0">
+              <Crosshair className="h-5 w-5 text-emerald-600" />
             </div>
-            <div className="text-sm text-muted-foreground mt-0.5">Signal</div>
-          </div>
-        </div>
+            <div className="flex-1">
+              <div className="text-lg font-semibold text-foreground">{formatRelativeTime(vehicle.last_seen_at)}</div>
+              <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">Last Seen</div>
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card className="mb-0">
+          <CardBody className="p-5 flex items-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10 mr-4 shrink-0">
+              <BatteryMedium className="h-5 w-5 text-violet-600" />
+            </div>
+            <div className="flex-1">
+              <div className="text-lg font-semibold text-foreground tabular-nums">
+                {snapshot?.battery_voltage !== null && snapshot?.battery_voltage !== undefined
+                  ? `${Number(snapshot.battery_voltage).toFixed(1)} V`
+                  : "--"}
+              </div>
+              <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">Battery</div>
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card className="mb-0">
+          <CardBody className="p-5 flex items-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 mr-4 shrink-0">
+              <Signal className="h-5 w-5 text-amber-600" />
+            </div>
+            <div className="flex-1">
+              <div className={cn("text-lg font-semibold", getSignalInfo(snapshot?.signal_strength).color)}>
+                {getSignalInfo(snapshot?.signal_strength).text}
+              </div>
+              <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">Signal</div>
+            </div>
+          </CardBody>
+        </Card>
       </div>
 
       <GridContainer>
@@ -409,7 +415,7 @@ export default function VehicleDetails() {
         <GridItem xs={12} md={4}>
           <Card>
             <CardBody>
-              <h4 className="text-base font-semibold text-foreground mb-4 mt-2">Vehicle Information</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-4 mt-2 tracking-[-0.01em]">Vehicle Information</h4>
               {[
                 ["Name", vehicle.name || "\u2014"],
                 ["Make", vehicle.make || "\u2014"],
@@ -421,11 +427,12 @@ export default function VehicleDetails() {
               ].map(([label, value], idx, arr) => (
                 <div
                   key={label}
-                  className={`flex justify-between py-3 ${
-                    idx < arr.length - 1 ? "border-b border-border/50" : ""
-                  }`}
+                  className={cn(
+                    "flex justify-between py-3",
+                    idx < arr.length - 1 && "border-b border-border/40"
+                  )}
                 >
-                  <span className="text-sm text-muted-foreground">{label}</span>
+                  <span className="text-sm text-muted-foreground/70">{label}</span>
                   <span className="text-sm font-medium text-foreground">{value}</span>
                 </div>
               ))}
@@ -437,8 +444,8 @@ export default function VehicleDetails() {
         <GridItem xs={12} md={8}>
           <Card>
             <CardBody>
-              <h4 className="text-base font-semibold text-foreground mb-4 mt-2">Current Location</h4>
-              <div className="h-[300px] rounded-xl overflow-hidden relative">
+              <h4 className="text-sm font-semibold text-foreground mb-4 mt-2 tracking-[-0.01em]">Current Location</h4>
+              <div className="h-75 rounded-xl overflow-hidden relative">
                 <div
                   ref={mapContainerRef}
                   className="w-full h-full"
@@ -457,16 +464,17 @@ export default function VehicleDetails() {
 
         {/* Events Card */}
         <GridItem xs={12}>
-          <h4 className="text-base font-semibold text-foreground mb-4 mt-2">Recent Events</h4>
-          <div className="flex items-center gap-2 mb-4">
+          <h4 className="text-sm font-semibold text-foreground mb-4 mt-2 tracking-[-0.01em]">Recent Events</h4>
+          <div className="flex items-center gap-1.5 mb-4">
             {Object.keys(EVENT_FILTER_TYPES).map((filter) => (
               <button
                 key={filter}
-                className={`rounded-md border px-4 py-1.5 text-sm font-medium transition-all ${
+                className={cn(
+                  "rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150",
                   eventsFilter === filter
-                    ? "bg-primary border-primary text-white hover:bg-primary/90"
-                    : "bg-muted border-border text-foreground hover:bg-muted"
-                }`}
+                    ? "bg-foreground text-background shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
                 onClick={() => {
                   setEventsFilter(filter);
                   setEventsPage(1);
@@ -477,141 +485,128 @@ export default function VehicleDetails() {
             ))}
           </div>
           {eventsLoading ? (
-            <div className="flex items-center justify-center min-h-[400px]">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="flex items-center justify-center p-16">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/40" />
             </div>
           ) : events.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground text-sm">No recent events for this vehicle</div>
+            <div className="text-center py-10 text-muted-foreground/70 text-sm">No recent events for this vehicle</div>
           ) : (
             <>
               {paginatedEvents.map((event) => {
                 const linkText = getEventLinkText(event.event_type);
                 return (
-                  <div key={event.id} className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
-                    <div className="flex items-center justify-between px-5 py-[15px]">
-                      <div className="flex items-center">
+                  <Card key={event.id} className="mb-3 border-border/40">
+                    <CardBody className="p-0">
+                      <div className="flex items-start gap-3.5 px-5 py-4">
                         <div
-                          className="flex h-8 w-8 items-center justify-center rounded-md mr-[15px] flex-shrink-0"
-                          style={{
-                            backgroundColor:
-                              event.severity === "critical"
-                                ? "#F44336"
-                                : event.severity === "info"
-                                ? "#1A73E8"
-                                : "#FB8C00",
-                          }}
+                          className={cn(
+                            "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+                            event.severity === "critical" ? "bg-red-500/10" : event.severity === "info" ? "bg-blue-500/10" : "bg-amber-500/10"
+                          )}
                         >
                           {event.severity === "critical" ? (
-                            <CircleAlert className="h-[18px] w-[18px] text-white" />
+                            <CircleAlert className="h-4 w-4 text-red-600" />
                           ) : event.severity === "info" ? (
-                            <Info className="h-[18px] w-[18px] text-white" />
+                            <Info className="h-4 w-4 text-blue-600" />
                           ) : (
-                            <AlertTriangle className="h-[18px] w-[18px] text-white" />
+                            <AlertTriangle className="h-4 w-4 text-amber-600" />
                           )}
                         </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-foreground m-0">{getEventTitle(event)}</h4>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-semibold text-foreground m-0">{getEventTitle(event)}</h4>
+                            <span className="text-[11px] text-muted-foreground/60 shrink-0 ml-3">{formatDateTime(event.event_at)}</span>
+                          </div>
+                          {getEventDetails(event) && getEventDetails(event) !== "\u2014" && (
+                            <p className="text-xs text-muted-foreground/60 mt-1 m-0">{getEventDetails(event)}</p>
+                          )}
                         </div>
                       </div>
-                      <MoreHorizontal className="h-5 w-5 text-muted-foreground cursor-pointer" />
-                    </div>
 
-                    <div className="px-5 pb-5" style={{ paddingLeft: "67px" }}>
-                      {getEventDetails(event) && getEventDetails(event) !== "\u2014" && (
-                        <p className="text-sm text-muted-foreground mt-[5px]">{getEventDetails(event)}</p>
+                      {linkText && (
+                        <div className="border-t border-border/30 px-5 py-3">
+                          <button
+                            className="text-xs font-medium text-primary flex items-center gap-1 hover:text-primary/80 transition-colors"
+                            onClick={() => handleEventNavigate(event)}
+                          >
+                            {linkText}
+                            <ChevronRight className="h-3 w-3" />
+                          </button>
+                        </div>
                       )}
-                      <p className="text-sm text-muted-foreground m-0">{formatDateTime(event.event_at)}</p>
-                    </div>
-
-                    {linkText && (
-                      <div className="border-t border-border/50 px-5 py-[15px] flex items-center">
-                        <div
-                          className="text-primary font-semibold text-sm flex items-center cursor-pointer"
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => handleEventNavigate(event)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              handleEventNavigate(event);
-                            }
-                          }}
-                        >
-                          <Play className="h-3.5 w-3.5 mr-[5px]" /> {linkText}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                    </CardBody>
+                  </Card>
                 );
               })}
 
-                  {/* Pagination */}
-                  {totalEventsPages > 1 && (
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
-                      <div className="text-sm text-muted-foreground">
-                        Showing {(eventsPage - 1) * eventsPerPage + 1}-
-                        {Math.min(eventsPage * eventsPerPage, events.length)} of{" "}
-                        {events.length} events
-                      </div>
-                      <div className="flex items-center gap-2">
+              {/* Pagination */}
+              {totalEventsPages > 1 && (
+                <div className="flex items-center justify-between mt-6 pt-5 border-t border-border/50">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {(eventsPage - 1) * eventsPerPage + 1}-
+                    {Math.min(eventsPage * eventsPerPage, events.length)} of{" "}
+                    {events.length} events
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      className="min-w-9 h-9 px-3 rounded-lg text-sm font-medium flex items-center justify-center transition-all duration-150 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => setEventsPage(1)}
+                      disabled={eventsPage === 1}
+                    >
+                      First
+                    </button>
+                    <button
+                      className="min-w-9 h-9 px-3 rounded-lg text-sm font-medium flex items-center justify-center transition-all duration-150 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => setEventsPage((p) => Math.max(1, p - 1))}
+                      disabled={eventsPage === 1}
+                    >
+                      Prev
+                    </button>
+                    {[...Array(Math.min(5, totalEventsPages))].map((_, i) => {
+                      let pageNum;
+                      if (totalEventsPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (eventsPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (eventsPage >= totalEventsPages - 2) {
+                        pageNum = totalEventsPages - 4 + i;
+                      } else {
+                        pageNum = eventsPage - 2 + i;
+                      }
+                      return (
                         <button
-                          className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-white text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
-                          onClick={() => setEventsPage(1)}
-                          disabled={eventsPage === 1}
+                          key={pageNum}
+                          className={cn(
+                            "min-w-9 h-9 px-3 rounded-lg text-sm font-medium flex items-center justify-center transition-all duration-150",
+                            eventsPage === pageNum
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          )}
+                          onClick={() => setEventsPage(pageNum)}
                         >
-                          First
+                          {pageNum}
                         </button>
-                        <button
-                          className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-white text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
-                          onClick={() => setEventsPage((p) => Math.max(1, p - 1))}
-                          disabled={eventsPage === 1}
-                        >
-                          Prev
-                        </button>
-                        {[...Array(Math.min(5, totalEventsPages))].map((_, i) => {
-                          let pageNum;
-                          if (totalEventsPages <= 5) {
-                            pageNum = i + 1;
-                          } else if (eventsPage <= 3) {
-                            pageNum = i + 1;
-                          } else if (eventsPage >= totalEventsPages - 2) {
-                            pageNum = totalEventsPages - 4 + i;
-                          } else {
-                            pageNum = eventsPage - 2 + i;
-                          }
-                          return (
-                            <button
-                              key={pageNum}
-                              className={`min-w-[36px] h-9 px-3 rounded-md border text-sm font-medium flex items-center justify-center transition-all ${
-                                eventsPage === pageNum
-                                  ? "bg-primary border-primary text-white hover:bg-primary/90"
-                                  : "border-border bg-white text-foreground hover:bg-muted/50 hover:border-border"
-                              }`}
-                              onClick={() => setEventsPage(pageNum)}
-                            >
-                              {pageNum}
-                            </button>
-                          );
-                        })}
-                        <button
-                          className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-white text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
-                          onClick={() => setEventsPage((p) => Math.min(totalEventsPages, p + 1))}
-                          disabled={eventsPage === totalEventsPages}
-                        >
-                          Next
-                        </button>
-                        <button
-                          className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-white text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
-                          onClick={() => setEventsPage(totalEventsPages)}
-                          disabled={eventsPage === totalEventsPages}
-                        >
-                          Last
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </>
+                      );
+                    })}
+                    <button
+                      className="min-w-9 h-9 px-3 rounded-lg text-sm font-medium flex items-center justify-center transition-all duration-150 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => setEventsPage((p) => Math.min(totalEventsPages, p + 1))}
+                      disabled={eventsPage === totalEventsPages}
+                    >
+                      Next
+                    </button>
+                    <button
+                      className="min-w-9 h-9 px-3 rounded-lg text-sm font-medium flex items-center justify-center transition-all duration-150 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => setEventsPage(totalEventsPages)}
+                      disabled={eventsPage === totalEventsPages}
+                    >
+                      Last
+                    </button>
+                  </div>
+                </div>
               )}
+            </>
+          )}
         </GridItem>
       </GridContainer>
 

@@ -17,9 +17,9 @@ export default function CustomTable({
 }) {
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full caption-bottom text-sm">
+      <table className="w-full caption-bottom text-sm border-separate border-spacing-0">
         {tableHead !== undefined ? (
-          <thead className="border-b">
+          <thead>
             <tr>
               {tableHead.map((prop, key) => {
                 const extraClass =
@@ -31,7 +31,9 @@ export default function CustomTable({
                 return (
                   <th
                     className={cn(
-                      "h-10 px-3 text-left align-middle font-medium text-muted-foreground whitespace-nowrap uppercase tracking-wider text-xs bg-muted/50",
+                      "h-11 px-4 text-left align-middle font-semibold text-muted-foreground/80 whitespace-nowrap uppercase tracking-[0.05em] text-[11px] border-b border-border/60 bg-muted/30",
+                      key === 0 && "rounded-tl-lg",
+                      key === tableHead.length - 1 && "rounded-tr-lg",
                       extraClass,
                     )}
                     key={key}
@@ -54,21 +56,21 @@ export default function CustomTable({
             }
             if (prop.total) {
               return (
-                <tr key={key} className="border-b font-medium">
-                  <td className="p-3" colSpan={prop.colspan} />
-                  <td className="p-3 text-right">Total</td>
-                  <td className="p-3">{prop.amount}</td>
+                <tr key={key} className="border-b border-border/40 font-medium">
+                  <td className="px-4 py-3.5" colSpan={prop.colspan} />
+                  <td className="px-4 py-3.5 text-right">Total</td>
+                  <td className="px-4 py-3.5">{prop.amount}</td>
                   {tableHead.length - (prop.colspan - 0 + 2) > 0 ? (
-                    <td className="p-3" colSpan={tableHead.length - (prop.colspan - 0 + 2)} />
+                    <td className="px-4 py-3.5" colSpan={tableHead.length - (prop.colspan - 0 + 2)} />
                   ) : null}
                 </tr>
               );
             }
             if (prop.purchase) {
               return (
-                <tr key={key} className="border-b">
-                  <td className="p-3" colSpan={prop.colspan} />
-                  <td className="p-3 text-right" colSpan={prop.col.colspan}>
+                <tr key={key} className="border-b border-border/40">
+                  <td className="px-4 py-3.5" colSpan={prop.colspan} />
+                  <td className="px-4 py-3.5 text-right" colSpan={prop.col.colspan}>
                     {prop.col.text}
                   </td>
                 </tr>
@@ -78,9 +80,9 @@ export default function CustomTable({
               <tr
                 key={key}
                 className={cn(
-                  "border-b transition-colors",
-                  "hover:bg-muted/50",
-                  striped && key % 2 === 0 && "bg-muted/30",
+                  "border-b border-border/40 transition-colors duration-150",
+                  "hover:bg-primary/3",
+                  striped && key % 2 === 0 && "bg-muted/20",
                 )}
               >
                 {prop.map((cellProp, cellKey) => {
@@ -91,7 +93,7 @@ export default function CustomTable({
                       ? customCellClasses[customClassesForCells.indexOf(cellKey)]
                       : "";
                   return (
-                    <td className={cn("p-3 align-middle", extraCellClass)} key={cellKey}>
+                    <td className={cn("px-4 py-3.5 align-middle", extraCellClass)} key={cellKey}>
                       {cellProp}
                     </td>
                   );
