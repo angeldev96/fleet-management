@@ -294,7 +294,7 @@ export default function EventSystemGuide() {
         <ArrowLeft className="w-[18px] h-[18px]" /> Back to Settings
       </button>
 
-      <h1 className="text-2xl font-semibold text-foreground mb-2">Event System Guide</h1>
+      <h1 className="text-xl md:text-2xl font-semibold text-foreground mb-2">Event System Guide</h1>
       <p className="text-sm text-muted-foreground mb-8 max-w-[720px] leading-relaxed">
         Complete reference for how telemetry data flows from GPS devices into Entry.
         This covers every event type, what triggers it, how it affects vehicle status,
@@ -355,25 +355,25 @@ export default function EventSystemGuide() {
           received in 5 minutes, the vehicle automatically shows as Offline.
         </p>
         <div className="bg-white rounded-xl p-5 border border-border">
-          <div className="flex items-center gap-3 py-3.5 px-4 border-b border-border/50">
-            <Circle className="w-3.5 h-3.5 fill-emerald-500 text-emerald-500 shrink-0" />
-            <span className="text-sm font-semibold text-foreground min-w-[80px]">Online</span>
+          <div className="flex items-start sm:items-center gap-3 py-3.5 px-4 border-b border-border/50">
+            <Circle className="w-3.5 h-3.5 fill-emerald-500 text-emerald-500 shrink-0 mt-0.5 sm:mt-0" />
+            <span className="text-sm font-semibold text-foreground min-w-[80px] shrink-0">Online</span>
             <span className="text-[13px] text-muted-foreground flex-1">
               Vehicle is moving (speed &gt; 0). Set by <code>location_update</code> with speed,
               or driving behavior events (overspeed, harsh braking, etc.).
             </span>
           </div>
-          <div className="flex items-center gap-3 py-3.5 px-4 border-b border-border/50">
-            <Circle className="w-3.5 h-3.5 fill-amber-500 text-amber-500 shrink-0" />
-            <span className="text-sm font-semibold text-foreground min-w-[80px]">Idle</span>
+          <div className="flex items-start sm:items-center gap-3 py-3.5 px-4 border-b border-border/50">
+            <Circle className="w-3.5 h-3.5 fill-amber-500 text-amber-500 shrink-0 mt-0.5 sm:mt-0" />
+            <span className="text-sm font-semibold text-foreground min-w-[80px] shrink-0">Idle</span>
             <span className="text-[13px] text-muted-foreground flex-1">
               Engine is on but vehicle is not moving (speed = 0). Set by <code>location_update</code> with
               speed 0, <code>device_online</code>, or informational events like alarms.
             </span>
           </div>
-          <div className="flex items-center gap-3 py-3.5 px-4">
-            <Circle className="w-3.5 h-3.5 fill-purple-600 text-purple-600 shrink-0" />
-            <span className="text-sm font-semibold text-foreground min-w-[80px]">Offline</span>
+          <div className="flex items-start sm:items-center gap-3 py-3.5 px-4">
+            <Circle className="w-3.5 h-3.5 fill-purple-600 text-purple-600 shrink-0 mt-0.5 sm:mt-0" />
+            <span className="text-sm font-semibold text-foreground min-w-[80px] shrink-0">Offline</span>
             <span className="text-[13px] text-muted-foreground flex-1">
               Vehicle engine is off or device was disconnected. Set immediately
               by <code>device_offline</code> or <code>power_event</code> (Power off alarm).
@@ -502,7 +502,7 @@ export default function EventSystemGuide() {
           (rpm, fuel_level, voltage, etc.), the edge function extracts each metric and
           creates individual <code>pid_reading</code> events for tracking over time.
         </p>
-        <div className="bg-white rounded-xl p-5 border border-border">
+        <div className="bg-white rounded-xl p-5 border border-border overflow-x-auto">
           <table className="w-full border-collapse text-[13px]">
             <thead>
               <tr>
@@ -550,7 +550,7 @@ export default function EventSystemGuide() {
           The edge function automatically normalizes these before inserting. The original
           type is preserved in <code>raw_payload</code>.
         </p>
-        <div className="bg-white rounded-xl p-5 border border-border">
+        <div className="bg-white rounded-xl p-5 border border-border overflow-x-auto">
           <table className="w-full border-collapse text-[13px]">
             <thead>
               <tr>

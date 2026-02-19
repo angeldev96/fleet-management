@@ -87,7 +87,7 @@ export default function Dashboard(props) {
           {...rest}
         />
         <main className="flex-1 overflow-y-auto bg-background">
-          <div className="px-6 py-5 max-w-360 mx-auto w-full">
+          <div className="px-4 md:px-6 py-5 max-w-360 mx-auto w-full">
             <Switch>
               {getRoutes(routes)}
               <Redirect from="/admin" to="/admin/dashboard" />

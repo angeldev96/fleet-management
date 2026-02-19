@@ -207,7 +207,7 @@ export default function Alerts() {
         </div>
       </div>
 
-      <div className="flex items-center mb-8">
+      <div className="flex flex-wrap items-center gap-2.5 mb-8">
         <FilterBar
           filters={Object.keys(FILTER_TYPES).map((f) => ({ label: f, value: f }))}
           activeFilter={activeFilter}
@@ -219,7 +219,7 @@ export default function Alerts() {
           name="timeFilter"
           value={timeFilter}
           onChange={handleTimeChange}
-          className="ml-2.5 h-9 rounded-lg border border-border/60 bg-background px-3 text-sm focus:outline-none focus:ring-[3px] focus:ring-primary/10 focus:border-primary/40"
+          className="h-9 rounded-lg border border-border/60 bg-background px-3 text-sm focus:outline-none focus:ring-[3px] focus:ring-primary/10 focus:border-primary/40"
         >
           <option value="Now">Last Hour</option>
           <option value="Today">Today</option>
@@ -290,7 +290,7 @@ export default function Alerts() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6 pt-5 border-t border-border/50">
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-5 gap-4 border-t border-border/50">
               <div className="text-sm text-muted-foreground">
                 Showing {(page - 1) * alertsPerPage + 1}-
                 {Math.min(page * alertsPerPage, events.length)} of {events.length} alerts

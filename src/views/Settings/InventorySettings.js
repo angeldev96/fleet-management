@@ -363,13 +363,13 @@ export default function InventorySettings() {
       {/* Header with back button */}
       <div className="flex items-center mb-6">
         <button
-          className="mr-4 p-2 bg-white border border-border rounded-lg hover:bg-muted/50 transition-colors"
+          className="mr-3 md:mr-4 p-2 bg-white border border-border rounded-lg hover:bg-muted/50 transition-colors shrink-0"
           onClick={() => history.push("/admin/settings")}
         >
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground m-0">Inventory Management</h1>
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-semibold text-foreground m-0">Inventory Management</h1>
           <div className="text-sm text-muted-foreground mt-1">
             Add vehicles and link GPS devices to your fleet
           </div>

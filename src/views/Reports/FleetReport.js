@@ -144,35 +144,35 @@ export default function FleetReport() {
       </p>
 
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-8 print:mb-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 print:mb-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <Button
-            className="bg-muted text-foreground p-2 min-w-[40px] rounded-lg hover:bg-muted print:hidden"
+            className="bg-muted text-foreground p-2 min-w-[40px] rounded-lg hover:bg-muted print:hidden shrink-0"
             onClick={() => history.push("/admin/reports")}
           >
             <ArrowLeft size={20} />
           </Button>
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground m-0">Fleet Summary Report</h1>
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-2xl font-semibold text-foreground m-0">Fleet Summary Report</h1>
             <p className="text-sm text-muted-foreground mt-1 mb-0">
-              Overview of your entire fleet performance and statistics
+              Overview of your entire fleet performance
             </p>
           </div>
         </div>
-        <div className="flex gap-3 print:hidden">
+        <div className="flex gap-2 md:gap-3 print:hidden">
           <Button
-            className="px-5 py-2.5 normal-case font-semibold rounded-lg shadow-sm bg-emerald-600 text-white hover:bg-emerald-700"
+            className="px-3 md:px-5 py-2 md:py-2.5 normal-case font-semibold rounded-lg shadow-sm bg-emerald-600 text-white hover:bg-emerald-700"
             onClick={handleExportCSV}
           >
-            <Download className="mr-2" size={18} />
-            Export CSV
+            <Download className="mr-1.5 md:mr-2" size={16} />
+            CSV
           </Button>
           <Button
-            className="px-5 py-2.5 normal-case font-semibold rounded-lg shadow-sm bg-red-600 text-white hover:bg-red-700"
+            className="px-3 md:px-5 py-2 md:py-2.5 normal-case font-semibold rounded-lg shadow-sm bg-red-600 text-white hover:bg-red-700"
             onClick={handleExportPDF}
           >
-            <FileText className="mr-2" size={18} />
-            Export PDF
+            <FileText className="mr-1.5 md:mr-2" size={16} />
+            PDF
           </Button>
         </div>
       </div>
@@ -266,9 +266,9 @@ export default function FleetReport() {
       <GridContainer>
         <GridItem xs={12} md={8}>
           <Card className="rounded-xl shadow-sm border border-border print:shadow-none print:break-inside-avoid">
-            <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground m-0">Detailed Summary</h3>
-              <span className="text-[13px] text-muted-foreground px-4 py-2 bg-muted/50 rounded-md">
+            <div className="px-4 md:px-6 py-4 md:py-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <h3 className="text-base md:text-lg font-semibold text-foreground m-0">Detailed Summary</h3>
+              <span className="text-xs md:text-[13px] text-muted-foreground px-3 md:px-4 py-1.5 md:py-2 bg-muted/50 rounded-md w-fit">
                 Report generated: {formatDateOnly(new Date())}
               </span>
             </div>

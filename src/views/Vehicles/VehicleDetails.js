@@ -306,51 +306,51 @@ export default function VehicleDetails() {
       {/* Header */}
       <div className="flex items-center mb-6">
         <button
-          className="mr-4 rounded-lg border border-border/60 bg-background p-2 transition-colors hover:bg-muted"
+          className="mr-3 md:mr-4 rounded-lg border border-border/60 bg-background p-2 transition-colors hover:bg-muted shrink-0"
           onClick={handleBack}
         >
           <ArrowLeft className="h-5 w-5 text-muted-foreground" />
         </button>
-        <div className="flex-1">
-          <div className="flex items-center">
-            <h1 className="text-xl font-semibold text-foreground m-0 tracking-[-0.02em]">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center flex-wrap gap-1">
+            <h1 className="text-lg md:text-xl font-semibold text-foreground m-0 tracking-[-0.02em] truncate">
               {vehicleTitle}
             </h1>
             {getStatusBadge()}
           </div>
-          <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">
+          <div className="text-xs text-muted-foreground/70 font-medium mt-0.5 truncate">
             {vehicle.name} &bull; {vehicle.plate_number || "No plate"} &bull; Driver:{" "}
             {vehicle.driver_name || "Unassigned"}
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end gap-2.5 mb-5">
+      <div className="flex flex-wrap justify-end gap-2.5 mb-5">
         <button
-          className="inline-flex items-center rounded-lg border border-border/60 bg-background px-4 py-2 text-sm font-medium text-foreground transition-all duration-150 hover:bg-muted"
+          className="inline-flex items-center rounded-lg border border-border/60 bg-background px-3 md:px-4 py-2 text-sm font-medium text-foreground transition-all duration-150 hover:bg-muted"
           onClick={() => setEditModalOpen(true)}
         >
           <Pencil className="mr-1.5 h-4 w-4" />
           Edit Vehicle
         </button>
         <button
-          className="inline-flex items-center rounded-lg border border-border/60 bg-background px-4 py-2 text-sm font-medium text-foreground transition-all duration-150 hover:bg-muted"
+          className="inline-flex items-center rounded-lg border border-border/60 bg-background px-3 md:px-4 py-2 text-sm font-medium text-foreground transition-all duration-150 hover:bg-muted"
           onClick={() => history.push(`/admin/vehicle/${vehicleId}/snapshot`)}
         >
           <Camera className="mr-1.5 h-4 w-4" />
           Snapshot
         </button>
         <button
-          className="inline-flex items-center rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background shadow-sm transition-all duration-150 hover:bg-foreground/90"
+          className="inline-flex items-center rounded-lg bg-foreground px-3 md:px-4 py-2 text-sm font-medium text-background shadow-sm transition-all duration-150 hover:bg-foreground/90"
           onClick={() => history.push(`/admin/vehicle/${vehicleId}/travel-report`)}
         >
           <Activity className="mr-1.5 h-4 w-4" />
-          Generate Travel Report
+          <span className="hidden sm:inline">Generate</span> Travel Report
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
         <Card className="mb-0">
           <CardBody className="p-5 flex items-center">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 mr-4 shrink-0">
@@ -465,7 +465,7 @@ export default function VehicleDetails() {
         {/* Events Card */}
         <GridItem xs={12}>
           <h4 className="text-sm font-semibold text-foreground mb-4 mt-2 tracking-[-0.01em]">Recent Events</h4>
-          <div className="flex items-center gap-1.5 mb-4">
+          <div className="flex flex-wrap items-center gap-1.5 mb-4">
             {Object.keys(EVENT_FILTER_TYPES).map((filter) => (
               <button
                 key={filter}
@@ -541,7 +541,7 @@ export default function VehicleDetails() {
 
               {/* Pagination */}
               {totalEventsPages > 1 && (
-                <div className="flex items-center justify-between mt-6 pt-5 border-t border-border/50">
+                <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-5 gap-4 border-t border-border/50">
                   <div className="text-sm text-muted-foreground">
                     Showing {(eventsPage - 1) * eventsPerPage + 1}-
                     {Math.min(eventsPage * eventsPerPage, events.length)} of{" "}

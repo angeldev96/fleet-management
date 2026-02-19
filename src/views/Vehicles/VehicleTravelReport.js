@@ -854,42 +854,42 @@ export default function VehicleTravelReport() {
       </p>
 
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-6 print:mb-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 print:mb-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <button
-            className="rounded-lg bg-muted p-2 text-foreground transition-colors hover:bg-muted print:hidden"
+            className="rounded-lg bg-muted p-2 text-foreground transition-colors hover:bg-muted print:hidden shrink-0"
             onClick={() => history.push(`/admin/vehicle/${vehicleId}`)}
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground m-0">Travel Report</h1>
-            <p className="text-sm text-muted-foreground mt-1 mb-0">
-              {vehicleTitle} - Historical travel data and route visualization
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-2xl font-semibold text-foreground m-0">Travel Report</h1>
+            <p className="text-sm text-muted-foreground mt-1 mb-0 truncate">
+              {vehicleTitle} - Historical travel data
             </p>
           </div>
         </div>
-        <div className="flex gap-3 print:hidden">
+        <div className="flex gap-2 md:gap-3 print:hidden">
           <button
-            className="inline-flex items-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+            className="inline-flex items-center rounded-lg bg-emerald-600 px-3 md:px-5 py-2 md:py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
             onClick={handleExportCSV}
           >
-            <Download className="mr-2 h-[18px] w-[18px]" />
-            Export CSV
+            <Download className="mr-1.5 md:mr-2 h-4 w-4" />
+            CSV
           </button>
           <button
-            className="inline-flex items-center rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700"
+            className="inline-flex items-center rounded-lg bg-red-600 px-3 md:px-5 py-2 md:py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700"
             onClick={handleExportPDF}
           >
-            <FileText className="mr-2 h-[18px] w-[18px]" />
-            Export PDF
+            <FileText className="mr-1.5 md:mr-2 h-4 w-4" />
+            PDF
           </button>
         </div>
       </div>
 
       {/* Date Range Filter */}
       <Card className="rounded-xl shadow-sm border border-border mb-6 print:hidden">
-        <div className="flex items-center gap-6 px-6 py-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 px-4 md:px-6 py-4 md:py-5">
           <div className="flex flex-col">
             <label className="text-sm font-medium text-foreground mb-1">Start Date</label>
             <input
@@ -912,7 +912,7 @@ export default function VehicleTravelReport() {
               className="flex h-9 rounded-lg border border-border bg-transparent px-3 py-1 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
-          <span className="text-muted-foreground text-sm self-end pb-1.5">
+          <span className="text-muted-foreground text-xs sm:text-sm sm:self-end sm:pb-1.5">
             Maximum period: 30 days
           </span>
         </div>

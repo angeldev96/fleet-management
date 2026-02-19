@@ -55,21 +55,21 @@ export default function Pagination({
   }
 
   return (
-    <div className="flex items-center justify-between mt-6 pt-5 flex-wrap gap-4 border-t border-border/50">
+    <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-5 flex-wrap gap-3 md:gap-4 border-t border-border/50">
       <div className="text-sm text-muted-foreground">
         Showing {startItem} to {endItem} of {totalCount} items
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 md:gap-2 order-first sm:order-none">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={!hasPrevPage}
-          className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:pointer-events-none transition-all duration-150"
+          className="inline-flex items-center justify-center h-8 w-8 md:h-9 md:w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:pointer-events-none transition-all duration-150"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 md:gap-1">
           {getPageNumbers().map((pageNum) => {
             if (typeof pageNum === "string") {
               return (
@@ -82,7 +82,7 @@ export default function Pagination({
               <button
                 key={pageNum}
                 className={cn(
-                  "inline-flex items-center justify-center min-w-9 h-9 rounded-lg text-sm font-medium transition-all duration-150",
+                  "inline-flex items-center justify-center min-w-8 h-8 md:min-w-9 md:h-9 rounded-lg text-sm font-medium transition-all duration-150",
                   pageNum === page
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -98,18 +98,18 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={!hasNextPage}
-          className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:pointer-events-none transition-all duration-150"
+          className="inline-flex items-center justify-center h-8 w-8 md:h-9 md:w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:pointer-events-none transition-all duration-150"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Items per page:</span>
+        <span className="text-sm text-muted-foreground hidden sm:inline">Items per page:</span>
         <select
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="h-9 rounded-lg border border-border/60 bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/10 focus-visible:border-primary/40"
+          className="h-8 md:h-9 rounded-lg border border-border/60 bg-background px-2 md:px-3 text-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/10 focus-visible:border-primary/40"
         >
           {pageSizeOptions.map((size) => (
             <option key={size} value={size}>

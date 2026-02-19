@@ -229,25 +229,23 @@ export default function Vehicles() {
   return (
     <div>
       {/* Page Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4 flex-1">
-          <div>
-            <h1 className="text-xl font-semibold text-foreground m-0 tracking-[-0.02em]">Vehicles</h1>
-            <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">
-              {effectiveTotalCount} {effectiveTotalCount === 1 ? "vehicle" : "vehicles"} total
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-xl font-semibold text-foreground m-0 tracking-[-0.02em]">Vehicles</h1>
+          <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">
+            {effectiveTotalCount} {effectiveTotalCount === 1 ? "vehicle" : "vehicles"} total
           </div>
         </div>
         <div className="flex items-center gap-2.5">
           <button
-            className="inline-flex items-center rounded-lg border border-border/60 bg-background px-4 py-2 text-sm font-medium text-foreground transition-all duration-150 hover:bg-muted"
+            className="inline-flex items-center rounded-lg border border-border/60 bg-background px-3 md:px-4 py-2 text-sm font-medium text-foreground transition-all duration-150 hover:bg-muted"
             onClick={() => history.push("/admin/reports")}
           >
             <BarChart3 className="mr-1.5 h-4 w-4" />
-            Fleet Report
+            <span className="hidden sm:inline">Fleet </span>Report
           </button>
           <button
-            className="inline-flex items-center rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background shadow-sm transition-all duration-150 hover:bg-foreground/90"
+            className="inline-flex items-center rounded-lg bg-foreground px-3 md:px-4 py-2 text-sm font-medium text-background shadow-sm transition-all duration-150 hover:bg-foreground/90"
             onClick={() => setAddModalOpen(true)}
           >
             <Plus className="mr-1.5 h-4 w-4" />

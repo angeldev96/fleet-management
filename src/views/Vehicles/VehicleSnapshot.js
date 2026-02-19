@@ -104,32 +104,36 @@ export default function VehicleSnapshot() {
   return (
     <div>
       {/* Page Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          className="rounded-lg border border-border/60 bg-background p-2 transition-colors hover:bg-muted"
-          onClick={handleBack}
-        >
-          <ArrowLeft className="h-5 w-5 text-muted-foreground" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-xl font-semibold text-foreground m-0 tracking-[-0.02em]">
-            {getVehicleDisplayName()} - PID Snapshot
-          </h1>
-          <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">Last known vehicle diagnostic data</div>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+          <button
+            className="rounded-lg border border-border/60 bg-background p-2 transition-colors hover:bg-muted shrink-0"
+            onClick={handleBack}
+          >
+            <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-lg md:text-xl font-semibold text-foreground m-0 tracking-[-0.02em] truncate">
+              {getVehicleDisplayName()} - PID Snapshot
+            </h1>
+            <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">Last known vehicle diagnostic data</div>
+          </div>
         </div>
-        <button
-          className="inline-flex items-center rounded-lg border border-border/60 bg-background px-4 py-2 text-sm font-medium text-foreground transition-all duration-150 hover:bg-muted"
-          onClick={() => history.push(`/admin/vehicle/${vehicleId}`)}
-        >
-          Vehicle Overview
-        </button>
-        <button
-          className="inline-flex items-center rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background shadow-sm transition-all duration-150 hover:bg-foreground/90"
-          onClick={refetch}
-        >
-          <RefreshCw className="mr-1.5 h-4 w-4" />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            className="inline-flex items-center rounded-lg border border-border/60 bg-background px-3 md:px-4 py-2 text-sm font-medium text-foreground transition-all duration-150 hover:bg-muted"
+            onClick={() => history.push(`/admin/vehicle/${vehicleId}`)}
+          >
+            <span className="hidden sm:inline">Vehicle </span>Overview
+          </button>
+          <button
+            className="inline-flex items-center rounded-lg bg-foreground px-3 md:px-4 py-2 text-sm font-medium text-background shadow-sm transition-all duration-150 hover:bg-foreground/90"
+            onClick={refetch}
+          >
+            <RefreshCw className="mr-1.5 h-4 w-4" />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Vehicle Info */}
@@ -174,7 +178,7 @@ export default function VehicleSnapshot() {
 
       {/* Timestamp Info */}
       {snapshot?.timestamp && (
-        <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/30 px-6 py-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-border/60 bg-muted/30 px-4 md:px-6 py-3 md:py-4 mb-6">
           <span className="text-xs text-muted-foreground/70 font-medium">Last Known Reading</span>
           <span className="text-sm text-foreground font-semibold">
             {formatRelativeTime(snapshot.timestamp)} ({formatDateTime(snapshot.timestamp)})

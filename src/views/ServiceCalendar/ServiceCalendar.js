@@ -212,20 +212,20 @@ export default function ServiceCalendar() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-2xl font-semibold text-foreground m-0">Service Calendar</h1>
+          <h1 className="text-xl md:text-2xl font-semibold text-foreground m-0">Service Calendar</h1>
           <p className="text-sm text-muted-foreground m-0">Plan and track scheduled maintenance across your fleet</p>
         </div>
         <div className="flex gap-3">
           <Button
-            className="bg-background text-primary px-5 py-2.5 normal-case font-semibold rounded-lg border border-primary shadow-sm hover:bg-muted/50 hover:shadow-md"
+            className="bg-background text-primary px-4 md:px-5 py-2.5 normal-case font-semibold rounded-lg border border-primary shadow-sm hover:bg-muted/50 hover:shadow-md"
             onClick={() => setExportModalOpen(true)}
           >
-            Export Report
+            Export
           </Button>
           <Button
-            className="bg-primary text-primary-foreground px-5 py-2.5 normal-case font-semibold rounded-lg shadow-sm hover:bg-primary/90 hover:shadow-md"
+            className="bg-primary text-primary-foreground px-4 md:px-5 py-2.5 normal-case font-semibold rounded-lg shadow-sm hover:bg-primary/90 hover:shadow-md"
             onClick={() => setNewEventModalOpen(true)}
           >
             New Event
@@ -318,12 +318,12 @@ export default function ServiceCalendar() {
                     <ChevronRight className="h-5 w-5" />
                   </button>
                 </div>
-                <div className="flex items-center gap-2.5 mt-2">
+                <div className="flex flex-wrap items-center gap-1.5 md:gap-2.5 mt-2">
                   {["All", "Pending", "In Progress", "Overdue", "Completed"].map((filter) => (
                     <Button
                       key={filter}
                       className={cn(
-                        "normal-case rounded-full px-4 py-1.5 text-xs font-semibold",
+                        "normal-case rounded-full px-3 md:px-4 py-1.5 text-xs font-semibold",
                         activeFilter === filter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
                       )}
                       onClick={() => setActiveFilter(filter)}
@@ -339,7 +339,8 @@ export default function ServiceCalendar() {
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <div className="grid grid-cols-7 gap-2 p-4">
+              <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+                <div className="grid grid-cols-7 gap-1 md:gap-2 p-2 md:p-4 min-w-[500px] md:min-w-0">
                 {WEEKDAYS.map((weekday) => (
                   <div key={weekday} className="text-center text-xs font-semibold text-muted-foreground pb-2">
                     {weekday}
@@ -350,7 +351,7 @@ export default function ServiceCalendar() {
                     return (
                       <div
                         key={`empty-${index}`}
-                        className="border border-dashed border-border rounded-[10px] min-h-[86px] p-2.5 bg-muted/50"
+                        className="border border-dashed border-border rounded-lg md:rounded-[10px] min-h-[60px] md:min-h-[86px] p-1.5 md:p-2.5 bg-muted/50"
                       />
                     );
                   }
@@ -362,7 +363,7 @@ export default function ServiceCalendar() {
                     <div
                       key={cell.date}
                       className={cn(
-                        "border border-border rounded-[10px] min-h-[86px] p-2.5 bg-card flex flex-col gap-1.5 cursor-pointer hover:bg-muted/50",
+                        "border border-border rounded-lg md:rounded-[10px] min-h-[60px] md:min-h-[86px] p-1.5 md:p-2.5 bg-card flex flex-col gap-1 md:gap-1.5 cursor-pointer hover:bg-muted/50",
                         isTodayCell && "border-primary border-2"
                       )}
                     >
@@ -400,6 +401,7 @@ export default function ServiceCalendar() {
                     </div>
                   );
                 })}
+              </div>
               </div>
             )}
           </Card>
