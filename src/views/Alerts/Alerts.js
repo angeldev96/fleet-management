@@ -1,198 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import MenuItem from "@material-ui/core/MenuItem";
-import Select from "@material-ui/core/Select";
-import FormControl from "@material-ui/core/FormControl";
-import CircularProgress from "@material-ui/core/CircularProgress";
 
-// @material-ui/icons
-import Warning from "@material-ui/icons/Warning";
-import Error from "@material-ui/icons/Error";
-import Info from "@material-ui/icons/Info";
-import MoreHoriz from "@material-ui/icons/MoreHoriz";
-import PlayArrow from "@material-ui/icons/PlayArrow";
+// lucide icons
+import { AlertTriangle, CircleAlert, Info, MoreHorizontal, Play, Loader2 } from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
-import Button from "components/CustomButtons/Button.js";
+import FilterBar from "components/FilterBar/FilterBar.js";
+import EmptyState from "components/EmptyState/EmptyState.js";
 
 // hooks
 import { useEvents } from "hooks/useEvents";
 
 // utils
-import { EVENT_LABELS, PID_LABELS, formatDateTime } from "types/database";
-
-import styles from "assets/jss/material-dashboard-pro-react/views/dashboardStyle.js";
-
-const useStyles = makeStyles(() => ({
-  ...styles,
-  filterButton: {
-    marginRight: "10px",
-    textTransform: "none",
-    fontWeight: "500",
-    padding: "8px 20px",
-    borderRadius: "8px",
-  },
-  activeFilter: {
-    backgroundColor: "#3E4D6C !important",
-    color: "#FFFFFF !important",
-  },
-  inactiveFilter: {
-    backgroundColor: "#E0E4E8 !important",
-    color: "#3E4D6C !important",
-  },
-  timeSelect: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: "8px",
-    padding: "2px 10px",
-    border: "1px solid #E0E4E8",
-    "&:before": { border: "none" },
-    "&:after": { border: "none" },
-    "&:hover:not(.Mui-disabled):before": { border: "none" },
-  },
-  alertCard: {
-    marginBottom: "20px",
-    boxShadow: "0 2px 12px 0 rgba(0,0,0,0.05)",
-  },
-  alertHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "15px 20px",
-  },
-  alertIconBox: {
-    width: "32px",
-    height: "32px",
-    borderRadius: "6px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: "15px",
-  },
-  alertTitle: {
-    fontSize: "18px",
-    fontWeight: "600",
-    color: "#333",
-    margin: "0",
-  },
-  alertVehicle: {
-    fontSize: "16px",
-    color: "#333",
-    fontWeight: "500",
-    margin: "5px 0",
-  },
-  alertTime: {
-    fontSize: "14px",
-    color: "#999",
-    margin: "0",
-  },
-  alertFooter: {
-    borderTop: "1px solid #eee",
-    padding: "15px 20px",
-    display: "flex",
-    alignItems: "center",
-  },
-  footerLink: {
-    color: "#3E4D6C",
-    fontWeight: "600",
-    fontSize: "14px",
-    display: "flex",
-    alignItems: "center",
-    cursor: "pointer",
-    "& svg": {
-      fontSize: "14px",
-      marginRight: "5px",
-    },
-  },
-  loadingContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "60px",
-  },
-  emptyState: {
-    textAlign: "center",
-    padding: "40px",
-    color: "#999",
-  },
-  alertDetails: {
-    fontSize: "13px",
-    color: "#666",
-    marginTop: "5px",
-  },
-  paginationContainer: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: "24px",
-    padding: "16px 0",
-    borderTop: "1px solid #E5E7EB",
-  },
-  paginationInfo: {
-    fontSize: "14px",
-    color: "#6b7280",
-  },
-  paginationButtons: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  paginationBtn: {
-    minWidth: "36px",
-    height: "36px",
-    padding: "0 12px",
-    borderRadius: "6px",
-    border: "1px solid #E5E7EB",
-    backgroundColor: "#FFFFFF",
-    color: "#374151",
-    fontSize: "14px",
-    fontWeight: "500",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "all 0.15s ease",
-    "&:hover:not(:disabled)": {
-      backgroundColor: "#F9FAFB",
-      borderColor: "#D1D5DB",
-    },
-    "&:disabled": {
-      opacity: 0.5,
-      cursor: "not-allowed",
-    },
-  },
-  paginationBtnActive: {
-    backgroundColor: "#3E4D6C",
-    borderColor: "#3E4D6C",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-    },
-  },
-  pageHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "24px",
-  },
-  pageTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  alertCount: {
-    fontSize: "14px",
-    color: "#6b7280",
-    marginTop: "4px",
-  },
-}));
+import { EVENT_LABELS, PID_LABELS, SEVERITY_CLASSES, formatDateTime } from "types/database";
+import { cn } from "lib/utils";
 
 const FILTER_TYPES = {
   All: null,
@@ -209,7 +35,6 @@ const TIME_FILTERS = {
 };
 
 export default function Alerts() {
-  const classes = useStyles();
   const history = useHistory();
   const location = useLocation();
   const [activeFilter, setActiveFilter] = useState("All");
@@ -361,15 +186,15 @@ export default function Alerts() {
 
   if (loading) {
     return (
-      <div className={classes.loadingContainer}>
-        <CircularProgress />
+      <div className="flex items-center justify-center p-16">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={classes.emptyState}>
+      <div className="text-center p-10 text-muted-foreground">
         <p>Error loading alerts: {error.message}</p>
       </div>
     );
@@ -378,105 +203,88 @@ export default function Alerts() {
   return (
     <div>
       {/* Page Header */}
-      <div className={classes.pageHeader}>
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className={classes.pageTitle}>Alerts</h1>
-          <div className={classes.alertCount}>
+          <h1 className="text-2xl font-semibold text-foreground m-0">Alerts</h1>
+          <div className="text-sm text-muted-foreground mt-1">
             {events.length} {events.length === 1 ? "alert" : "alerts"} found
           </div>
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", marginBottom: "30px" }}>
-        {Object.keys(FILTER_TYPES).map((filter) => (
-          <Button
-            key={filter}
-            className={`${classes.filterButton} ${
-              activeFilter === filter ? classes.activeFilter : classes.inactiveFilter
-            }`}
-            onClick={() => handleFilterChange(filter)}
-          >
-            {filter}
-          </Button>
-        ))}
+      <div className="flex items-center mb-8">
+        <FilterBar
+          filters={Object.keys(FILTER_TYPES).map((f) => ({ label: f, value: f }))}
+          activeFilter={activeFilter}
+          onFilterChange={handleFilterChange}
+        />
 
-        <FormControl style={{ marginLeft: "10px" }}>
-          <Select
-            id="alerts-time-filter"
-            name="timeFilter"
-            value={timeFilter}
-            onChange={handleTimeChange}
-            className={classes.timeSelect}
-            inputProps={{
-              name: "timeFilter",
-              id: "alerts-time-filter",
-            }}
-          >
-            <MenuItem value="Now">Last Hour</MenuItem>
-            <MenuItem value="Today">Today</MenuItem>
-            <MenuItem value="Week">This Week</MenuItem>
-          </Select>
-        </FormControl>
+        <select
+          id="alerts-time-filter"
+          name="timeFilter"
+          value={timeFilter}
+          onChange={handleTimeChange}
+          className="ml-2.5 h-10 rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+        >
+          <option value="Now">Last Hour</option>
+          <option value="Today">Today</option>
+          <option value="Week">This Week</option>
+        </select>
       </div>
 
       {events.length === 0 ? (
-        <div className={classes.emptyState}>
-          <p>No alerts found for the selected filters</p>
-        </div>
+        <EmptyState title="No alerts found" description="No alerts match the selected filters" />
       ) : (
         <>
           <GridContainer>
             {paginatedEvents.map((event) => (
               <GridItem xs={12} key={event.id}>
-                <Card className={classes.alertCard}>
-                  <CardBody style={{ padding: "0" }}>
-                    <div className={classes.alertHeader}>
-                      <div style={{ display: "flex", alignItems: "center" }}>
+                <Card className="mb-5 shadow-sm">
+                  <CardBody className="p-0">
+                    <div className="flex items-center justify-between px-5 py-4">
+                      <div className="flex items-center">
                         <div
-                          className={classes.alertIconBox}
-                          style={{
-                            backgroundColor:
-                              event.severity === "critical"
-                                ? "#F44336"
-                                : event.severity === "info"
-                                ? "#1A73E8"
-                                : "#FB8C00",
-                          }}
+                          className={cn(
+                            "w-8 h-8 rounded-md flex items-center justify-center mr-4",
+                            event.severity === "critical" ? "bg-red-500" : event.severity === "info" ? "bg-blue-500" : "bg-amber-500"
+                          )}
                         >
                           {event.severity === "critical" ? (
-                            <Error style={{ color: "white", fontSize: "18px" }} />
+                            <CircleAlert className="h-[18px] w-[18px] text-white" />
                           ) : event.severity === "info" ? (
-                            <Info style={{ color: "white", fontSize: "18px" }} />
+                            <Info className="h-[18px] w-[18px] text-white" />
                           ) : (
-                            <Warning style={{ color: "white", fontSize: "18px" }} />
+                            <AlertTriangle className="h-[18px] w-[18px] text-white" />
                           )}
                         </div>
                         <div>
-                          <h4 className={classes.alertTitle}>{getAlertTitle(event)}</h4>
+                          <h4 className="text-lg font-semibold text-foreground m-0">
+                            {getAlertTitle(event)}
+                          </h4>
                         </div>
                       </div>
-                      <MoreHoriz style={{ color: "#999", cursor: "pointer" }} />
+                      <MoreHorizontal className="h-5 w-5 text-muted-foreground cursor-pointer" />
                     </div>
 
-                    <div style={{ padding: "0 20px 20px 67px" }}>
-                      <p className={classes.alertVehicle}>
+                    <div className="px-5 pb-5 pl-[67px]">
+                      <p className="text-base text-foreground font-medium my-1">
                         {event.vehicles?.name || "Unknown Vehicle"}
                         {event.vehicles?.driver_name && (
-                          <span style={{ color: "#666", fontWeight: "400" }}>
+                          <span className="text-muted-foreground font-normal">
                             {" "}
                             • {event.vehicles.driver_name}
                           </span>
                         )}
                       </p>
                       {getAlertDetails(event) && (
-                        <p className={classes.alertDetails}>{getAlertDetails(event)}</p>
+                        <p className="text-[13px] text-muted-foreground mt-1">{getAlertDetails(event)}</p>
                       )}
-                      <p className={classes.alertTime}>{formatDateTime(event.event_at)}</p>
+                      <p className="text-sm text-muted-foreground m-0">{formatDateTime(event.event_at)}</p>
                     </div>
 
-                    <div className={classes.alertFooter}>
+                    <div className="border-t border-border/50 px-5 py-4 flex items-center">
                       <div
-                        className={classes.footerLink}
+                        className="text-primary font-semibold text-sm flex items-center cursor-pointer"
                         role="button"
                         tabIndex={0}
                         onClick={() => handleAlertNavigate(event)}
@@ -487,7 +295,7 @@ export default function Alerts() {
                           }
                         }}
                       >
-                        <PlayArrow /> {getAlertLinkText(event.event_type)}
+                        <Play className="h-3.5 w-3.5 mr-1.5" /> {getAlertLinkText(event.event_type)}
                       </div>
                     </div>
                   </CardBody>
@@ -498,21 +306,21 @@ export default function Alerts() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className={classes.paginationContainer}>
-              <div className={classes.paginationInfo}>
+            <div className="flex items-center justify-between mt-6 py-4 border-t border-border">
+              <div className="text-sm text-muted-foreground">
                 Showing {(page - 1) * alertsPerPage + 1}-
                 {Math.min(page * alertsPerPage, events.length)} of {events.length} alerts
               </div>
-              <div className={classes.paginationButtons}>
+              <div className="flex items-center gap-2">
                 <button
-                  className={classes.paginationBtn}
+                  className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-background text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setPage(1)}
                   disabled={page === 1}
                 >
                   First
                 </button>
                 <button
-                  className={classes.paginationBtn}
+                  className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-background text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
                 >
@@ -532,9 +340,12 @@ export default function Alerts() {
                   return (
                     <button
                       key={pageNum}
-                      className={`${classes.paginationBtn} ${
-                        page === pageNum ? classes.paginationBtnActive : ""
-                      }`}
+                      className={cn(
+                        "min-w-[36px] h-9 px-3 rounded-md border text-sm font-medium flex items-center justify-center transition-all",
+                        page === pageNum
+                          ? "bg-primary border-primary text-primary-foreground hover:bg-primary/90"
+                          : "border-border bg-background text-foreground hover:bg-muted/50 hover:border-border"
+                      )}
                       onClick={() => setPage(pageNum)}
                     >
                       {pageNum}
@@ -542,14 +353,14 @@ export default function Alerts() {
                   );
                 })}
                 <button
-                  className={classes.paginationBtn}
+                  className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-background text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
                 >
                   Next
                 </button>
                 <button
-                  className={classes.paginationBtn}
+                  className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-background text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setPage(totalPages)}
                   disabled={page === totalPages}
                 >

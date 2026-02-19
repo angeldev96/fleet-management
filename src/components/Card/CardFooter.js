@@ -1,56 +1,31 @@
 import React from "react";
-// nodejs library that concatenates classes
-import classNames from "classnames";
-// nodejs library to set properties for components
-import PropTypes from "prop-types";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-// @material-ui/icons
+import { cn } from "lib/utils";
 
-// core components
-import styles from "assets/jss/material-dashboard-pro-react/components/cardFooterStyle.js";
-
-const useStyles = makeStyles(styles);
-
-export default function CardFooter(props) {
-  const classes = useStyles();
-  const {
-    className,
-    children,
-    plain,
-    profile,
-    pricing,
-    testimonial,
-    stats,
-    chart,
-    product,
-    ...rest
-  } = props;
-  const cardFooterClasses = classNames({
-    [classes.cardFooter]: true,
-    [classes.cardFooterPlain]: plain,
-    [classes.cardFooterProfile]: profile || testimonial,
-    [classes.cardFooterPricing]: pricing,
-    [classes.cardFooterTestimonial]: testimonial,
-    [classes.cardFooterStats]: stats,
-    [classes.cardFooterChart]: chart || product,
-    [className]: className !== undefined,
-  });
+export default function CardFooter({
+  className,
+  children,
+  plain,
+  profile,
+  pricing,
+  testimonial,
+  stats,
+  chart,
+  product,
+  ...rest
+}) {
   return (
-    <div className={cardFooterClasses} {...rest}>
+    <div
+      className={cn(
+        "flex items-center px-5 py-3 border-t border-border/50",
+        (stats || chart || product) && "text-sm text-muted-foreground",
+        (profile || testimonial) && "justify-center",
+        plain && "border-transparent",
+        pricing && "justify-center",
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
 }
-
-CardFooter.propTypes = {
-  className: PropTypes.string,
-  plain: PropTypes.bool,
-  profile: PropTypes.bool,
-  pricing: PropTypes.bool,
-  testimonial: PropTypes.bool,
-  stats: PropTypes.bool,
-  chart: PropTypes.bool,
-  product: PropTypes.bool,
-  children: PropTypes.node,
-};

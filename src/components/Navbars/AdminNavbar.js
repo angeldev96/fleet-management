@@ -1,85 +1,44 @@
 import React from "react";
-// nodejs library to set properties for components
-import PropTypes from "prop-types";
-import cx from "classnames";
+import { cn } from "lib/utils";
+import { Menu, MoreVertical, List } from "lucide-react";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import Hidden from "@material-ui/core/Hidden";
-
-// material-ui icons
-import Menu from "@material-ui/icons/Menu";
-import MoreVert from "@material-ui/icons/MoreVert";
-import ViewList from "@material-ui/icons/ViewList";
-
-// core components
 import AdminNavbarLinks from "./AdminNavbarLinks";
-import Button from "components/CustomButtons/Button.js";
 
-import styles from "assets/jss/material-dashboard-pro-react/components/adminNavbarStyle.js";
-
-const useStyles = makeStyles(styles);
-
-export default function AdminNavbar(props) {
-  const classes = useStyles();
-  const { color, rtlActive, brandText } = props;
-  const appBarClasses = cx({
-    [" " + classes[color]]: color,
-  });
-  const sidebarMinimize =
-    classes.sidebarMinimize +
-    " " +
-    cx({
-      [classes.sidebarMinimizeRTL]: rtlActive,
-    });
+export default function AdminNavbar({ brandText, miniActive, sidebarMinimize, handleDrawerToggle }) {
   return (
-    <AppBar className={classes.appBar + appBarClasses}>
-      <Toolbar className={classes.container}>
-        <Hidden smDown implementation="css">
-          <div className={sidebarMinimize}>
-            {props.miniActive ? (
-              <Button justIcon round color="white" onClick={props.sidebarMinimize}>
-                <ViewList className={classes.sidebarMiniIcon} />
-              </Button>
-            ) : (
-              <Button justIcon round color="white" onClick={props.sidebarMinimize}>
-                <MoreVert className={classes.sidebarMiniIcon} />
-              </Button>
-            )}
-          </div>
-        </Hidden>
-        <div className={classes.flex}>
-          {/* Here we create navbar brand, based on route name */}
-          <Button href="#" className={classes.title} color="transparent">
-            {brandText}
-          </Button>
-        </div>
-        <Hidden smDown implementation="css">
-          <AdminNavbarLinks rtlActive={rtlActive} />
-        </Hidden>
-        <Hidden mdUp implementation="css">
-          <Button
-            className={classes.appResponsive}
-            color="transparent"
-            justIcon
-            aria-label="open drawer"
-            onClick={props.handleDrawerToggle}
-          >
-            <Menu />
-          </Button>
-        </Hidden>
-      </Toolbar>
-    </AppBar>
+    <header className="sticky top-0 z-30 flex items-center h-16 px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b shadow-sm">
+      {/* Sidebar toggle - desktop only */}
+      <div className="hidden md:block mr-2">
+        <button
+          onClick={sidebarMinimize}
+          className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-white border border-input shadow-sm hover:bg-accent transition-colors"
+        >
+          {miniActive ? (
+            <List className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <MoreVertical className="h-4 w-4 text-muted-foreground" />
+          )}
+        </button>
+      </div>
+
+      {/* Brand text */}
+      <div className="flex-1">
+        <span className="text-lg font-semibold text-foreground">{brandText}</span>
+      </div>
+
+      {/* Desktop navbar links */}
+      <div className="hidden md:flex items-center">
+        <AdminNavbarLinks />
+      </div>
+
+      {/* Mobile menu button */}
+      <button
+        className="inline-flex items-center justify-center h-9 w-9 rounded-md md:hidden hover:bg-accent transition-colors"
+        onClick={handleDrawerToggle}
+        aria-label="open drawer"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+    </header>
   );
 }
-
-AdminNavbar.propTypes = {
-  color: PropTypes.oneOf(["primary", "info", "success", "warning", "danger"]),
-  rtlActive: PropTypes.bool,
-  brandText: PropTypes.string,
-  miniActive: PropTypes.bool,
-  handleDrawerToggle: PropTypes.func,
-  sidebarMinimize: PropTypes.func,
-};

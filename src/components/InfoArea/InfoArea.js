@@ -1,36 +1,26 @@
 import React from "react";
-import PropTypes from "prop-types";
+import { cn } from "lib/utils";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
+const colorClasses = {
+  primary: "text-primary",
+  info: "text-blue-500",
+  success: "text-emerald-500",
+  warning: "text-amber-500",
+  danger: "text-red-500",
+  rose: "text-pink-500",
+  gray: "text-zinc-500",
+};
 
-import styles from "assets/jss/material-dashboard-pro-react/components/infoStyle";
-
-const useStyles = makeStyles(styles);
-
-export default function InfoArea(props) {
-  const classes = useStyles();
-  const { title, description, iconColor } = props;
+export default function InfoArea({ icon: Icon, title, description, iconColor = "gray" }) {
   return (
-    <div className={classes.infoArea}>
-      <div className={classes.iconWrapper + " " + classes[iconColor]}>
-        <props.icon className={classes.icon} />
+    <div className="flex gap-4 p-4">
+      <div className={cn("flex-shrink-0", colorClasses[iconColor] || colorClasses.gray)}>
+        <Icon className="h-8 w-8" />
       </div>
-      <div className={classes.descriptionWrapper}>
-        <h4 className={classes.title}>{title}</h4>
-        <p className={classes.description}>{description}</p>
+      <div>
+        <h4 className="text-base font-semibold text-foreground mb-1">{title}</h4>
+        <p className="text-sm text-muted-foreground">{description}</p>
       </div>
     </div>
   );
 }
-
-InfoArea.defaultProps = {
-  iconColor: "gray",
-};
-
-InfoArea.propTypes = {
-  icon: PropTypes.object.isRequired,
-  title: PropTypes.string.isRequired,
-  description: PropTypes.string.isRequired,
-  iconColor: PropTypes.oneOf(["primary", "warning", "danger", "success", "info", "rose", "gray"]),
-};

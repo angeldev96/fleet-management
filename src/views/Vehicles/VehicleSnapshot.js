@@ -1,205 +1,50 @@
 import React from "react";
 import { useParams, useHistory } from "react-router-dom";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import IconButton from "@material-ui/core/IconButton";
-// @material-ui/icons
-import ArrowBack from "@material-ui/icons/ArrowBack";
-import BatteryChargingFull from "@material-ui/icons/BatteryChargingFull";
-import Speed from "@material-ui/icons/Speed";
-import Opacity from "@material-ui/icons/Opacity";
-import LocalGasStation from "@material-ui/icons/LocalGasStation";
-import Timer from "@material-ui/icons/Timer";
-import TrendingUp from "@material-ui/icons/TrendingUp";
-import Refresh from "@material-ui/icons/Refresh";
+
+// lucide icons
+import {
+  ArrowLeft,
+  BatteryCharging,
+  Gauge,
+  Droplets,
+  Fuel,
+  Timer,
+  TrendingUp,
+  RefreshCw,
+  Loader2,
+} from "lucide-react";
+
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
-import Button from "components/CustomButtons/Button.js";
+
 // hooks
 import { useVehicleSnapshot } from "hooks/useVehicleSnapshot";
 // utils
 import { formatDateTime, formatRelativeTime } from "types/database";
 
-const useStyles = makeStyles(() => ({
-  pageHeader: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "24px",
-    gap: "16px",
-  },
-  backButton: {
-    backgroundColor: "#F9FAFB",
-    border: "1px solid #E5E7EB",
-    borderRadius: "8px",
-    padding: "8px",
-    "&:hover": {
-      backgroundColor: "#F3F4F6",
-    },
-  },
-  headerContent: {
-    flex: 1,
-  },
-  pageTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  pageSubtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    marginTop: "4px",
-  },
-  refreshButton: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    padding: "10px 20px",
-    textTransform: "none",
-    fontWeight: "600",
-    borderRadius: "8px",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-    },
-  },
-  loadingContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "80px 20px",
-  },
-  snapshotCard: {
-    borderRadius: "12px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    border: "1px solid #E5E7EB",
-    height: "100%",
-    transition: "all 0.2s ease",
-    "&:hover": {
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-      transform: "translateY(-2px)",
-    },
-  },
-  cardContent: {
-    padding: "24px !important",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    textAlign: "center",
-  },
-  iconContainer: {
-    width: "64px",
-    height: "64px",
-    borderRadius: "16px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: "16px",
-  },
-  cardIcon: {
-    fontSize: "32px",
-    color: "#FFFFFF",
-  },
-  cardLabel: {
-    fontSize: "14px",
-    color: "#6b7280",
-    fontWeight: "500",
-    marginBottom: "8px",
-  },
-  cardValue: {
-    fontSize: "28px",
-    fontWeight: "700",
-    color: "#1f2937",
-  },
-  cardUnit: {
-    fontSize: "14px",
-    color: "#9ca3af",
-    fontWeight: "500",
-    marginLeft: "4px",
-  },
-  noData: {
-    color: "#9ca3af",
-    fontSize: "18px",
-    fontWeight: "500",
-  },
-  timestampCard: {
-    backgroundColor: "#F9FAFB",
-    borderRadius: "12px",
-    padding: "16px 24px",
-    marginBottom: "24px",
-    border: "1px solid #E5E7EB",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  timestampLabel: {
-    fontSize: "14px",
-    color: "#6b7280",
-    fontWeight: "500",
-  },
-  timestampValue: {
-    fontSize: "14px",
-    color: "#1f2937",
-    fontWeight: "600",
-  },
-  vehicleInfoCard: {
-    borderRadius: "12px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    border: "1px solid #E5E7EB",
-    marginBottom: "24px",
-  },
-  vehicleInfoContent: {
-    padding: "20px 24px !important",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    gap: "16px",
-  },
-  vehicleInfoItem: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  vehicleInfoLabel: {
-    fontSize: "12px",
-    color: "#6b7280",
-    fontWeight: "500",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-  },
-  vehicleInfoValue: {
-    fontSize: "16px",
-    color: "#1f2937",
-    fontWeight: "600",
-    marginTop: "4px",
-  },
-  emptyState: {
-    textAlign: "center",
-    padding: "60px 20px",
-    color: "#6b7280",
-  },
-}));
-
 const PIDCard = ({ icon: Icon, label, value, unit, color, noDataText = "--" }) => {
-  const classes = useStyles();
   const hasValue = value !== null && value !== undefined;
 
   return (
-    <Card className={classes.snapshotCard}>
-      <CardBody className={classes.cardContent}>
-        <div className={classes.iconContainer} style={{ backgroundColor: color }}>
-          <Icon className={classes.cardIcon} />
+    <Card className="rounded-xl shadow-sm border border-border h-full transition-all hover:shadow-md hover:-translate-y-0.5">
+      <CardBody className="p-6 flex flex-col items-center text-center">
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+          style={{ backgroundColor: color }}
+        >
+          <Icon className="h-8 w-8 text-white" />
         </div>
-        <div className={classes.cardLabel}>{label}</div>
+        <div className="text-sm text-muted-foreground font-medium mb-2">{label}</div>
         {hasValue ? (
-          <div className={classes.cardValue}>
+          <div className="text-[28px] font-bold text-foreground">
             {typeof value === "number" ? value.toFixed(1) : value}
-            <span className={classes.cardUnit}>{unit}</span>
+            <span className="text-sm text-muted-foreground font-medium ml-1">{unit}</span>
           </div>
         ) : (
-          <div className={classes.noData}>{noDataText}</div>
+          <div className="text-muted-foreground text-lg font-medium">{noDataText}</div>
         )}
       </CardBody>
     </Card>
@@ -207,7 +52,6 @@ const PIDCard = ({ icon: Icon, label, value, unit, color, noDataText = "--" }) =
 };
 
 export default function VehicleSnapshot() {
-  const classes = useStyles();
   const history = useHistory();
   const { vehicleId } = useParams();
 
@@ -228,17 +72,22 @@ export default function VehicleSnapshot() {
 
   if (loading) {
     return (
-      <div className={classes.loadingContainer}>
-        <CircularProgress />
+      <div className="flex items-center justify-center py-20 px-5">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (error && !vehicle) {
     return (
-      <div className={classes.emptyState}>
+      <div className="text-center py-16 px-5 text-muted-foreground">
         <p>Error loading vehicle: {error.message}</p>
-        <Button onClick={handleBack}>Back to Vehicle</Button>
+        <button
+          className="mt-4 inline-flex items-center rounded-lg bg-muted px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
+          onClick={handleBack}
+        >
+          Back to Vehicle
+        </button>
       </div>
     );
   }
@@ -246,48 +95,69 @@ export default function VehicleSnapshot() {
   return (
     <div>
       {/* Page Header */}
-      <div className={classes.pageHeader}>
-        <IconButton className={classes.backButton} onClick={handleBack}>
-          <ArrowBack />
-        </IconButton>
-        <div className={classes.headerContent}>
-          <h1 className={classes.pageTitle}>{getVehicleDisplayName()} - PID Snapshot</h1>
-          <div className={classes.pageSubtitle}>Last known vehicle diagnostic data</div>
+      <div className="flex items-center gap-4 mb-6">
+        <button
+          className="rounded-lg border border-border bg-muted/50 p-2 transition-colors hover:bg-muted"
+          onClick={handleBack}
+        >
+          <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+        </button>
+        <div className="flex-1">
+          <h1 className="text-2xl font-semibold text-foreground m-0">
+            {getVehicleDisplayName()} - PID Snapshot
+          </h1>
+          <div className="text-sm text-muted-foreground mt-1">Last known vehicle diagnostic data</div>
         </div>
-        <Button
-          className={classes.refreshButton}
-          style={{ backgroundColor: "#F3F4F6", color: "#374151" }}
+        <button
+          className="inline-flex items-center rounded-lg bg-muted px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
           onClick={() => history.push(`/admin/vehicle/${vehicleId}`)}
         >
           Vehicle Overview
-        </Button>
-        <Button className={classes.refreshButton} onClick={refetch}>
-          <Refresh style={{ marginRight: "8px", fontSize: "18px" }} />
+        </button>
+        <button
+          className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
+          onClick={refetch}
+        >
+          <RefreshCw className="mr-2 h-[18px] w-[18px]" />
           Refresh
-        </Button>
+        </button>
       </div>
 
       {/* Vehicle Info */}
       {vehicle && (
-        <Card className={classes.vehicleInfoCard}>
-          <CardBody className={classes.vehicleInfoContent}>
-            <div className={classes.vehicleInfoItem}>
-              <span className={classes.vehicleInfoLabel}>Plate Number</span>
-              <span className={classes.vehicleInfoValue}>{vehicle.plate_number || "--"}</span>
+        <Card className="rounded-xl shadow-sm border border-border mb-6">
+          <CardBody className="px-6 py-5 flex items-center justify-between flex-wrap gap-4">
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                Plate Number
+              </span>
+              <span className="text-base text-foreground font-semibold mt-1">
+                {vehicle.plate_number || "--"}
+              </span>
             </div>
-            <div className={classes.vehicleInfoItem}>
-              <span className={classes.vehicleInfoLabel}>Make / Model</span>
-              <span className={classes.vehicleInfoValue}>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                Make / Model
+              </span>
+              <span className="text-base text-foreground font-semibold mt-1">
                 {vehicle.make || "--"} {vehicle.model || ""}
               </span>
             </div>
-            <div className={classes.vehicleInfoItem}>
-              <span className={classes.vehicleInfoLabel}>Year</span>
-              <span className={classes.vehicleInfoValue}>{vehicle.year || "--"}</span>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                Year
+              </span>
+              <span className="text-base text-foreground font-semibold mt-1">
+                {vehicle.year || "--"}
+              </span>
             </div>
-            <div className={classes.vehicleInfoItem}>
-              <span className={classes.vehicleInfoLabel}>Driver</span>
-              <span className={classes.vehicleInfoValue}>{vehicle.driver_name || "--"}</span>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                Driver
+              </span>
+              <span className="text-base text-foreground font-semibold mt-1">
+                {vehicle.driver_name || "--"}
+              </span>
             </div>
           </CardBody>
         </Card>
@@ -295,9 +165,9 @@ export default function VehicleSnapshot() {
 
       {/* Timestamp Info */}
       {snapshot?.timestamp && (
-        <div className={classes.timestampCard}>
-          <span className={classes.timestampLabel}>Last Known Reading</span>
-          <span className={classes.timestampValue}>
+        <div className="flex items-center justify-between rounded-xl border border-border bg-muted/50 px-6 py-4 mb-6">
+          <span className="text-sm text-muted-foreground font-medium">Last Known Reading</span>
+          <span className="text-sm text-foreground font-semibold">
             {formatRelativeTime(snapshot.timestamp)} ({formatDateTime(snapshot.timestamp)})
           </span>
         </div>
@@ -307,7 +177,7 @@ export default function VehicleSnapshot() {
       <GridContainer spacing={3}>
         <GridItem xs={12} sm={6} md={3}>
           <PIDCard
-            icon={BatteryChargingFull}
+            icon={BatteryCharging}
             label="Battery Voltage"
             value={snapshot?.battery_voltage}
             unit="V"
@@ -316,7 +186,7 @@ export default function VehicleSnapshot() {
         </GridItem>
         <GridItem xs={12} sm={6} md={3}>
           <PIDCard
-            icon={Speed}
+            icon={Gauge}
             label="Engine RPM"
             value={snapshot?.rpm}
             unit="rpm"
@@ -325,7 +195,7 @@ export default function VehicleSnapshot() {
         </GridItem>
         <GridItem xs={12} sm={6} md={3}>
           <PIDCard
-            icon={Opacity}
+            icon={Droplets}
             label="Coolant Temperature"
             value={snapshot?.coolant_temp}
             unit="°C"
@@ -334,7 +204,7 @@ export default function VehicleSnapshot() {
         </GridItem>
         <GridItem xs={12} sm={6} md={3}>
           <PIDCard
-            icon={LocalGasStation}
+            icon={Fuel}
             label="Fuel Level"
             value={snapshot?.fuel_level}
             unit="%"
@@ -374,7 +244,7 @@ export default function VehicleSnapshot() {
         </GridItem>
         <GridItem xs={12} sm={6} md={3}>
           <PIDCard
-            icon={Speed}
+            icon={Gauge}
             label="Odometer"
             value={snapshot?.odometer}
             unit="km"

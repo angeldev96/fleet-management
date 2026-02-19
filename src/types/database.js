@@ -101,6 +101,34 @@ export const SERVICE_STATUS_COLORS = {
   overdue: { bg: "#FEE2E2", text: "#B91C1C" },
 };
 
+/**
+ * Tailwind class-based severity styles (replaces inline hex colors)
+ */
+export const SEVERITY_CLASSES = {
+  info: { badge: "bg-blue-50 text-blue-700", dot: "bg-blue-500" },
+  warning: { badge: "bg-amber-50 text-amber-700", dot: "bg-amber-500" },
+  critical: { badge: "bg-red-50 text-red-700", dot: "bg-red-500" },
+};
+
+/**
+ * Tailwind class-based vehicle status styles
+ */
+export const STATUS_CLASSES = {
+  online: { badge: "bg-emerald-50 text-emerald-700", dot: "bg-emerald-500" },
+  idle: { badge: "bg-amber-50 text-amber-700", dot: "bg-amber-500" },
+  offline: { badge: "bg-gray-100 text-gray-600", dot: "bg-gray-400" },
+};
+
+/**
+ * Tailwind class-based service status styles
+ */
+export const SERVICE_STATUS_CLASSES = {
+  pending: "bg-amber-50 text-amber-700",
+  in_progress: "bg-blue-50 text-blue-700",
+  completed: "bg-emerald-50 text-emerald-700",
+  overdue: "bg-red-50 text-red-700",
+};
+
 const JAMAICA_TIMEZONE = "America/Jamaica";
 
 function getDatePartsInTimeZone(date, timeZone) {

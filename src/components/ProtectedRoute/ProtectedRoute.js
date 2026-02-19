@@ -2,27 +2,13 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Route, Redirect } from "react-router-dom";
 import { useAuth } from "context/AuthContext";
+import { Loader2 } from "lucide-react";
 
-// Loading component
 function LoadingScreen() {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        backgroundColor: "#1a1a2e",
-      }}
-    >
-      <div
-        style={{
-          color: "#fff",
-          fontSize: "18px",
-        }}
-      >
-        Loading...
-      </div>
+    <div className="flex flex-col items-center justify-center h-screen bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+      <span className="text-muted-foreground text-sm">Loading...</span>
     </div>
   );
 }

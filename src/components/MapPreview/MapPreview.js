@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useHistory } from "react-router-dom";
-import mapboxgl from "!mapbox-gl";
+import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useVehicles } from "hooks/useVehicles";
 import "./MapPreview.css";
 
 // Mapbox Public Access Token
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN_PUBLIC;
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
 
 // Kingston, Jamaica center coordinates
 const JAMAICA_CENTER = {

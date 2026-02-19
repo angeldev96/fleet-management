@@ -1,40 +1,28 @@
 import React from "react";
-// nodejs library that concatenates classes
-import classNames from "classnames";
-// nodejs library to set properties for components
-import PropTypes from "prop-types";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-// @material-ui/icons
-// core components
+import { cn } from "lib/utils";
 
-import styles from "assets/jss/material-dashboard-pro-react/components/cardAvatarStyle.js";
-
-const useStyles = makeStyles(styles);
-
-export default function CardAvatar(props) {
-  const classes = useStyles();
-  const { children, className, plain, profile, testimonial, testimonialFooter, ...rest } = props;
-  const cardAvatarClasses = classNames({
-    [classes.cardAvatar]: true,
-    [classes.cardAvatarProfile]: profile,
-    [classes.cardAvatarPlain]: plain,
-    [classes.cardAvatarTestimonial]: testimonial,
-    [classes.cardAvatarTestimonialFooter]: testimonialFooter,
-    [className]: className !== undefined,
-  });
+export default function CardAvatar({
+  children,
+  className,
+  plain,
+  profile,
+  testimonial,
+  testimonialFooter,
+  ...rest
+}) {
   return (
-    <div className={cardAvatarClasses} {...rest}>
+    <div
+      className={cn(
+        "overflow-hidden mx-auto -mt-12",
+        profile && "w-32 h-32 rounded-full shadow-lg",
+        testimonial && "w-24 h-24 rounded-full shadow-lg",
+        testimonialFooter && "w-10 h-10 rounded-full",
+        plain && "mt-0",
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
 }
-
-CardAvatar.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-  profile: PropTypes.bool,
-  plain: PropTypes.bool,
-  testimonial: PropTypes.bool,
-  testimonialFooter: PropTypes.bool,
-};

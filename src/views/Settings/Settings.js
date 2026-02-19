@@ -1,100 +1,14 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-
-// @material-ui/icons
-import DirectionsCar from "@material-ui/icons/DirectionsCar";
-import DevicesOther from "@material-ui/icons/DevicesOther";
-import Person from "@material-ui/icons/Person";
-import Notifications from "@material-ui/icons/Notifications";
-import Security from "@material-ui/icons/Security";
-import Business from "@material-ui/icons/Business";
-import ChevronRight from "@material-ui/icons/ChevronRight";
+// Lucide icons
+import { Car, Smartphone, User, Bell, Shield, Building, ChevronRight } from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 
-const useStyles = makeStyles(() => ({
-  pageTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: "8px",
-  },
-  pageSubtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    marginBottom: "32px",
-  },
-  settingsCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: "12px",
-    padding: "24px",
-    cursor: "pointer",
-    border: "1px solid #E5E7EB",
-    transition: "all 0.2s ease",
-    display: "flex",
-    alignItems: "center",
-    "&:hover": {
-      borderColor: "#3E4D6C",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-      transform: "translateY(-2px)",
-    },
-  },
-  settingsCardDisabled: {
-    backgroundColor: "#F9FAFB",
-    borderRadius: "12px",
-    padding: "24px",
-    border: "1px solid #E5E7EB",
-    display: "flex",
-    alignItems: "center",
-    opacity: 0.6,
-    cursor: "not-allowed",
-  },
-  iconContainer: {
-    width: "56px",
-    height: "56px",
-    borderRadius: "12px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: "20px",
-    flexShrink: 0,
-  },
-  icon: {
-    fontSize: "28px",
-    color: "#FFFFFF",
-  },
-  cardContent: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: "4px",
-  },
-  cardDescription: {
-    fontSize: "13px",
-    color: "#6b7280",
-    lineHeight: "1.4",
-  },
-  chevron: {
-    color: "#9CA3AF",
-    fontSize: "24px",
-  },
-  comingSoon: {
-    fontSize: "11px",
-    color: "#9CA3AF",
-    fontWeight: "500",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-    marginTop: "6px",
-  },
-}));
+import { cn } from "lib/utils";
 
 const settingsOptions = [
   {
@@ -102,8 +16,8 @@ const settingsOptions = [
     title: "Vehicle Data Upload",
     description:
       "Add vehicles to your fleet individually or upload customer data in bulk via CSV.",
-    icon: DirectionsCar,
-    color: "#2563EB",
+    icon: Car,
+    bgColor: "bg-blue-600",
     path: "/admin/settings/vehicles",
     enabled: true,
   },
@@ -112,8 +26,8 @@ const settingsOptions = [
     title: "Device Management",
     description:
       "Link GPS devices to your fleet vehicles. Manage device configurations, firmware versions, and assignments.",
-    icon: DevicesOther,
-    color: "#3E4D6C",
+    icon: Smartphone,
+    bgColor: "bg-primary",
     path: "/admin/settings/devices",
     enabled: true,
   },
@@ -121,8 +35,8 @@ const settingsOptions = [
     id: "users",
     title: "User Management",
     description: "Manage team members, roles, and permissions for your organization.",
-    icon: Person,
-    color: "#8B5CF6",
+    icon: User,
+    bgColor: "bg-violet-500",
     path: "/admin/settings/users",
     enabled: true,
   },
@@ -130,8 +44,8 @@ const settingsOptions = [
     id: "notifications",
     title: "Notifications",
     description: "Configure alert preferences, email notifications, and push settings.",
-    icon: Notifications,
-    color: "#F59E0B",
+    icon: Bell,
+    bgColor: "bg-amber-500",
     path: "/admin/settings/notifications",
     enabled: false,
   },
@@ -139,8 +53,8 @@ const settingsOptions = [
     id: "security",
     title: "Security",
     description: "Password settings, two-factor authentication, and session management.",
-    icon: Security,
-    color: "#10B981",
+    icon: Shield,
+    bgColor: "bg-emerald-500",
     path: "/admin/settings/security",
     enabled: false,
   },
@@ -148,15 +62,14 @@ const settingsOptions = [
     id: "fleet",
     title: "Fleet Settings",
     description: "Customize your fleet branding. Upload your organization's logo.",
-    icon: Business,
-    color: "#3B82F6",
+    icon: Building,
+    bgColor: "bg-blue-500",
     path: "/admin/settings/fleet",
     enabled: true,
   },
 ];
 
 export default function Settings() {
-  const classes = useStyles();
   const history = useHistory();
 
   const handleCardClick = (option) => {
@@ -167,8 +80,8 @@ export default function Settings() {
 
   return (
     <div>
-      <h1 className={classes.pageTitle}>Settings</h1>
-      <p className={classes.pageSubtitle}>
+      <h1 className="text-2xl font-semibold text-foreground mb-2">Settings</h1>
+      <p className="text-sm text-muted-foreground mb-8">
         Manage your fleet configuration, users, and preferences
       </p>
 
@@ -176,18 +89,29 @@ export default function Settings() {
         {settingsOptions.map((option) => (
           <GridItem xs={12} sm={6} lg={4} key={option.id}>
             <div
-              className={option.enabled ? classes.settingsCard : classes.settingsCardDisabled}
+              className={cn(
+                "rounded-xl p-6 flex items-center border transition-all duration-200",
+                option.enabled
+                  ? "bg-white border-border cursor-pointer hover:border-primary hover:shadow-md hover:-translate-y-0.5"
+                  : "bg-muted/50 border-border opacity-60 cursor-not-allowed"
+              )}
               onClick={() => handleCardClick(option)}
             >
-              <div className={classes.iconContainer} style={{ backgroundColor: option.color }}>
-                <option.icon className={classes.icon} />
+              <div
+                className={cn("w-14 h-14 rounded-xl flex items-center justify-center mr-5 shrink-0", option.bgColor)}
+              >
+                <option.icon className="w-7 h-7 text-white" />
               </div>
-              <div className={classes.cardContent}>
-                <div className={classes.cardTitle}>{option.title}</div>
-                <div className={classes.cardDescription}>{option.description}</div>
-                {!option.enabled && <div className={classes.comingSoon}>Coming Soon</div>}
+              <div className="flex-1">
+                <div className="text-base font-semibold text-foreground mb-1">{option.title}</div>
+                <div className="text-[13px] text-muted-foreground leading-snug">{option.description}</div>
+                {!option.enabled && (
+                  <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide mt-1.5">
+                    Coming Soon
+                  </div>
+                )}
               </div>
-              {option.enabled && <ChevronRight className={classes.chevron} />}
+              {option.enabled && <ChevronRight className="w-6 h-6 text-muted-foreground" />}
             </div>
           </GridItem>
         ))}

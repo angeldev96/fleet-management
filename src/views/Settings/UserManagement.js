@@ -1,19 +1,8 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import TextField from "@material-ui/core/TextField";
-import InputAdornment from "@material-ui/core/InputAdornment";
-
-// @material-ui/icons
-import ArrowBack from "@material-ui/icons/ArrowBack";
-import PersonAdd from "@material-ui/icons/PersonAdd";
-import Search from "@material-ui/icons/Search";
-import Shield from "@material-ui/icons/Security";
-import Group from "@material-ui/icons/Group";
-import Person from "@material-ui/icons/Person";
-import Visibility from "@material-ui/icons/Visibility";
+// Lucide icons
+import { ArrowLeft, UserPlus, Search, Shield, Users, User, Eye } from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -23,132 +12,7 @@ import CardBody from "components/Card/CardBody.js";
 import Table from "components/Table/Table.js";
 import Button from "components/CustomButtons/Button.js";
 
-const useStyles = makeStyles(() => ({
-  pageHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "24px",
-    gap: "16px",
-    flexWrap: "wrap",
-  },
-  headerLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-  },
-  backButton: {
-    backgroundColor: "#F9FAFB",
-    border: "1px solid #E5E7EB",
-    borderRadius: "8px",
-    padding: "8px 12px",
-    textTransform: "none",
-    color: "#374151",
-    "&:hover": {
-      backgroundColor: "#F3F4F6",
-    },
-  },
-  pageTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  pageSubtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    marginTop: "4px",
-  },
-  primaryButton: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    padding: "10px 18px",
-    textTransform: "none",
-    fontWeight: "600",
-    borderRadius: "8px",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-    },
-  },
-  rolesCard: {
-    borderRadius: "12px",
-    border: "1px solid #E5E7EB",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-  },
-  roleItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    padding: "12px 0",
-    borderBottom: "1px dashed #E5E7EB",
-  },
-  roleIcon: {
-    width: "40px",
-    height: "40px",
-    borderRadius: "10px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#FFFFFF",
-  },
-  roleTitle: {
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: "2px",
-  },
-  roleDesc: {
-    fontSize: "12px",
-    color: "#6b7280",
-  },
-  roleCount: {
-    marginLeft: "auto",
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "#1f2937",
-  },
-  searchCard: {
-    borderRadius: "12px",
-    border: "1px solid #E5E7EB",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-    marginTop: "8px",
-  },
-  searchInput: {
-    width: "100%",
-  },
-  tableCard: {
-    borderRadius: "12px",
-    border: "1px solid #E5E7EB",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-  },
-  statusBadge: {
-    padding: "4px 10px",
-    borderRadius: "999px",
-    fontSize: "12px",
-    fontWeight: "600",
-    width: "fit-content",
-  },
-  statusActive: {
-    backgroundColor: "#ECFDF5",
-    color: "#059669",
-    border: "1px solid #A7F3D0",
-  },
-  statusInvited: {
-    backgroundColor: "#FFFBEB",
-    color: "#D97706",
-    border: "1px solid #FDE68A",
-  },
-  rolePill: {
-    padding: "4px 10px",
-    borderRadius: "999px",
-    fontSize: "12px",
-    fontWeight: "600",
-    backgroundColor: "#EEF2FF",
-    color: "#4F46E5",
-    border: "1px solid #C7D2FE",
-    width: "fit-content",
-  },
-}));
+import { cn } from "lib/utils";
 
 const mockUsers = [
   {
@@ -186,118 +50,132 @@ const mockUsers = [
 ];
 
 export default function UserManagement() {
-  const classes = useStyles();
   const history = useHistory();
 
   const tableData = mockUsers.map((user) => [
     user.name,
     user.email,
-    <span className={classes.rolePill} key={`role-${user.id}`}>
+    <span
+      className="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200 w-fit inline-block"
+      key={`role-${user.id}`}
+    >
       {user.role}
     </span>,
     <span
-      className={`${classes.statusBadge} ${
-        user.status === "Active" ? classes.statusActive : classes.statusInvited
-      }`}
+      className={cn(
+        "px-2.5 py-1 rounded-full text-xs font-semibold w-fit inline-block",
+        user.status === "Active"
+          ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+          : "bg-amber-50 text-amber-600 border border-amber-200"
+      )}
       key={`status-${user.id}`}
     >
       {user.status}
     </span>,
     user.lastActive,
-    <Button key={`action-${user.id}`} className={classes.backButton}>
+    <Button
+      key={`action-${user.id}`}
+      className="bg-muted/50 border border-border rounded-lg px-3 py-2 normal-case text-foreground hover:bg-muted text-sm"
+    >
       Manage
     </Button>,
   ]);
 
   return (
     <div>
-      <div className={classes.pageHeader}>
-        <div className={classes.headerLeft}>
-          <Button className={classes.backButton} onClick={() => history.push("/admin/settings")}>
-            <ArrowBack style={{ fontSize: "18px", marginRight: "6px" }} />
+      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          <Button
+            className="bg-muted/50 border border-border rounded-lg px-3 py-2 normal-case text-foreground hover:bg-muted"
+            onClick={() => history.push("/admin/settings")}
+          >
+            <ArrowLeft className="w-[18px] h-[18px] mr-1.5" />
             Back
           </Button>
           <div>
-            <h1 className={classes.pageTitle}>User Management</h1>
-            <div className={classes.pageSubtitle}>
+            <h1 className="text-2xl font-semibold text-foreground m-0">User Management</h1>
+            <div className="text-sm text-muted-foreground mt-1">
               Superadmins can add users and manage roles within their fleet.
             </div>
           </div>
         </div>
-        <Button className={classes.primaryButton}>
-          <PersonAdd style={{ fontSize: "18px", marginRight: "8px" }} />
+        <Button className="bg-primary text-primary-foreground px-[18px] py-2.5 normal-case font-semibold rounded-lg hover:bg-primary/90">
+          <UserPlus className="w-[18px] h-[18px] mr-2" />
           Invite User
         </Button>
       </div>
 
       <GridContainer spacing={3}>
         <GridItem xs={12} md={4}>
-          <Card className={classes.rolesCard}>
+          <Card className="rounded-xl border border-border shadow-sm">
             <CardBody>
-              <div className={classes.roleItem}>
-                <div className={classes.roleIcon} style={{ backgroundColor: "#3B82F6" }}>
-                  <Shield />
+              <div className="flex items-center gap-3 py-3 border-b border-dashed border-border">
+                <div
+                  className="w-10 h-10 rounded-[10px] flex items-center justify-center text-white bg-blue-500"
+                >
+                  <Shield className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className={classes.roleTitle}>Superadmin</div>
-                  <div className={classes.roleDesc}>Full access across the fleet</div>
+                  <div className="text-sm font-semibold text-foreground mb-0.5">Superadmin</div>
+                  <div className="text-xs text-muted-foreground">Full access across the fleet</div>
                 </div>
-                <div className={classes.roleCount}>1</div>
+                <div className="ml-auto text-sm font-semibold text-foreground">1</div>
               </div>
-              <div className={classes.roleItem}>
-                <div className={classes.roleIcon} style={{ backgroundColor: "#10B981" }}>
-                  <Group />
+              <div className="flex items-center gap-3 py-3 border-b border-dashed border-border">
+                <div
+                  className="w-10 h-10 rounded-[10px] flex items-center justify-center text-white bg-emerald-500"
+                >
+                  <Users className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className={classes.roleTitle}>Admin</div>
-                  <div className={classes.roleDesc}>Manage users and settings</div>
+                  <div className="text-sm font-semibold text-foreground mb-0.5">Admin</div>
+                  <div className="text-xs text-muted-foreground">Manage users and settings</div>
                 </div>
-                <div className={classes.roleCount}>2</div>
+                <div className="ml-auto text-sm font-semibold text-foreground">2</div>
               </div>
-              <div className={classes.roleItem}>
-                <div className={classes.roleIcon} style={{ backgroundColor: "#8B5CF6" }}>
-                  <Person />
+              <div className="flex items-center gap-3 py-3 border-b border-dashed border-border">
+                <div
+                  className="w-10 h-10 rounded-[10px] flex items-center justify-center text-white bg-violet-500"
+                >
+                  <User className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className={classes.roleTitle}>User</div>
-                  <div className={classes.roleDesc}>Standard fleet access</div>
+                  <div className="text-sm font-semibold text-foreground mb-0.5">User</div>
+                  <div className="text-xs text-muted-foreground">Standard fleet access</div>
                 </div>
-                <div className={classes.roleCount}>1</div>
+                <div className="ml-auto text-sm font-semibold text-foreground">1</div>
               </div>
-              <div className={classes.roleItem} style={{ borderBottom: "none" }}>
-                <div className={classes.roleIcon} style={{ backgroundColor: "#F59E0B" }}>
-                  <Visibility />
+              <div className="flex items-center gap-3 py-3">
+                <div
+                  className="w-10 h-10 rounded-[10px] flex items-center justify-center text-white bg-amber-500"
+                >
+                  <Eye className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className={classes.roleTitle}>Viewer</div>
-                  <div className={classes.roleDesc}>Read-only access</div>
+                  <div className="text-sm font-semibold text-foreground mb-0.5">Viewer</div>
+                  <div className="text-xs text-muted-foreground">Read-only access</div>
                 </div>
-                <div className={classes.roleCount}>1</div>
+                <div className="ml-auto text-sm font-semibold text-foreground">1</div>
               </div>
             </CardBody>
           </Card>
         </GridItem>
 
         <GridItem xs={12} md={8}>
-          <Card className={classes.searchCard}>
+          <Card className="rounded-xl border border-border shadow-sm mt-2">
             <CardBody>
-              <TextField
-                className={classes.searchInput}
-                placeholder="Search by name or email"
-                variant="outlined"
-                size="small"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search style={{ color: "#9CA3AF" }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              <div className="relative w-full">
+                <Search className="w-5 h-5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search by name or email"
+                  className="w-full pl-10 pr-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
             </CardBody>
           </Card>
 
-          <Card className={classes.tableCard} style={{ marginTop: "16px" }}>
+          <Card className="rounded-xl border border-border shadow-sm mt-4">
             <CardBody>
               <Table
                 tableHead={["User", "Email", "Role", "Status", "Last Active", "Actions"]}

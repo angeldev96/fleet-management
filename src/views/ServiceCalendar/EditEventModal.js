@@ -1,116 +1,53 @@
 import React, { useState, useEffect } from "react";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import Dialog from "@material-ui/core/Dialog";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import DialogContent from "@material-ui/core/DialogContent";
-import TextField from "@material-ui/core/TextField";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
-import RadioGroup from "@material-ui/core/RadioGroup";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Radio from "@material-ui/core/Radio";
-import MenuItem from "@material-ui/core/MenuItem";
-
-// @material-ui/icons
-import Close from "@material-ui/icons/Close";
+// lucide icons
+import { X, Loader2 } from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Button from "components/CustomButtons/Button.js";
 
+// shadcn ui
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from "components/ui/alert-dialog";
+import { RadioGroup, RadioGroupItem } from "components/ui/radio-group";
+import { Label } from "components/ui/label";
+
 // hooks & utils
 import { updateServiceEvent, createServiceEvent } from "hooks/useServiceEvents";
 import { useAuth } from "context/AuthContext";
-import SweetAlert from "react-bootstrap-sweetalert";
 
-const useStyles = makeStyles(() => ({
-  dialogPaper: {
-    minWidth: "600px",
-    maxWidth: "800px",
-  },
-  dialogTitle: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: "1px solid #E0E4E8",
-    padding: "16px 24px",
-  },
-  titleText: {
-    fontSize: "20px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  closeButton: {
-    cursor: "pointer",
-    color: "#9CA3AF",
-    "&:hover": {
-      color: "#3E4D6C",
-    },
-  },
-  dialogContent: {
-    padding: "24px",
-  },
-  vehicleInfo: {
-    backgroundColor: "#F9FAFB",
-    borderRadius: "8px",
-    padding: "12px",
-    marginBottom: "16px",
-    fontSize: "13px",
-    color: "#6B7280",
-  },
-  vehicleInfoItem: {
-    marginBottom: "4px",
-    "&:last-child": {
-      marginBottom: 0,
-    },
-  },
-  submitButton: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    marginTop: "24px",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-    },
-  },
-  cancelButton: {
-    backgroundColor: "#FFFFFF",
-    color: "#3E4D6C",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    marginTop: "24px",
-    marginRight: "12px",
-    border: "1px solid #E0E4E8",
-    "&:hover": {
-      backgroundColor: "#F9FAFB",
-    },
-  },
-  buttonContainer: {
-    display: "flex",
-    justifyContent: "flex-end",
-    marginTop: "16px",
-  },
-  formControl: {
-    marginTop: "12px",
-  },
-  radioGroup: {
-    flexDirection: "row",
-    gap: "24px",
-  },
-}));
+const inputClasses =
+  "flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+
+const selectClasses =
+  "flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none";
 
 export default function EditEventModal({ open, onClose, onSuccess, event }) {
-  const classes = useStyles();
   const { user } = useAuth();
-  const [alert, setAlert] = useState(null);
+
+  // AlertDialog states (replacing SweetAlert)
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -147,18 +84,8 @@ export default function EditEventModal({ open, onClose, onSuccess, event }) {
 
   const handleSubmit = async () => {
     if (!formData.service_date) {
-      setAlert(
-        <SweetAlert
-          warning
-          title="Missing Field"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Got it"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          Please select a service date.
-        </SweetAlert>
-      );
+      setWarningMessage("Please select a service date.");
+      setShowWarning(true);
       return;
     }
 
@@ -167,18 +94,10 @@ export default function EditEventModal({ open, onClose, onSuccess, event }) {
       today.setHours(0, 0, 0, 0);
       const serviceDate = new Date(formData.service_date + "T00:00:00");
       if (serviceDate > today) {
-        setAlert(
-          <SweetAlert
-            warning
-            title="Invalid Date"
-            onConfirm={() => setAlert(null)}
-            confirmBtnText="Got it"
-            focusCancelBtn={false}
-            focusConfirmBtn={false}
-          >
-            A service event cannot be marked as completed with a future date. Please use today or a past date.
-          </SweetAlert>
+        setWarningMessage(
+          "A service event cannot be marked as completed with a future date. Please use today or a past date."
         );
+        setShowWarning(true);
         return;
       }
     }
@@ -228,40 +147,18 @@ export default function EditEventModal({ open, onClose, onSuccess, event }) {
         }
       }
 
-      setAlert(
-        <SweetAlert
-          success
-          title="Event Updated!"
-          onConfirm={() => {
-            setAlert(null);
-            onSuccess && onSuccess();
-            onClose();
-          }}
-          confirmBtnText="Continue"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          {followUpCreated
-            ? "The service event has been updated successfully. A follow-up event has been created for " +
+      setSuccessMessage(
+        followUpCreated
+          ? "The service event has been updated successfully. A follow-up event has been created for " +
               formData.next_service_date +
               "."
-            : "The service event has been updated successfully."}
-        </SweetAlert>
+          : "The service event has been updated successfully."
       );
+      setShowSuccess(true);
     } catch (err) {
       console.error("Error updating service event:", err);
-      setAlert(
-        <SweetAlert
-          error
-          title="Error"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Close"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          {err.message}
-        </SweetAlert>
-      );
+      setErrorMessage(err.message);
+      setShowError(true);
     } finally {
       setSubmitting(false);
     }
@@ -271,180 +168,231 @@ export default function EditEventModal({ open, onClose, onSuccess, event }) {
 
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        classes={{ paper: classes.dialogPaper }}
-        maxWidth="md"
-      >
-        <DialogTitle disableTypography className={classes.dialogTitle}>
-          <h3 className={classes.titleText}>Edit Service Event</h3>
-          <Close className={classes.closeButton} onClick={onClose} />
-        </DialogTitle>
-        <DialogContent className={classes.dialogContent}>
-          <div className={classes.vehicleInfo}>
-            <div className={classes.vehicleInfoItem}>
-              <strong>Vehicle:</strong> {event.vehicle_name}
-              {event.plate_number ? ` (${event.plate_number})` : ""}
+      <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
+        <DialogContent className="sm:max-w-[800px]" showCloseButton={false}>
+          <DialogHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
+            <DialogTitle className="text-xl font-semibold text-foreground">Edit Service Event</DialogTitle>
+            <button
+              className="text-muted-foreground hover:text-primary transition-colors"
+              onClick={onClose}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </DialogHeader>
+
+          <div className="py-2">
+            <div className="bg-muted/50 rounded-lg p-3 mb-4 text-sm text-muted-foreground">
+              <div className="mb-1 last:mb-0">
+                <strong>Vehicle:</strong> {event.vehicle_name}
+                {event.plate_number ? ` (${event.plate_number})` : ""}
+              </div>
+              {event.driver_name && (
+                <div className="mb-1 last:mb-0">
+                  <strong>Driver:</strong> {event.driver_name}
+                </div>
+              )}
+              {(event.make || event.model) && (
+                <div className="mb-1 last:mb-0">
+                  <strong>Details:</strong> {event.make} {event.model}
+                  {event.year && ` (${event.year})`}
+                </div>
+              )}
             </div>
-            {event.driver_name && (
-              <div className={classes.vehicleInfoItem}>
-                <strong>Driver:</strong> {event.driver_name}
-              </div>
-            )}
-            {(event.make || event.model) && (
-              <div className={classes.vehicleInfoItem}>
-                <strong>Details:</strong> {event.make} {event.model}
-                {event.year && ` (${event.year})`}
-              </div>
-            )}
-          </div>
 
-          <GridContainer>
-            <GridItem xs={12}>
-              <FormControl component="fieldset" className={classes.formControl}>
-                <FormLabel component="legend" style={{ fontSize: "12px", color: "#6B7280" }}>
-                  Service Type *
-                </FormLabel>
-                <RadioGroup
-                  className={classes.radioGroup}
-                  value={formData.service_type}
-                  onChange={handleChange("service_type")}
-                >
-                  <FormControlLabel
-                    value="scheduled_maintenance"
-                    control={<Radio color="primary" />}
-                    label="Scheduled Maintenance"
+            <GridContainer>
+              <GridItem xs={12}>
+                <div className="mt-3">
+                  <label className="block text-xs text-muted-foreground mb-2">Service Type *</label>
+                  <RadioGroup
+                    className="flex flex-row gap-6"
+                    value={formData.service_type}
+                    onValueChange={(value) => setFormData({ ...formData, service_type: value })}
+                  >
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="scheduled_maintenance" id="edit-type-scheduled" />
+                      <Label htmlFor="edit-type-scheduled" className="text-sm font-normal">Scheduled Maintenance</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="repair" id="edit-type-repair" />
+                      <Label htmlFor="edit-type-repair" className="text-sm font-normal">Repair/Incident</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </GridItem>
+
+              <GridItem xs={12}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Service Items</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Oil Change, Brake Inspection"
+                    className={inputClasses}
+                    value={formData.service_items}
+                    onChange={handleChange("service_items")}
                   />
-                  <FormControlLabel
-                    value="repair"
-                    control={<Radio color="primary" />}
-                    label="Repair/Incident"
+                </div>
+              </GridItem>
+
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Mileage (km)</label>
+                  <input
+                    type="number"
+                    className={inputClasses}
+                    value={formData.mileage}
+                    onChange={handleChange("mileage")}
                   />
-                </RadioGroup>
-              </FormControl>
-            </GridItem>
+                </div>
+              </GridItem>
 
-            <GridItem xs={12}>
-              <TextField
-                margin="dense"
-                label="Service Items"
-                placeholder="e.g. Oil Change, Brake Inspection"
-                fullWidth
-                variant="outlined"
-                value={formData.service_items}
-                onChange={handleChange("service_items")}
-              />
-            </GridItem>
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Cost</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">J$</span>
+                    <input
+                      type="number"
+                      className={`${inputClasses} pl-9`}
+                      value={formData.cost}
+                      onChange={handleChange("cost")}
+                    />
+                  </div>
+                </div>
+              </GridItem>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Mileage (km)"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={formData.mileage}
-                onChange={handleChange("mileage")}
-              />
-            </GridItem>
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Service Date *</label>
+                  <input
+                    type="date"
+                    className={inputClasses}
+                    value={formData.service_date}
+                    onChange={handleChange("service_date")}
+                  />
+                </div>
+              </GridItem>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Cost"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={formData.cost}
-                onChange={handleChange("cost")}
-                InputProps={{
-                  startAdornment: <span style={{ marginRight: "4px", color: "#6B7280" }}>J$</span>,
-                }}
-              />
-            </GridItem>
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Next Service Date</label>
+                  <input
+                    type="date"
+                    className={inputClasses}
+                    value={formData.next_service_date}
+                    onChange={handleChange("next_service_date")}
+                  />
+                </div>
+              </GridItem>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Service Date *"
-                type="date"
-                fullWidth
-                variant="outlined"
-                value={formData.service_date}
-                onChange={handleChange("service_date")}
-                InputLabelProps={{ shrink: true }}
-              />
-            </GridItem>
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Location</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Kingston Depot"
+                    className={inputClasses}
+                    value={formData.location}
+                    onChange={handleChange("location")}
+                  />
+                </div>
+              </GridItem>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Next Service Date"
-                type="date"
-                fullWidth
-                variant="outlined"
-                value={formData.next_service_date}
-                onChange={handleChange("next_service_date")}
-                InputLabelProps={{ shrink: true }}
-              />
-            </GridItem>
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Status</label>
+                  <select
+                    className={selectClasses}
+                    value={formData.status}
+                    onChange={handleChange("status")}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+              </GridItem>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Location"
-                placeholder="e.g. Kingston Depot"
-                fullWidth
-                variant="outlined"
-                value={formData.location}
-                onChange={handleChange("location")}
-              />
-            </GridItem>
+              <GridItem xs={12}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Additional notes..."
+                    className="flex w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                    value={formData.notes}
+                    onChange={handleChange("notes")}
+                  />
+                </div>
+              </GridItem>
+            </GridContainer>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                select
-                margin="dense"
-                label="Status"
-                fullWidth
-                variant="outlined"
-                value={formData.status}
-                onChange={handleChange("status")}
+            <div className="flex justify-end mt-6">
+              <Button
+                className="bg-background text-primary px-6 py-2.5 normal-case font-semibold mr-3 border border-border rounded-lg hover:bg-muted/50"
+                onClick={onClose}
               >
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="in_progress">In Progress</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
-              </TextField>
-            </GridItem>
-
-            <GridItem xs={12}>
-              <TextField
-                margin="dense"
-                label="Notes"
-                placeholder="Additional notes..."
-                fullWidth
-                multiline
-                rows={3}
-                variant="outlined"
-                value={formData.notes}
-                onChange={handleChange("notes")}
-              />
-            </GridItem>
-          </GridContainer>
-
-          <div className={classes.buttonContainer}>
-            <Button className={classes.cancelButton} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button className={classes.submitButton} onClick={handleSubmit} disabled={submitting}>
-              {submitting ? <CircularProgress size={20} color="inherit" /> : "Save Changes"}
-            </Button>
+                Cancel
+              </Button>
+              <Button
+                className="bg-primary text-primary-foreground px-6 py-2.5 normal-case font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                onClick={handleSubmit}
+                disabled={submitting}
+              >
+                {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Changes"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {alert}
+      {/* Warning AlertDialog */}
+      <AlertDialog open={showWarning} onOpenChange={setShowWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {warningMessage.includes("future date") ? "Invalid Date" : "Missing Field"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>{warningMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowWarning(false)}>Got it</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success AlertDialog */}
+      <AlertDialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Event Updated!</AlertDialogTitle>
+            <AlertDialogDescription>{successMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => {
+                setShowSuccess(false);
+                onSuccess && onSuccess();
+                onClose();
+              }}
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Error AlertDialog */}
+      <AlertDialog open={showError} onOpenChange={setShowError}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Error</AlertDialogTitle>
+            <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowError(false)}>Close</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -1,88 +1,50 @@
 import React from "react";
-import PropTypes from "prop-types";
-import cx from "classnames";
+import { cn } from "lib/utils";
+import { X } from "lucide-react";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import Snack from "@material-ui/core/Snackbar";
-import IconButton from "@material-ui/core/IconButton";
+const colorClasses = {
+  info: "bg-blue-500 text-white",
+  success: "bg-emerald-500 text-white",
+  warning: "bg-amber-500 text-white",
+  danger: "bg-red-500 text-white",
+  primary: "bg-primary text-primary-foreground",
+  rose: "bg-pink-500 text-white",
+};
 
-// @material-ui/icons
-import Close from "@material-ui/icons/Close";
+export default function Snackbar({ message, color = "info", close, icon, place, open, closeNotification }) {
+  if (!open) return null;
 
-import styles from "assets/jss/material-dashboard-pro-react/components/snackbarContentStyle.js";
+  const positionClasses = {
+    tl: "top-5 left-5",
+    tr: "top-5 right-5",
+    tc: "top-5 left-1/2 -translate-x-1/2",
+    bl: "bottom-5 left-5",
+    br: "bottom-5 right-5",
+    bc: "bottom-5 left-1/2 -translate-x-1/2",
+  };
 
-const useStyles = makeStyles(styles);
-
-export default function Snackbar(props) {
-  const classes = useStyles();
-  const { message, color, close, icon, place, open } = props;
-  var action = [];
-  const messageClasses = cx({
-    [classes.iconMessage]: icon !== undefined,
-  });
-  if (close !== undefined) {
-    action = [
-      <IconButton
-        className={classes.iconButton}
-        key="close"
-        aria-label="Close"
-        color="inherit"
-        onClick={() => props.closeNotification()}
-      >
-        <Close className={classes.close} />
-      </IconButton>,
-    ];
-  }
-  const iconClasses = cx({
-    [classes.icon]: classes.icon,
-    [classes.infoIcon]: color === "info",
-    [classes.successIcon]: color === "success",
-    [classes.warningIcon]: color === "warning",
-    [classes.dangerIcon]: color === "danger",
-    [classes.primaryIcon]: color === "primary",
-    [classes.roseIcon]: color === "rose",
-  });
   return (
-    <Snack
-      classes={{
-        anchorOriginTopCenter: classes.top20,
-        anchorOriginTopRight: classes.top40,
-        anchorOriginTopLeft: classes.top40,
-      }}
-      anchorOrigin={{
-        vertical: place.indexOf("t") === -1 ? "bottom" : "top",
-        horizontal:
-          place.indexOf("l") !== -1 ? "left" : place.indexOf("c") !== -1 ? "center" : "right",
-      }}
-      open={open}
-      message={
-        <div>
-          {icon !== undefined ? <props.icon className={iconClasses} /> : null}
-          <span className={messageClasses}>{message}</span>
-        </div>
-      }
-      action={action}
-      ContentProps={{
-        classes: {
-          root: classes.root + " " + classes[color],
-          message: classes.message,
-        },
-      }}
-    />
+    <div
+      className={cn(
+        "fixed z-[9999] min-w-[300px] max-w-md rounded-lg px-4 py-3 shadow-lg",
+        "animate-in fade-in slide-in-from-top-2 duration-300",
+        colorClasses[color] || colorClasses.info,
+        positionClasses[place] || positionClasses.tr,
+      )}
+    >
+      <div className="flex items-center gap-3">
+        {icon !== undefined ? React.createElement(icon, { className: "h-5 w-5 flex-shrink-0" }) : null}
+        <span className={cn("flex-1 text-sm", icon !== undefined && "ml-1")}>{message}</span>
+        {close !== undefined ? (
+          <button
+            onClick={() => closeNotification()}
+            className="flex-shrink-0 rounded-md p-1 hover:bg-white/20 transition-colors"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        ) : null}
+      </div>
+    </div>
   );
 }
-
-Snackbar.defaultProps = {
-  color: "info",
-};
-
-Snackbar.propTypes = {
-  message: PropTypes.node.isRequired,
-  color: PropTypes.oneOf(["info", "success", "warning", "danger", "primary", "rose"]),
-  close: PropTypes.bool,
-  icon: PropTypes.object,
-  place: PropTypes.oneOf(["tl", "tr", "tc", "br", "bl", "bc"]),
-  open: PropTypes.bool,
-  closeNotification: PropTypes.func,
-};

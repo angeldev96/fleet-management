@@ -2,9 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+
 ## Project Overview
 
-Entry is a fleet intelligence platform built with React 17 + Material Dashboard Pro. It tracks vehicles in real-time, detects driving events, and displays OBD-II diagnostics. The backend is Supabase (PostgreSQL with RLS for multitenancy).
+Entry is a fleet intelligence platform built with React 18 + Vite + Tailwind CSS v4 + shadcn/ui. It tracks vehicles in real-time, detects driving events, and displays OBD-II diagnostics. The backend is Supabase (PostgreSQL with RLS for multitenancy).
+
+Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
+
 
 ### Supabase Project
 
@@ -23,33 +27,35 @@ We are currently working on the **dev branch** (`qhsquyccwnmyxpgfigru`). All edg
 ## Commands
 
 ```bash
-npm install --legacy-peer-deps     # Install dependencies (--legacy-peer-deps is REQUIRED)
-npm start                          # Dev server on localhost:3000
-npm run build                      # Production build (output: build/)
-npm run test                       # Jest tests
+npm install --legacy-peer-deps     # Install dependencies (--legacy-peer-deps may be needed for some packages)
+npm run dev                        # Vite dev server on localhost:5173
+npm start                          # Alias for npm run dev
+npm run build                      # Vite production build (output: dist/)
+npm run preview                    # Preview production build
 npm run lint:check                 # ESLint check
 npm run lint:fix                   # ESLint auto-fix
 npm run format                     # Prettier format
 npm run simulator                  # GPS/telemetry simulator for testing
 ```
 
-Node 17+ requires `NODE_OPTIONS=--openssl-legacy-provider` (already set in npm scripts via cross-env).
-
 ## Architecture
 
 ### Tech Stack
-- **React 17** with Create React App (react-scripts 4.0.3)
-- **Material-UI v4** (`@material-ui/core` 4.11.4) with Material Dashboard Pro theme
+- **React 18** with Vite 6 (`@vitejs/plugin-react-swc`)
+- **Tailwind CSS v4** with `@tailwindcss/vite` plugin
+- **shadcn/ui** (new-york style) — components in `src/components/ui/*.tsx`
+- **Lucide React** for icons
+- **Sonner** for toast notifications
 - **Supabase v1.x** (`@supabase/supabase-js` 1.35.7) — uses legacy v1 auth API (`supabase.auth.signIn()`, `supabase.auth.session()`, NOT v2's `signInWithPassword`)
 - **Mapbox GL** for fleet map visualization
 - **React Router v5** for routing
-- **SASS + JSS** (Material-UI `makeStyles`) for styling
 
 ### Import Aliases
-`jsconfig.json` sets `baseUrl: "src"`, so all imports are relative to `src/`:
+`vite.config.mjs` and `tsconfig.json` set path aliases with `baseUrl: "src"`, so all imports are relative to `src/`:
 ```javascript
 import { useAuth } from "context/AuthContext";
 import { supabase } from "lib/supabase";
+import { cn } from "lib/utils";
 ```
 
 ### Data Flow: Services → Hooks → Views
@@ -65,7 +71,7 @@ src/components/*/             Reusable presentational components (Card, Table, B
 ### State Management
 No Redux/Zustand. Uses **React Context + custom hooks**:
 - `context/AuthContext.js` — user session, profile (with fleet_id and role), auth methods
-- `context/NotificationContext.js` — toast notification system (`showNotification({ title, subtitle, color })`)
+- `context/NotificationContext.js` — toast notification system via Sonner (`showNotification({ title, subtitle, color })`)
 - `hooks/use*.js` — each returns `{ data, loading, error, refetch }` pattern
 
 ### Authentication & Multitenancy
@@ -112,9 +118,9 @@ The `vehicles_with_status` view pre-calculates online/idle/offline status with `
 
 Required in `.env`:
 ```
-REACT_APP_SUPABASE_URL
-REACT_APP_SUPABASE_ANON_KEY
-REACT_APP_MAPBOX_ACCESS_TOKEN_PUBLIC
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+VITE_MAPBOX_ACCESS_TOKEN_PUBLIC
 ```
 
 ## Conventions
@@ -124,4 +130,7 @@ REACT_APP_MAPBOX_ACCESS_TOKEN_PUBLIC
 - **Excluded event types**: `location_update`, `device_offline`, `device_online`, `power_event` are filtered out of event/alert feeds.
 - **Prettier config**: 100 char width, double quotes, trailing commas (es5), no tabs.
 - **File naming**: PascalCase for components, camelCase for hooks/services/utils.
-- **Styling**: Use `makeStyles` JSS for component styles. Theme SCSS lives in `assets/scss/material-dashboard-pro-react/`.
+- **Styling**: Use Tailwind CSS utility classes. Use `cn()` from `lib/utils` for conditional class merging. shadcn/ui components live in `src/components/ui/`. CSS custom properties for theming are in `src/index.css`.
+- **Icons**: Use Lucide React icons (`lucide-react`). Do NOT use `@material-ui/icons`.
+- **Modals/Dialogs**: Use shadcn `Dialog` for modals, `AlertDialog` for confirmation prompts (replaces SweetAlert).
+- **Toasts**: Use Sonner via `NotificationContext` (`showNotification()`). Do NOT use MUI Snackbar.

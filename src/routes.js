@@ -17,16 +17,17 @@ import ServiceCalendar from "views/ServiceCalendar/ServiceCalendar.js";
 import LoginPage from "views/Pages/LoginPage.js";
 import RegisterPage from "views/Pages/RegisterPage.js";
 
-// @material-ui/icons
-import Home from "@material-ui/icons/Home";
-import LocationOn from "@material-ui/icons/LocationOn";
-import DirectionsCar from "@material-ui/icons/DirectionsCar";
-import Notifications from "@material-ui/icons/Notifications";
-import DevicesOther from "@material-ui/icons/DevicesOther";
-import Assignment from "@material-ui/icons/Assignment";
-import EventNote from "@material-ui/icons/EventNote";
-import Settings from "@material-ui/icons/Settings";
-import Image from "@material-ui/icons/Image";
+import {
+  Home,
+  MapPin,
+  Car,
+  Bell,
+  Tablet,
+  FileText,
+  CalendarDays,
+  Settings,
+  Image,
+} from "lucide-react";
 
 var dashRoutes = [
   {
@@ -40,14 +41,14 @@ var dashRoutes = [
   {
     path: "/live-map",
     name: "Live Map",
-    icon: LocationOn,
+    icon: MapPin,
     component: LiveMap,
     layout: "/admin",
   },
   {
     path: "/vehicles",
     name: "Vehicles",
-    icon: DirectionsCar,
+    icon: Car,
     component: Vehicles,
     layout: "/admin",
   },
@@ -75,14 +76,14 @@ var dashRoutes = [
   {
     path: "/alerts",
     name: "Alerts",
-    icon: Notifications,
+    icon: Bell,
     component: Alerts,
     layout: "/admin",
   },
   {
     path: "/devices",
     name: "Devices",
-    icon: DevicesOther,
+    icon: Tablet,
     component: Devices,
     layout: "/admin",
   },
@@ -96,14 +97,14 @@ var dashRoutes = [
   {
     path: "/reports",
     name: "Reports",
-    icon: Assignment,
+    icon: FileText,
     component: ReportsHub,
     layout: "/admin",
   },
   {
     path: "/service-calendar",
     name: "Service Calendar",
-    icon: EventNote,
+    icon: CalendarDays,
     component: ServiceCalendar,
     layout: "/admin",
   },

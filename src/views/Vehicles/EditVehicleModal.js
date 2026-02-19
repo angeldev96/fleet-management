@@ -1,99 +1,46 @@
 import React, { useState, useEffect } from "react";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import Dialog from "@material-ui/core/Dialog";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import DialogContent from "@material-ui/core/DialogContent";
-import TextField from "@material-ui/core/TextField";
-import CircularProgress from "@material-ui/core/CircularProgress";
-
-// @material-ui/icons
-import Close from "@material-ui/icons/Close";
+// lucide icons
+import { X, Loader2 } from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
-import Button from "components/CustomButtons/Button.js";
+
+// shadcn ui
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "components/ui/alert-dialog";
 
 // hooks & utils
 import { updateVehicle, deleteVehicle } from "services/vehicleService";
-import SweetAlert from "react-bootstrap-sweetalert";
-
-const useStyles = makeStyles(() => ({
-  dialogPaper: {
-    minWidth: "500px",
-    maxWidth: "600px",
-  },
-  dialogTitle: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: "1px solid #E0E4E8",
-    padding: "16px 24px",
-  },
-  titleText: {
-    fontSize: "20px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  closeButton: {
-    cursor: "pointer",
-    color: "#9CA3AF",
-    "&:hover": {
-      color: "#3E4D6C",
-    },
-  },
-  dialogContent: {
-    padding: "24px",
-  },
-  buttonRow: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "12px",
-    marginTop: "24px",
-    paddingTop: "16px",
-    borderTop: "1px solid #E0E4E8",
-  },
-  cancelButton: {
-    backgroundColor: "#F3F4F6",
-    color: "#374151",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    "&:hover": {
-      backgroundColor: "#E5E7EB",
-    },
-  },
-  submitButton: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-    },
-  },
-  deleteButton: {
-    backgroundColor: "#DC2626",
-    color: "#FFFFFF",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    marginRight: "auto",
-    "&:hover": {
-      backgroundColor: "#B91C1C",
-    },
-  },
-}));
 
 export default function EditVehicleModal({ open, onClose, vehicle, onSuccess }) {
-  const classes = useStyles();
-  const [alert, setAlert] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // AlertDialog states
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [successCallback, setSuccessCallback] = useState(null);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const [vehicleData, setVehicleData] = useState({
     name: "",
@@ -120,18 +67,8 @@ export default function EditVehicleModal({ open, onClose, vehicle, onSuccess }) 
 
   const handleUpdateVehicle = async () => {
     if (!vehicleData.name.trim()) {
-      setAlert(
-        <SweetAlert
-          warning
-          title="Missing Field"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Got it"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          Vehicle name is required.
-        </SweetAlert>
-      );
+      setWarningMessage("Vehicle name is required.");
+      setShowWarning(true);
       return;
     }
 
@@ -148,207 +85,235 @@ export default function EditVehicleModal({ open, onClose, vehicle, onSuccess }) 
 
       if (error) throw error;
 
-      setAlert(
-        <SweetAlert
-          success
-          title="Vehicle Updated!"
-          onConfirm={() => {
-            setAlert(null);
-            onSuccess && onSuccess();
-            onClose();
-          }}
-          confirmBtnText="Continue"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          The vehicle has been successfully updated.
-        </SweetAlert>
-      );
+      setSuccessMessage("The vehicle has been successfully updated.");
+      setSuccessCallback(() => () => {
+        onSuccess && onSuccess();
+        onClose();
+      });
+      setShowSuccess(true);
     } catch (err) {
       console.error("Error updating vehicle:", err);
-      setAlert(
-        <SweetAlert
-          error
-          title="Error"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Close"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          {err.message}
-        </SweetAlert>
-      );
+      setErrorMessage(err.message);
+      setShowError(true);
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDeleteVehicle = () => {
-    setAlert(
-      <SweetAlert
-        warning
-        showCancel
-        title="Delete Vehicle?"
-        onConfirm={confirmDelete}
-        onCancel={() => setAlert(null)}
-        confirmBtnText="Yes, delete it"
-        cancelBtnText="Cancel"
-        focusCancelBtn={false}
-        focusConfirmBtn={false}
-      >
-        This action cannot be undone. All data associated with this vehicle will be permanently deleted.
-      </SweetAlert>
-    );
+    setShowDeleteConfirm(true);
   };
 
   const confirmDelete = async () => {
-    setAlert(null);
+    setShowDeleteConfirm(false);
     setDeleting(true);
     try {
       const { error } = await deleteVehicle(vehicle.id);
 
       if (error) throw error;
 
-      setAlert(
-        <SweetAlert
-          success
-          title="Vehicle Deleted"
-          onConfirm={() => {
-            setAlert(null);
-            onSuccess && onSuccess();
-            onClose();
-          }}
-          confirmBtnText="Continue"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          The vehicle has been permanently deleted.
-        </SweetAlert>
-      );
+      setSuccessMessage("The vehicle has been permanently deleted.");
+      setSuccessCallback(() => () => {
+        onSuccess && onSuccess();
+        onClose();
+      });
+      setShowSuccess(true);
     } catch (err) {
       console.error("Error deleting vehicle:", err);
-      setAlert(
-        <SweetAlert
-          error
-          title="Error"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Close"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          {err.message}
-        </SweetAlert>
-      );
+      setErrorMessage(err.message);
+      setShowError(true);
     } finally {
       setDeleting(false);
     }
   };
 
+  const inputClasses =
+    "flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        classes={{ paper: classes.dialogPaper }}
-        maxWidth="md"
-      >
-        <DialogTitle disableTypography className={classes.dialogTitle}>
-          <h3 className={classes.titleText}>Edit Vehicle</h3>
-          <Close className={classes.closeButton} onClick={onClose} />
-        </DialogTitle>
-        <DialogContent className={classes.dialogContent}>
-          <GridContainer>
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Vehicle Name *"
-                placeholder="e.g. Truck 01"
-                fullWidth
-                variant="outlined"
-                value={vehicleData.name}
-                onChange={(e) => setVehicleData({ ...vehicleData, name: e.target.value })}
-              />
-            </GridItem>
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Plate Number"
-                fullWidth
-                variant="outlined"
-                value={vehicleData.plate_number}
-                onChange={(e) =>
-                  setVehicleData({ ...vehicleData, plate_number: e.target.value })
-                }
-              />
-            </GridItem>
-            <GridItem xs={12} sm={4}>
-              <TextField
-                margin="dense"
-                label="Make"
-                fullWidth
-                variant="outlined"
-                value={vehicleData.make}
-                onChange={(e) => setVehicleData({ ...vehicleData, make: e.target.value })}
-              />
-            </GridItem>
-            <GridItem xs={12} sm={4}>
-              <TextField
-                margin="dense"
-                label="Model"
-                fullWidth
-                variant="outlined"
-                value={vehicleData.model}
-                onChange={(e) => setVehicleData({ ...vehicleData, model: e.target.value })}
-              />
-            </GridItem>
-            <GridItem xs={12} sm={4}>
-              <TextField
-                margin="dense"
-                label="Year"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={vehicleData.year}
-                onChange={(e) => setVehicleData({ ...vehicleData, year: e.target.value })}
-              />
-            </GridItem>
-            <GridItem xs={12}>
-              <TextField
-                margin="dense"
-                label="Driver Name"
-                fullWidth
-                variant="outlined"
-                value={vehicleData.driver_name}
-                onChange={(e) =>
-                  setVehicleData({ ...vehicleData, driver_name: e.target.value })
-                }
-              />
-            </GridItem>
-          </GridContainer>
+      <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
+        <DialogContent className="sm:max-w-[600px]" showCloseButton={false}>
+          <DialogHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
+            <DialogTitle className="text-xl font-semibold text-foreground">Edit Vehicle</DialogTitle>
+            <button
+              className="text-muted-foreground hover:text-primary transition-colors"
+              onClick={onClose}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </DialogHeader>
 
-          <div className={classes.buttonRow}>
-            <Button
-              className={classes.deleteButton}
-              onClick={handleDeleteVehicle}
-              disabled={deleting || submitting}
-            >
-              {deleting ? <CircularProgress size={20} color="inherit" /> : "Delete"}
-            </Button>
-            <Button className={classes.cancelButton} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              className={classes.submitButton}
-              onClick={handleUpdateVehicle}
-              disabled={submitting || deleting}
-            >
-              {submitting ? <CircularProgress size={20} color="inherit" /> : "Save Changes"}
-            </Button>
+          <div className="py-2">
+            <GridContainer>
+              <GridItem xs={12} sm={6}>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Vehicle Name *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Truck 01"
+                    className={inputClasses}
+                    value={vehicleData.name}
+                    onChange={(e) => setVehicleData({ ...vehicleData, name: e.target.value })}
+                  />
+                </div>
+              </GridItem>
+              <GridItem xs={12} sm={6}>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Plate Number</label>
+                  <input
+                    type="text"
+                    className={inputClasses}
+                    value={vehicleData.plate_number}
+                    onChange={(e) =>
+                      setVehicleData({ ...vehicleData, plate_number: e.target.value })
+                    }
+                  />
+                </div>
+              </GridItem>
+              <GridItem xs={12} sm={4}>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Make</label>
+                  <input
+                    type="text"
+                    className={inputClasses}
+                    value={vehicleData.make}
+                    onChange={(e) => setVehicleData({ ...vehicleData, make: e.target.value })}
+                  />
+                </div>
+              </GridItem>
+              <GridItem xs={12} sm={4}>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Model</label>
+                  <input
+                    type="text"
+                    className={inputClasses}
+                    value={vehicleData.model}
+                    onChange={(e) => setVehicleData({ ...vehicleData, model: e.target.value })}
+                  />
+                </div>
+              </GridItem>
+              <GridItem xs={12} sm={4}>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Year</label>
+                  <input
+                    type="number"
+                    className={inputClasses}
+                    value={vehicleData.year}
+                    onChange={(e) => setVehicleData({ ...vehicleData, year: e.target.value })}
+                  />
+                </div>
+              </GridItem>
+              <GridItem xs={12}>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Driver Name</label>
+                  <input
+                    type="text"
+                    className={inputClasses}
+                    value={vehicleData.driver_name}
+                    onChange={(e) =>
+                      setVehicleData({ ...vehicleData, driver_name: e.target.value })
+                    }
+                  />
+                </div>
+              </GridItem>
+            </GridContainer>
+
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+              <button
+                className="mr-auto inline-flex items-center rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+                onClick={handleDeleteVehicle}
+                disabled={deleting || submitting}
+              >
+                {deleting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Delete"}
+              </button>
+              <button
+                className="inline-flex items-center rounded-lg bg-muted px-6 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+              <button
+                className="inline-flex items-center rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50"
+                onClick={handleUpdateVehicle}
+                disabled={submitting || deleting}
+              >
+                {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Changes"}
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {alert}
+      {/* Warning AlertDialog */}
+      <AlertDialog open={showWarning} onOpenChange={setShowWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Missing Field</AlertDialogTitle>
+            <AlertDialogDescription>{warningMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowWarning(false)}>Got it</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success AlertDialog */}
+      <AlertDialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {successMessage.includes("deleted") ? "Vehicle Deleted" : "Vehicle Updated!"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>{successMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => {
+                setShowSuccess(false);
+                successCallback && successCallback();
+              }}
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Error AlertDialog */}
+      <AlertDialog open={showError} onOpenChange={setShowError}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Error</AlertDialogTitle>
+            <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowError(false)}>Close</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation AlertDialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vehicle?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. All data associated with this vehicle will be permanently
+              deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteConfirm(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Yes, delete it
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -1,34 +1,31 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useHistory } from "react-router-dom";
-import mapboxgl from "!mapbox-gl";
+import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import IconButton from "@material-ui/core/IconButton";
-
-// @material-ui/icons
-import ArrowBack from "@material-ui/icons/ArrowBack";
-import Speed from "@material-ui/icons/Speed";
-import GpsFixed from "@material-ui/icons/GpsFixed";
-import Battery90 from "@material-ui/icons/Battery90";
-import SignalCellular4Bar from "@material-ui/icons/SignalCellular4Bar";
-import Warning from "@material-ui/icons/Warning";
-import Info from "@material-ui/icons/Info";
-import Error from "@material-ui/icons/Error";
-import Timeline from "@material-ui/icons/Timeline";
-import Edit from "@material-ui/icons/Edit";
-import CameraAlt from "@material-ui/icons/CameraAlt";
-import MoreHoriz from "@material-ui/icons/MoreHoriz";
-import PlayArrow from "@material-ui/icons/PlayArrow";
+// lucide icons
+import {
+  ArrowLeft,
+  Gauge,
+  Crosshair,
+  BatteryMedium,
+  Signal,
+  AlertTriangle,
+  Info,
+  CircleAlert,
+  Activity,
+  Pencil,
+  Camera,
+  MoreHorizontal,
+  Play,
+  Loader2,
+} from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
-import Button from "components/CustomButtons/Button.js";
 
 // hooks
 import { useVehicle } from "hooks/useVehicles";
@@ -47,326 +44,7 @@ import {
 import { useVehicleSnapshot } from "hooks/useVehicleSnapshot";
 
 // Mapbox Public Access Token
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN_PUBLIC;
-
-const useStyles = makeStyles(() => ({
-  backButton: {
-    marginRight: "16px",
-    backgroundColor: "#FFFFFF",
-    border: "1px solid #E0E4E8",
-    "&:hover": {
-      backgroundColor: "#F8F9FB",
-    },
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "24px",
-  },
-  headerInfo: {
-    flex: 1,
-  },
-  reportButton: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    padding: "10px 20px",
-    textTransform: "none",
-    fontWeight: "600",
-    borderRadius: "8px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    },
-  },
-  reportRow: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "12px",
-    marginBottom: "16px",
-  },
-  editButton: {
-    backgroundColor: "#F3F4F6",
-    color: "#374151",
-    padding: "10px 20px",
-    textTransform: "none",
-    fontWeight: "600",
-    borderRadius: "8px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    "&:hover": {
-      backgroundColor: "#E5E7EB",
-    },
-  },
-  vehicleTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  vehicleSubtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    marginTop: "4px",
-  },
-  statusBadge: {
-    display: "inline-flex",
-    alignItems: "center",
-    padding: "6px 14px",
-    borderRadius: "20px",
-    fontSize: "13px",
-    fontWeight: "600",
-    marginLeft: "16px",
-    "& svg": {
-      fontSize: "16px",
-      marginRight: "6px",
-    },
-  },
-  sectionTitle: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: "16px",
-    marginTop: "8px",
-  },
-  infoCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: "12px",
-    padding: "20px",
-    height: "100%",
-  },
-  infoRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    padding: "12px 0",
-    borderBottom: "1px solid #f3f4f6",
-    "&:last-child": {
-      borderBottom: "none",
-    },
-  },
-  infoLabel: {
-    color: "#6b7280",
-    fontSize: "14px",
-  },
-  infoValue: {
-    color: "#1f2937",
-    fontSize: "14px",
-    fontWeight: "500",
-  },
-  statsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "16px",
-    marginBottom: "24px",
-  },
-  statCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: "12px",
-    padding: "20px",
-    display: "flex",
-    alignItems: "center",
-  },
-  statIcon: {
-    width: "48px",
-    height: "48px",
-    borderRadius: "12px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: "16px",
-    "& svg": {
-      fontSize: "24px",
-      color: "#FFFFFF",
-    },
-  },
-  statInfo: {
-    flex: 1,
-  },
-  statValue: {
-    fontSize: "20px",
-    fontWeight: "600",
-    color: "#1f2937",
-  },
-  statLabel: {
-    fontSize: "13px",
-    color: "#6b7280",
-    marginTop: "2px",
-  },
-  mapContainer: {
-    height: "300px",
-    borderRadius: "12px",
-    overflow: "hidden",
-    position: "relative",
-  },
-  map: {
-    width: "100%",
-    height: "100%",
-  },
-  noLocation: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(249, 250, 251, 0.95)",
-    color: "#6b7280",
-    fontSize: "14px",
-    zIndex: 10,
-  },
-  eventCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: "12px",
-    boxShadow: "0 2px 12px 0 rgba(0,0,0,0.05)",
-    marginBottom: "16px",
-    overflow: "hidden",
-  },
-  eventHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "15px 20px",
-  },
-  eventIconBox: {
-    width: "32px",
-    height: "32px",
-    borderRadius: "6px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: "15px",
-    flexShrink: 0,
-  },
-  eventTitle: {
-    fontSize: "18px",
-    fontWeight: "600",
-    color: "#333",
-    margin: "0",
-  },
-  eventDetails: {
-    fontSize: "13px",
-    color: "#666",
-    marginTop: "5px",
-  },
-  eventTime: {
-    fontSize: "14px",
-    color: "#999",
-    margin: "0",
-  },
-  eventFooter: {
-    borderTop: "1px solid #eee",
-    padding: "15px 20px",
-    display: "flex",
-    alignItems: "center",
-  },
-  eventFooterLink: {
-    color: "#3E4D6C",
-    fontWeight: "600",
-    fontSize: "14px",
-    display: "flex",
-    alignItems: "center",
-    cursor: "pointer",
-    "& svg": {
-      fontSize: "14px",
-      marginRight: "5px",
-    },
-  },
-  loadingContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "400px",
-  },
-  errorContainer: {
-    textAlign: "center",
-    padding: "60px",
-    color: "#6b7280",
-  },
-  emptyEvents: {
-    textAlign: "center",
-    padding: "40px",
-    color: "#9ca3af",
-    fontSize: "14px",
-  },
-  eventsFilterRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    marginBottom: "16px",
-  },
-  eventsFilterBtn: {
-    padding: "6px 16px",
-    borderRadius: "6px",
-    border: "1px solid #E5E7EB",
-    backgroundColor: "#F3F4F6",
-    color: "#374151",
-    fontSize: "13px",
-    fontWeight: "500",
-    cursor: "pointer",
-    transition: "all 0.15s ease",
-    "&:hover": {
-      backgroundColor: "#E5E7EB",
-    },
-  },
-  eventsFilterBtnActive: {
-    backgroundColor: "#3E4D6C",
-    borderColor: "#3E4D6C",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-    },
-  },
-  paginationContainer: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: "16px",
-    paddingTop: "16px",
-    borderTop: "1px solid #f3f4f6",
-  },
-  paginationInfo: {
-    fontSize: "14px",
-    color: "#6b7280",
-  },
-  paginationButtons: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  paginationBtn: {
-    minWidth: "36px",
-    height: "36px",
-    padding: "0 12px",
-    borderRadius: "6px",
-    border: "1px solid #E5E7EB",
-    backgroundColor: "#FFFFFF",
-    color: "#374151",
-    fontSize: "14px",
-    fontWeight: "500",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "all 0.15s ease",
-    "&:hover:not(:disabled)": {
-      backgroundColor: "#F9FAFB",
-      borderColor: "#D1D5DB",
-    },
-    "&:disabled": {
-      opacity: 0.5,
-      cursor: "not-allowed",
-    },
-  },
-  paginationBtnActive: {
-    backgroundColor: "#3E4D6C",
-    borderColor: "#3E4D6C",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-    },
-  },
-}));
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
 
 // Default center (Jamaica) - same as LiveMap
 const DEFAULT_CENTER = { lng: -76.8099, lat: 18.0179 };
@@ -381,7 +59,6 @@ const EVENT_FILTER_TYPES = {
 };
 
 export default function VehicleDetails() {
-  const classes = useStyles();
   const { vehicleId } = useParams();
   const history = useHistory();
   const map = useRef(null);
@@ -584,23 +261,26 @@ export default function VehicleDetails() {
 
   if (vehicleLoading) {
     return (
-      <div className={classes.loadingContainer}>
-        <CircularProgress />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (vehicleError || !vehicle) {
     return (
-      <div className={classes.errorContainer}>
+      <div className="text-center py-16 text-muted-foreground">
         <h3>Vehicle not found</h3>
         <p>
           The vehicle you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to
           it.
         </p>
-        <IconButton onClick={handleBack} className={classes.backButton}>
-          <ArrowBack />
-        </IconButton>
+        <button
+          className="rounded-lg border border-border bg-white p-2 transition-colors hover:bg-muted/50"
+          onClick={handleBack}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
       </div>
     );
   }
@@ -620,103 +300,106 @@ export default function VehicleDetails() {
   return (
     <div>
       {/* Header */}
-      <div className={classes.header}>
-        <IconButton onClick={handleBack} className={classes.backButton}>
-          <ArrowBack />
-        </IconButton>
-        <div className={classes.headerInfo}>
-          <h1 className={classes.vehicleTitle}>
+      <div className="flex items-center mb-6">
+        <button
+          className="mr-4 rounded-lg border border-border bg-white p-2 transition-colors hover:bg-muted/50"
+          onClick={handleBack}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <div className="flex-1">
+          <h1 className="text-2xl font-semibold text-foreground m-0">
             {vehicleTitle}
             <span
-              className={classes.statusBadge}
+              className="inline-flex items-center rounded-full px-3.5 py-1.5 text-sm font-semibold ml-4"
               style={{ backgroundColor: statusInfo.bg, color: statusInfo.color }}
             >
               {statusInfo.label}
             </span>
           </h1>
-          <div className={classes.vehicleSubtitle}>
-            {vehicle.name} • {vehicle.plate_number || "No plate"} • Driver:{" "}
+          <div className="text-sm text-muted-foreground mt-1">
+            {vehicle.name} &bull; {vehicle.plate_number || "No plate"} &bull; Driver:{" "}
             {vehicle.driver_name || "Unassigned"}
           </div>
         </div>
       </div>
 
-      <div className={classes.reportRow}>
-        <Button
-          className={classes.editButton}
+      <div className="flex justify-end gap-3 mb-4">
+        <button
+          className="inline-flex items-center rounded-lg bg-muted px-5 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted"
           onClick={() => setEditModalOpen(true)}
         >
-          <Edit style={{ marginRight: "8px", fontSize: "18px" }} />
+          <Pencil className="mr-2 h-[18px] w-[18px]" />
           Edit Vehicle
-        </Button>
-        <Button
-          className={classes.reportButton}
+        </button>
+        <button
+          className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
           onClick={() => history.push(`/admin/vehicle/${vehicleId}/snapshot`)}
         >
-          <CameraAlt style={{ marginRight: "8px", fontSize: "18px" }} />
+          <Camera className="mr-2 h-[18px] w-[18px]" />
           Snapshot
-        </Button>
-        <Button
-          className={classes.reportButton}
+        </button>
+        <button
+          className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
           onClick={() => history.push(`/admin/vehicle/${vehicleId}/travel-report`)}
         >
-          <Timeline style={{ marginRight: "8px", fontSize: "18px" }} />
+          <Activity className="mr-2 h-[18px] w-[18px]" />
           Generate Travel Report
-        </Button>
+        </button>
       </div>
 
       {/* Stats Cards */}
-      <div className={classes.statsGrid}>
-        <div className={classes.statCard}>
-          <div className={classes.statIcon} style={{ backgroundColor: "#3B82F6" }}>
-            <Speed />
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="flex items-center rounded-xl bg-white p-5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500 mr-4">
+            <Gauge className="h-6 w-6 text-white" />
           </div>
-          <div className={classes.statInfo}>
-            <div className={classes.statValue}>
+          <div className="flex-1">
+            <div className="text-xl font-semibold text-foreground">
               {vehicle.last_speed !== null && vehicle.last_speed !== undefined
                 ? `${Math.round(parseFloat(vehicle.last_speed))} km/h`
                 : "N/A"}
             </div>
-            <div className={classes.statLabel}>Current Speed</div>
+            <div className="text-sm text-muted-foreground mt-0.5">Current Speed</div>
           </div>
         </div>
 
-        <div className={classes.statCard}>
-          <div className={classes.statIcon} style={{ backgroundColor: "#10B981" }}>
-            <GpsFixed />
+        <div className="flex items-center rounded-xl bg-white p-5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500 mr-4">
+            <Crosshair className="h-6 w-6 text-white" />
           </div>
-          <div className={classes.statInfo}>
-            <div className={classes.statValue}>{formatRelativeTime(vehicle.last_seen_at)}</div>
-            <div className={classes.statLabel}>Last Seen</div>
+          <div className="flex-1">
+            <div className="text-xl font-semibold text-foreground">{formatRelativeTime(vehicle.last_seen_at)}</div>
+            <div className="text-sm text-muted-foreground mt-0.5">Last Seen</div>
           </div>
         </div>
 
-        <div className={classes.statCard}>
-          <div className={classes.statIcon} style={{ backgroundColor: "#8B5CF6" }}>
-            <Battery90 />
+        <div className="flex items-center rounded-xl bg-white p-5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500 mr-4">
+            <BatteryMedium className="h-6 w-6 text-white" />
           </div>
-          <div className={classes.statInfo}>
-            <div className={classes.statValue}>
+          <div className="flex-1">
+            <div className="text-xl font-semibold text-foreground">
               {snapshot?.battery_voltage !== null && snapshot?.battery_voltage !== undefined
                 ? `${Number(snapshot.battery_voltage).toFixed(1)} V`
                 : "--"}
             </div>
-            <div className={classes.statLabel}>Battery</div>
+            <div className="text-sm text-muted-foreground mt-0.5">Battery</div>
           </div>
         </div>
 
-        <div className={classes.statCard}>
+        <div className="flex items-center rounded-xl bg-white p-5">
           <div
-            className={classes.statIcon}
+            className="flex h-12 w-12 items-center justify-center rounded-xl mr-4"
             style={{ backgroundColor: getSignalInfo(snapshot?.signal_strength).color }}
           >
-            <SignalCellular4Bar />
+            <Signal className="h-6 w-6 text-white" />
           </div>
-          <div className={classes.statInfo}>
-            <div className={classes.statValue}>
+          <div className="flex-1">
+            <div className="text-xl font-semibold text-foreground">
               {getSignalInfo(snapshot?.signal_strength).text}
             </div>
-            <div className={classes.statLabel}>Signal</div>
+            <div className="text-sm text-muted-foreground mt-0.5">Signal</div>
           </div>
         </div>
       </div>
@@ -726,35 +409,26 @@ export default function VehicleDetails() {
         <GridItem xs={12} md={4}>
           <Card>
             <CardBody>
-              <h4 className={classes.sectionTitle}>Vehicle Information</h4>
-              <div className={classes.infoRow}>
-                <span className={classes.infoLabel}>Name</span>
-                <span className={classes.infoValue}>{vehicle.name || "—"}</span>
-              </div>
-              <div className={classes.infoRow}>
-                <span className={classes.infoLabel}>Make</span>
-                <span className={classes.infoValue}>{vehicle.make || "—"}</span>
-              </div>
-              <div className={classes.infoRow}>
-                <span className={classes.infoLabel}>Model</span>
-                <span className={classes.infoValue}>{vehicle.model || "—"}</span>
-              </div>
-              <div className={classes.infoRow}>
-                <span className={classes.infoLabel}>Year</span>
-                <span className={classes.infoValue}>{vehicle.year || "—"}</span>
-              </div>
-              <div className={classes.infoRow}>
-                <span className={classes.infoLabel}>Plate Number</span>
-                <span className={classes.infoValue}>{vehicle.plate_number || "—"}</span>
-              </div>
-              <div className={classes.infoRow}>
-                <span className={classes.infoLabel}>Driver</span>
-                <span className={classes.infoValue}>{vehicle.driver_name || "Unassigned"}</span>
-              </div>
-              <div className={classes.infoRow}>
-                <span className={classes.infoLabel}>Device IMEI</span>
-                <span className={classes.infoValue}>{vehicle.imei || "No device"}</span>
-              </div>
+              <h4 className="text-base font-semibold text-foreground mb-4 mt-2">Vehicle Information</h4>
+              {[
+                ["Name", vehicle.name || "\u2014"],
+                ["Make", vehicle.make || "\u2014"],
+                ["Model", vehicle.model || "\u2014"],
+                ["Year", vehicle.year || "\u2014"],
+                ["Plate Number", vehicle.plate_number || "\u2014"],
+                ["Driver", vehicle.driver_name || "Unassigned"],
+                ["Device IMEI", vehicle.imei || "No device"],
+              ].map(([label, value], idx, arr) => (
+                <div
+                  key={label}
+                  className={`flex justify-between py-3 ${
+                    idx < arr.length - 1 ? "border-b border-border/50" : ""
+                  }`}
+                >
+                  <span className="text-sm text-muted-foreground">{label}</span>
+                  <span className="text-sm font-medium text-foreground">{value}</span>
+                </div>
+              ))}
             </CardBody>
           </Card>
         </GridItem>
@@ -763,16 +437,16 @@ export default function VehicleDetails() {
         <GridItem xs={12} md={8}>
           <Card>
             <CardBody>
-              <h4 className={classes.sectionTitle}>Current Location</h4>
-              <div className={classes.mapContainer}>
+              <h4 className="text-base font-semibold text-foreground mb-4 mt-2">Current Location</h4>
+              <div className="h-[300px] rounded-xl overflow-hidden relative">
                 <div
                   ref={mapContainerRef}
-                  className={classes.map}
+                  className="w-full h-full"
                   style={{ width: "100%", height: "300px" }}
                 />
                 {!vehicleLoading && !hasLocation && (
-                  <div className={classes.noLocation}>
-                    <GpsFixed style={{ marginRight: "8px" }} />
+                  <div className="absolute inset-0 flex items-center justify-center bg-muted/50 text-muted-foreground text-sm z-10">
+                    <Crosshair className="mr-2 h-5 w-5" />
                     No location data available
                   </div>
                 )}
@@ -783,13 +457,15 @@ export default function VehicleDetails() {
 
         {/* Events Card */}
         <GridItem xs={12}>
-          <h4 className={classes.sectionTitle}>Recent Events</h4>
-          <div className={classes.eventsFilterRow}>
+          <h4 className="text-base font-semibold text-foreground mb-4 mt-2">Recent Events</h4>
+          <div className="flex items-center gap-2 mb-4">
             {Object.keys(EVENT_FILTER_TYPES).map((filter) => (
               <button
                 key={filter}
-                className={`${classes.eventsFilterBtn} ${
-                  eventsFilter === filter ? classes.eventsFilterBtnActive : ""
+                className={`rounded-md border px-4 py-1.5 text-sm font-medium transition-all ${
+                  eventsFilter === filter
+                    ? "bg-primary border-primary text-white hover:bg-primary/90"
+                    : "bg-muted border-border text-foreground hover:bg-muted"
                 }`}
                 onClick={() => {
                   setEventsFilter(filter);
@@ -801,21 +477,21 @@ export default function VehicleDetails() {
             ))}
           </div>
           {eventsLoading ? (
-            <div className={classes.loadingContainer}>
-              <CircularProgress size={32} />
+            <div className="flex items-center justify-center min-h-[400px]">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : events.length === 0 ? (
-            <div className={classes.emptyEvents}>No recent events for this vehicle</div>
+            <div className="text-center py-10 text-muted-foreground text-sm">No recent events for this vehicle</div>
           ) : (
             <>
               {paginatedEvents.map((event) => {
                 const linkText = getEventLinkText(event.event_type);
                 return (
-                  <div key={event.id} className={classes.eventCard}>
-                    <div className={classes.eventHeader}>
-                      <div style={{ display: "flex", alignItems: "center" }}>
+                  <div key={event.id} className="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
+                    <div className="flex items-center justify-between px-5 py-[15px]">
+                      <div className="flex items-center">
                         <div
-                          className={classes.eventIconBox}
+                          className="flex h-8 w-8 items-center justify-center rounded-md mr-[15px] flex-shrink-0"
                           style={{
                             backgroundColor:
                               event.severity === "critical"
@@ -826,31 +502,31 @@ export default function VehicleDetails() {
                           }}
                         >
                           {event.severity === "critical" ? (
-                            <Error style={{ color: "white", fontSize: "18px" }} />
+                            <CircleAlert className="h-[18px] w-[18px] text-white" />
                           ) : event.severity === "info" ? (
-                            <Info style={{ color: "white", fontSize: "18px" }} />
+                            <Info className="h-[18px] w-[18px] text-white" />
                           ) : (
-                            <Warning style={{ color: "white", fontSize: "18px" }} />
+                            <AlertTriangle className="h-[18px] w-[18px] text-white" />
                           )}
                         </div>
                         <div>
-                          <h4 className={classes.eventTitle}>{getEventTitle(event)}</h4>
+                          <h4 className="text-lg font-semibold text-foreground m-0">{getEventTitle(event)}</h4>
                         </div>
                       </div>
-                      <MoreHoriz style={{ color: "#999", cursor: "pointer" }} />
+                      <MoreHorizontal className="h-5 w-5 text-muted-foreground cursor-pointer" />
                     </div>
 
-                    <div style={{ padding: "0 20px 20px 67px" }}>
-                      {getEventDetails(event) && getEventDetails(event) !== "—" && (
-                        <p className={classes.eventDetails}>{getEventDetails(event)}</p>
+                    <div className="px-5 pb-5" style={{ paddingLeft: "67px" }}>
+                      {getEventDetails(event) && getEventDetails(event) !== "\u2014" && (
+                        <p className="text-sm text-muted-foreground mt-[5px]">{getEventDetails(event)}</p>
                       )}
-                      <p className={classes.eventTime}>{formatDateTime(event.event_at)}</p>
+                      <p className="text-sm text-muted-foreground m-0">{formatDateTime(event.event_at)}</p>
                     </div>
 
                     {linkText && (
-                      <div className={classes.eventFooter}>
+                      <div className="border-t border-border/50 px-5 py-[15px] flex items-center">
                         <div
-                          className={classes.eventFooterLink}
+                          className="text-primary font-semibold text-sm flex items-center cursor-pointer"
                           role="button"
                           tabIndex={0}
                           onClick={() => handleEventNavigate(event)}
@@ -861,7 +537,7 @@ export default function VehicleDetails() {
                             }
                           }}
                         >
-                          <PlayArrow /> {linkText}
+                          <Play className="h-3.5 w-3.5 mr-[5px]" /> {linkText}
                         </div>
                       </div>
                     )}
@@ -871,22 +547,22 @@ export default function VehicleDetails() {
 
                   {/* Pagination */}
                   {totalEventsPages > 1 && (
-                    <div className={classes.paginationContainer}>
-                      <div className={classes.paginationInfo}>
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
+                      <div className="text-sm text-muted-foreground">
                         Showing {(eventsPage - 1) * eventsPerPage + 1}-
                         {Math.min(eventsPage * eventsPerPage, events.length)} of{" "}
                         {events.length} events
                       </div>
-                      <div className={classes.paginationButtons}>
+                      <div className="flex items-center gap-2">
                         <button
-                          className={classes.paginationBtn}
+                          className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-white text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
                           onClick={() => setEventsPage(1)}
                           disabled={eventsPage === 1}
                         >
                           First
                         </button>
                         <button
-                          className={classes.paginationBtn}
+                          className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-white text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
                           onClick={() => setEventsPage((p) => Math.max(1, p - 1))}
                           disabled={eventsPage === 1}
                         >
@@ -906,8 +582,10 @@ export default function VehicleDetails() {
                           return (
                             <button
                               key={pageNum}
-                              className={`${classes.paginationBtn} ${
-                                eventsPage === pageNum ? classes.paginationBtnActive : ""
+                              className={`min-w-[36px] h-9 px-3 rounded-md border text-sm font-medium flex items-center justify-center transition-all ${
+                                eventsPage === pageNum
+                                  ? "bg-primary border-primary text-white hover:bg-primary/90"
+                                  : "border-border bg-white text-foreground hover:bg-muted/50 hover:border-border"
                               }`}
                               onClick={() => setEventsPage(pageNum)}
                             >
@@ -916,14 +594,14 @@ export default function VehicleDetails() {
                           );
                         })}
                         <button
-                          className={classes.paginationBtn}
+                          className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-white text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
                           onClick={() => setEventsPage((p) => Math.min(totalEventsPages, p + 1))}
                           disabled={eventsPage === totalEventsPages}
                         >
                           Next
                         </button>
                         <button
-                          className={classes.paginationBtn}
+                          className="min-w-[36px] h-9 px-3 rounded-md border border-border bg-white text-foreground text-sm font-medium flex items-center justify-center transition-all hover:bg-muted/50 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed"
                           onClick={() => setEventsPage(totalEventsPages)}
                           disabled={eventsPage === totalEventsPages}
                         >
@@ -957,7 +635,7 @@ function getEventDetails(event) {
   switch (event.event_type) {
     case "overspeed":
       return data.actual_speed
-        ? `${Math.round(data.actual_speed)} km/h (limit: ${data.speed_limit || "—"} km/h)`
+        ? `${Math.round(data.actual_speed)} km/h (limit: ${data.speed_limit || "\u2014"} km/h)`
         : "Speed threshold exceeded";
     case "harsh_braking":
     case "harsh_acceleration":
@@ -993,6 +671,6 @@ function getEventDetails(event) {
     case "alarm":
       return data.alarm_name || "Device alarm";
     default:
-      return "—";
+      return "\u2014";
   }
 }

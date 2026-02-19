@@ -32,8 +32,8 @@
 .livemap-loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #3b82f6;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -60,7 +60,7 @@
 
 .legend-title {
   font-weight: 600;
-  color: #374151;
+  color: var(--color-foreground);
   margin-bottom: 8px;
   font-size: 11px;
   text-transform: uppercase;
@@ -72,7 +72,7 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 6px;
-  color: #4b5563;
+  color: var(--color-muted-foreground);
 }
 
 .legend-item:last-child {
@@ -89,13 +89,13 @@
 .legend-color.legend-cluster {
   width: 16px;
   height: 16px;
-  border: 2px solid #ffffff;
+  border: 2px solid var(--color-background);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .legend-divider {
   height: 1px;
-  background: #e5e7eb;
+  background: var(--color-border);
   margin: 10px 0;
 }
 
@@ -110,18 +110,18 @@
 .mapboxgl-popup-close-button {
   font-size: 18px;
   padding: 4px 8px;
-  color: #6b7280;
+  color: var(--color-muted-foreground);
   right: 4px;
   top: 4px;
 }
 
 .mapboxgl-popup-close-button:hover {
-  background: #f3f4f6;
-  color: #1f2937;
+  background: var(--color-muted);
+  color: var(--color-foreground);
 }
 
 .mapboxgl-popup-tip {
-  border-top-color: #ffffff !important;
+  border-top-color: var(--color-background) !important;
 }
 
 /* Vehicle Popup Content */
@@ -134,26 +134,26 @@
   margin: 0 0 4px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-foreground);
   padding-right: 20px;
 }
 
 .vehicle-popup-subtitle {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-muted-foreground);
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .vehicle-popup-details {
   font-size: 13px;
-  color: #4b5563;
+  color: var(--color-muted-foreground);
   line-height: 1.8;
 }
 
 .vehicle-popup-details strong {
-  color: #374151;
+  color: var(--color-foreground);
 }
 
 /* Status Badge */
@@ -167,18 +167,18 @@
 }
 
 .status-badge.status-online {
-  background: #d1fae5;
-  color: #065f46;
+  background: oklch(0.95 0.05 160);
+  color: oklch(0.39 0.09 165);
 }
 
 .status-badge.status-idle {
-  background: #fef3c7;
-  color: #92400e;
+  background: oklch(0.96 0.06 90);
+  color: oklch(0.47 0.11 60);
 }
 
 .status-badge.status-offline {
-  background: #f3e8ff;
-  color: #6b21a8;
+  background: oklch(0.95 0.05 300);
+  color: oklch(0.38 0.17 300);
 }
 
 /* View Details Button */
@@ -187,8 +187,8 @@
   width: 100%;
   margin-top: 14px;
   padding: 10px 16px;
-  background: #3b82f6;
-  color: #ffffff;
+  background: var(--color-primary);
+  color: var(--color-background);
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -198,11 +198,11 @@
 }
 
 .vehicle-popup-btn:hover {
-  background: #2563eb;
+  background: color-mix(in oklch, var(--color-primary) 90%, black);
 }
 
 .vehicle-popup-btn:active {
-  background: #1d4ed8;
+  background: color-mix(in oklch, var(--color-primary) 80%, black);
 }
 
 /* Old marker styles (kept for backwards compatibility, can be removed) */

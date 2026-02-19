@@ -1,81 +1,56 @@
 import React from "react";
-// nodejs library that concatenates classes
-import classNames from "classnames";
-// nodejs library to set properties for components
-import PropTypes from "prop-types";
-
-// material-ui components
-import { makeStyles } from "@material-ui/core/styles";
-import Tab from "@material-ui/core/Tab";
-import Tabs from "@material-ui/core/Tabs";
-
-// core components
+import { cn } from "lib/utils";
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 
-import styles from "assets/jss/material-dashboard-pro-react/components/navPillsStyle.js";
+const colorClasses = {
+  primary: "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+  info: "data-[state=active]:bg-blue-500 data-[state=active]:text-white",
+  success: "data-[state=active]:bg-emerald-500 data-[state=active]:text-white",
+  warning: "data-[state=active]:bg-amber-500 data-[state=active]:text-white",
+  danger: "data-[state=active]:bg-red-500 data-[state=active]:text-white",
+  rose: "data-[state=active]:bg-pink-500 data-[state=active]:text-white",
+};
 
-const useStyles = makeStyles(styles);
+export default function NavPills({ active = 0, tabs, color = "primary", horizontal, alignCenter }) {
+  const [activeTab, setActiveTab] = React.useState(active);
 
-export default function NavPills(props) {
-  const [active, setActive] = React.useState(props.active);
-  const handleChange = (event, active) => {
-    setActive(active);
-  };
-  const classes = useStyles();
-  const { tabs, color, horizontal, alignCenter } = props;
-  const flexContainerClasses = classNames({
-    [classes.flexContainer]: true,
-    [classes.horizontalDisplay]: horizontal !== undefined,
-  });
   const tabButtons = (
-    <Tabs
-      classes={{
-        root: classes.root,
-        fixed: classes.fixed,
-        flexContainer: flexContainerClasses,
-        indicator: classes.displayNone,
-      }}
-      value={active}
-      onChange={handleChange}
-      centered={alignCenter}
+    <div
+      className={cn(
+        "flex gap-1 rounded-lg bg-muted p-1",
+        horizontal && "flex-col",
+        alignCenter && "justify-center",
+      )}
     >
-      {tabs.map((prop, key) => {
-        var icon = {};
-        if (prop.tabIcon !== undefined) {
-          icon["icon"] = <prop.tabIcon className={classes.tabIcon} />;
-        }
-        const pillsClasses = classNames({
-          [classes.pills]: true,
-          [classes.horizontalPills]: horizontal !== undefined,
-          [classes.pillsWithIcons]: prop.tabIcon !== undefined,
-        });
-        return (
-          <Tab
-            label={prop.tabButton}
-            key={key}
-            {...icon}
-            classes={{
-              root: pillsClasses,
-              selected: classes[color],
-            }}
-          />
-        );
-      })}
-    </Tabs>
+      {tabs.map((tab, index) => (
+        <button
+          key={index}
+          data-state={index === activeTab ? "active" : "inactive"}
+          onClick={() => setActiveTab(index)}
+          className={cn(
+            "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all",
+            "text-muted-foreground hover:text-foreground",
+            colorClasses[color] || colorClasses.primary,
+            "data-[state=active]:shadow-sm",
+          )}
+        >
+          {tab.tabIcon && <tab.tabIcon className="h-4 w-4" />}
+          {tab.tabButton}
+        </button>
+      ))}
+    </div>
   );
+
   const tabContent = (
-    <div className={classes.contentWrapper}>
-      {tabs.map((prop, key) => {
-        if (key !== active) return null;
-        return (
-          <div className={classes.tabContent} key={key}>
-            {prop.tabContent}
-          </div>
-        );
+    <div className="mt-4">
+      {tabs.map((tab, index) => {
+        if (index !== activeTab) return null;
+        return <div key={index}>{tab.tabContent}</div>;
       })}
     </div>
   );
+
   return horizontal !== undefined ? (
     <GridContainer>
       <GridItem {...horizontal.tabsGrid}>{tabButtons}</GridItem>
@@ -88,26 +63,3 @@ export default function NavPills(props) {
     </div>
   );
 }
-
-NavPills.defaultProps = {
-  active: 0,
-  color: "primary",
-};
-
-NavPills.propTypes = {
-  // index of the default active pill
-  active: PropTypes.number,
-  tabs: PropTypes.arrayOf(
-    PropTypes.shape({
-      tabButton: PropTypes.string,
-      tabIcon: PropTypes.object,
-      tabContent: PropTypes.node,
-    })
-  ).isRequired,
-  color: PropTypes.oneOf(["primary", "warning", "danger", "success", "info", "rose"]),
-  horizontal: PropTypes.shape({
-    tabsGrid: PropTypes.object,
-    contentGrid: PropTypes.object,
-  }),
-  alignCenter: PropTypes.bool,
-};

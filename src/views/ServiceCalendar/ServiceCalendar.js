@@ -1,19 +1,18 @@
 import React, { useMemo, useState, useCallback } from "react";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import IconButton from "@material-ui/core/IconButton";
-import CircularProgress from "@material-ui/core/CircularProgress";
 
-// @material-ui/icons
-import EventNote from "@material-ui/icons/EventNote";
-import Build from "@material-ui/icons/Build";
-import Schedule from "@material-ui/icons/Schedule";
-import Warning from "@material-ui/icons/Warning";
-import CheckCircle from "@material-ui/icons/CheckCircle";
-import Room from "@material-ui/icons/Room";
-import Person from "@material-ui/icons/Person";
-import ChevronLeft from "@material-ui/icons/ChevronLeft";
-import ChevronRight from "@material-ui/icons/ChevronRight";
+// lucide icons
+import {
+  CalendarDays,
+  Wrench,
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  MapPin,
+  User,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -23,357 +22,26 @@ import CardBody from "components/Card/CardBody.js";
 import Button from "components/CustomButtons/Button.js";
 import Table from "components/Table/Table.js";
 
+// shadcn ui
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "components/ui/alert-dialog";
+
 // hooks & utils
 import { useServiceEvents, useServiceStats, deleteServiceEvent } from "hooks/useServiceEvents";
-import SweetAlert from "react-bootstrap-sweetalert";
-import { SERVICE_STATUS_COLORS } from "types/database";
+import { cn } from "lib/utils";
+import { SERVICE_STATUS_CLASSES } from "types/database";
 import NewEventModal from "./NewEventModal";
 import EditEventModal from "./EditEventModal";
 import ServiceHistoryModal from "./ServiceHistoryModal";
 import ExportReportModal from "./ExportReportModal";
-
-import styles from "assets/jss/material-dashboard-pro-react/views/dashboardStyle.js";
-
-const useStyles = makeStyles(() => ({
-  ...styles,
-  pageHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "24px",
-  },
-  headerLeft: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-  pageTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  pageSubtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    margin: 0,
-  },
-  headerActions: {
-    display: "flex",
-    gap: "12px",
-  },
-  primaryButton: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    padding: "10px 20px",
-    textTransform: "none",
-    fontWeight: "600",
-    borderRadius: "8px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    },
-  },
-  secondaryButton: {
-    backgroundColor: "#FFFFFF",
-    color: "#3E4D6C",
-    padding: "10px 20px",
-    textTransform: "none",
-    fontWeight: "600",
-    borderRadius: "8px",
-    border: "1px solid #3E4D6C",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    "&:hover": {
-      backgroundColor: "#F8FAFC",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.08)",
-    },
-  },
-  statsGrid: {
-    marginBottom: "24px",
-  },
-  statCard: {
-    borderRadius: "12px",
-    border: "1px solid #E5E7EB",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
-    height: "100%",
-  },
-  statCardBody: {
-    padding: "20px",
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-  },
-  statIcon: {
-    width: "48px",
-    height: "48px",
-    borderRadius: "12px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statContent: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  statLabel: {
-    fontSize: "13px",
-    color: "#6b7280",
-    margin: 0,
-  },
-  statValue: {
-    fontSize: "24px",
-    fontWeight: "700",
-    color: "#111827",
-    margin: 0,
-  },
-  calendarCard: {
-    borderRadius: "12px",
-    border: "1px solid #E5E7EB",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
-  },
-  calendarHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "18px 20px",
-    borderBottom: "1px solid #E5E7EB",
-  },
-  calendarTitleContainer: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  calendarTitle: {
-    fontSize: "18px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  navButton: {
-    padding: "4px",
-    color: "#6b7280",
-    "&:hover": {
-      backgroundColor: "#F3F4F6",
-    },
-  },
-  calendarGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(7, 1fr)",
-    gap: "8px",
-    padding: "16px",
-  },
-  weekdayLabel: {
-    textAlign: "center",
-    fontSize: "12px",
-    fontWeight: "600",
-    color: "#6b7280",
-    paddingBottom: "8px",
-  },
-  dayCell: {
-    border: "1px solid #E5E7EB",
-    borderRadius: "10px",
-    minHeight: "86px",
-    padding: "10px",
-    backgroundColor: "#FFFFFF",
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-    cursor: "pointer",
-    "&:hover": {
-      backgroundColor: "#F9FAFB",
-    },
-  },
-  dayCellEmpty: {
-    backgroundColor: "#F9FAFB",
-    borderStyle: "dashed",
-    cursor: "default",
-    "&:hover": {
-      backgroundColor: "#F9FAFB",
-    },
-  },
-  dayCellToday: {
-    borderColor: "#3E4D6C",
-    borderWidth: "2px",
-  },
-  dayNumber: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#374151",
-  },
-  dayNumberToday: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    borderRadius: "50%",
-    width: "24px",
-    height: "24px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  eventBadge: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "6px",
-    fontSize: "11px",
-    fontWeight: "600",
-    borderRadius: "999px",
-    padding: "4px 8px",
-    width: "fit-content",
-    cursor: "pointer",
-  },
-  badgePending: {
-    backgroundColor: "#FEF3C7",
-    color: "#B45309",
-  },
-  badgeInProgress: {
-    backgroundColor: "#EEF2FF",
-    color: "#4338CA",
-  },
-  badgeOverdue: {
-    backgroundColor: "#FEE2E2",
-    color: "#B91C1C",
-  },
-  badgeCompleted: {
-    backgroundColor: "#DCFCE7",
-    color: "#15803D",
-  },
-  listCard: {
-    borderRadius: "12px",
-    border: "1px solid #E5E7EB",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
-    height: "100%",
-  },
-  listHeader: {
-    padding: "18px 20px",
-    borderBottom: "1px solid #E5E7EB",
-  },
-  listTitle: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  listBody: {
-    padding: "8px 20px 20px",
-    maxHeight: "400px",
-    overflowY: "auto",
-  },
-  listItem: {
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    padding: "16px 0",
-    borderBottom: "1px solid #F3F4F6",
-    "&:last-child": {
-      borderBottom: "none",
-    },
-  },
-  listLeft: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  listVehicle: {
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "#1f2937",
-  },
-  listMeta: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    fontSize: "12px",
-    color: "#6b7280",
-  },
-  listTag: {
-    fontSize: "11px",
-    fontWeight: "600",
-    borderRadius: "6px",
-    padding: "2px 8px",
-    backgroundColor: "#F3F4F6",
-    color: "#4B5563",
-  },
-  listDate: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#374151",
-  },
-  filterBar: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    marginTop: "8px",
-  },
-  filterButton: {
-    textTransform: "none",
-    borderRadius: "999px",
-    padding: "6px 16px",
-    fontSize: "12px",
-    fontWeight: "600",
-    backgroundColor: "#E5E7EB",
-    color: "#374151",
-    "&:hover": {
-      backgroundColor: "#D1D5DB",
-    },
-  },
-  filterActive: {
-    backgroundColor: "#3E4D6C !important",
-    color: "#FFFFFF !important",
-  },
-  tableCard: {
-    borderRadius: "12px",
-    border: "1px solid #E5E7EB",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
-    marginTop: "24px",
-  },
-  tableHeader: {
-    padding: "18px 20px",
-    borderBottom: "1px solid #E5E7EB",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  tableTitle: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  statusBadge: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "6px",
-    fontSize: "12px",
-    fontWeight: "600",
-    borderRadius: "999px",
-    padding: "4px 10px",
-  },
-  actionButton: {
-    padding: "6px 14px",
-    textTransform: "none",
-    fontSize: "12px",
-    borderRadius: "6px",
-    backgroundColor: "#F9FAFB",
-    border: "1px solid #E5E7EB",
-    color: "#374151",
-    "&:hover": {
-      backgroundColor: "#F3F4F6",
-    },
-  },
-  loadingContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "40px",
-  },
-  emptyState: {
-    textAlign: "center",
-    padding: "40px",
-    color: "#6B7280",
-  },
-}));
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_NAMES = [
@@ -382,7 +50,6 @@ const MONTH_NAMES = [
 ];
 
 export default function ServiceCalendar() {
-  const classes = useStyles();
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -393,7 +60,13 @@ export default function ServiceCalendar() {
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
-  const [alert, setAlert] = useState(null);
+
+  // AlertDialog states (replacing SweetAlert)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const { events, loading: eventsLoading, refetch: refetchEvents } = useServiceEvents({
     month: currentMonth + 1,
@@ -443,24 +116,16 @@ export default function ServiceCalendar() {
   const getBadgeClass = (status) => {
     switch (status) {
       case "pending":
-        return classes.badgePending;
+        return "bg-amber-100 text-amber-700";
       case "in_progress":
-        return classes.badgeInProgress;
+        return "bg-indigo-50 text-indigo-700";
       case "overdue":
-        return classes.badgeOverdue;
+        return "bg-red-100 text-red-700";
       case "completed":
-        return classes.badgeCompleted;
+        return "bg-green-100 text-green-700";
       default:
-        return classes.badgePending;
+        return "bg-amber-100 text-amber-700";
     }
-  };
-
-  const getStatusStyle = (status) => {
-    const colors = SERVICE_STATUS_COLORS[status] || SERVICE_STATUS_COLORS.pending;
-    return {
-      backgroundColor: colors.bg,
-      color: colors.text,
-    };
   };
 
   const formatStatus = (status) => {
@@ -519,59 +184,27 @@ export default function ServiceCalendar() {
 
   const handleDeleteEvent = useCallback(
     (event) => {
-      setAlert(
-        <SweetAlert
-          warning
-          showCancel
-          title="Delete Service Event?"
-          onConfirm={async () => {
-            setAlert(null);
-            const { error } = await deleteServiceEvent(event.id);
-            if (error) {
-              setAlert(
-                <SweetAlert
-                  error
-                  title="Error"
-                  onConfirm={() => setAlert(null)}
-                  confirmBtnText="Close"
-                  focusCancelBtn={false}
-                  focusConfirmBtn={false}
-                >
-                  {error.message}
-                </SweetAlert>
-              );
-            } else {
-              setAlert(
-                <SweetAlert
-                  success
-                  title="Deleted!"
-                  onConfirm={() => setAlert(null)}
-                  confirmBtnText="Continue"
-                  focusCancelBtn={false}
-                  focusConfirmBtn={false}
-                >
-                  The service event has been deleted.
-                </SweetAlert>
-              );
-              refetchEvents();
-              refetchStats();
-              refetchAllEvents();
-            }
-          }}
-          onCancel={() => setAlert(null)}
-          confirmBtnText="Delete"
-          cancelBtnText="Cancel"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          This will permanently delete the service event for{" "}
-          <strong>{event.vehicle_name}</strong> on {event.service_date}. This action cannot be
-          undone.
-        </SweetAlert>
-      );
+      setDeleteTarget(event);
+      setDeleteConfirmOpen(true);
     },
-    [refetchEvents, refetchStats, refetchAllEvents]
+    []
   );
+
+  const confirmDeleteEvent = useCallback(async () => {
+    if (!deleteTarget) return;
+    setDeleteConfirmOpen(false);
+    const { error } = await deleteServiceEvent(deleteTarget.id);
+    if (error) {
+      setErrorMessage(error.message);
+      setShowError(true);
+    } else {
+      setShowSuccess(true);
+      refetchEvents();
+      refetchStats();
+      refetchAllEvents();
+    }
+    setDeleteTarget(null);
+  }, [deleteTarget, refetchEvents, refetchStats, refetchAllEvents]);
 
   const isToday = (dateStr) => {
     return dateStr === today.toISOString().split("T")[0];
@@ -579,77 +212,83 @@ export default function ServiceCalendar() {
 
   return (
     <div>
-      <div className={classes.pageHeader}>
-        <div className={classes.headerLeft}>
-          <h1 className={classes.pageTitle}>Service Calendar</h1>
-          <p className={classes.pageSubtitle}>Plan and track scheduled maintenance across your fleet</p>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-2xl font-semibold text-foreground m-0">Service Calendar</h1>
+          <p className="text-sm text-muted-foreground m-0">Plan and track scheduled maintenance across your fleet</p>
         </div>
-        <div className={classes.headerActions}>
-          <Button className={classes.secondaryButton} onClick={() => setExportModalOpen(true)}>
+        <div className="flex gap-3">
+          <Button
+            className="bg-background text-primary px-5 py-2.5 normal-case font-semibold rounded-lg border border-primary shadow-sm hover:bg-muted/50 hover:shadow-md"
+            onClick={() => setExportModalOpen(true)}
+          >
             Export Report
           </Button>
-          <Button className={classes.primaryButton} onClick={() => setNewEventModalOpen(true)}>
+          <Button
+            className="bg-primary text-primary-foreground px-5 py-2.5 normal-case font-semibold rounded-lg shadow-sm hover:bg-primary/90 hover:shadow-md"
+            onClick={() => setNewEventModalOpen(true)}
+          >
             New Event
           </Button>
         </div>
       </div>
 
-      <GridContainer className={classes.statsGrid} spacing={3}>
+      <GridContainer className="mb-6" spacing={3}>
         <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div className={classes.statIcon} style={{ backgroundColor: "#EEF2FF" }}>
-                <EventNote style={{ color: "#4338CA" }} />
+          <Card className="rounded-xl border border-border shadow-sm h-full">
+            <CardBody className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-indigo-50">
+                <CalendarDays className="h-5 w-5 text-indigo-700" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Scheduled This Month</p>
-                <p className={classes.statValue}>
-                  {statsLoading ? <CircularProgress size={20} /> : stats.scheduledThisMonth}
+              <div className="flex flex-col gap-1">
+                <p className="text-sm text-muted-foreground m-0">Scheduled This Month</p>
+                <p className="text-2xl font-bold text-foreground m-0">
+                  {statsLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : stats.scheduledThisMonth}
                 </p>
               </div>
             </CardBody>
           </Card>
         </GridItem>
         <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div className={classes.statIcon} style={{ backgroundColor: "#FEF3C7" }}>
-                <Schedule style={{ color: "#B45309" }} />
+          <Card className="rounded-xl border border-border shadow-sm h-full">
+            <CardBody className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-amber-100">
+                <Clock className="h-5 w-5 text-amber-700" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Upcoming (7 days)</p>
-                <p className={classes.statValue}>
-                  {statsLoading ? <CircularProgress size={20} /> : stats.upcoming7Days}
+              <div className="flex flex-col gap-1">
+                <p className="text-sm text-muted-foreground m-0">Upcoming (7 days)</p>
+                <p className="text-2xl font-bold text-foreground m-0">
+                  {statsLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : stats.upcoming7Days}
                 </p>
               </div>
             </CardBody>
           </Card>
         </GridItem>
         <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div className={classes.statIcon} style={{ backgroundColor: "#FEE2E2" }}>
-                <Warning style={{ color: "#B91C1C" }} />
+          <Card className="rounded-xl border border-border shadow-sm h-full">
+            <CardBody className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-red-100">
+                <AlertTriangle className="h-5 w-5 text-red-700" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Overdue</p>
-                <p className={classes.statValue}>
-                  {statsLoading ? <CircularProgress size={20} /> : stats.overdue}
+              <div className="flex flex-col gap-1">
+                <p className="text-sm text-muted-foreground m-0">Overdue</p>
+                <p className="text-2xl font-bold text-foreground m-0">
+                  {statsLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : stats.overdue}
                 </p>
               </div>
             </CardBody>
           </Card>
         </GridItem>
         <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div className={classes.statIcon} style={{ backgroundColor: "#DCFCE7" }}>
-                <CheckCircle style={{ color: "#15803D" }} />
+          <Card className="rounded-xl border border-border shadow-sm h-full">
+            <CardBody className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100">
+                <CheckCircle2 className="h-5 w-5 text-green-700" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Completed</p>
-                <p className={classes.statValue}>
-                  {statsLoading ? <CircularProgress size={20} /> : stats.completed}
+              <div className="flex flex-col gap-1">
+                <p className="text-sm text-muted-foreground m-0">Completed</p>
+                <p className="text-2xl font-bold text-foreground m-0">
+                  {statsLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : stats.completed}
                 </p>
               </div>
             </CardBody>
@@ -659,27 +298,34 @@ export default function ServiceCalendar() {
 
       <GridContainer spacing={3}>
         <GridItem xs={12} lg={8}>
-          <Card className={classes.calendarCard}>
-            <div className={classes.calendarHeader}>
+          <Card className="rounded-xl border border-border shadow-sm">
+            <div className="flex items-center justify-between px-5 py-[18px] border-b border-border">
               <div>
-                <div className={classes.calendarTitleContainer}>
-                  <IconButton className={classes.navButton} onClick={handlePrevMonth}>
-                    <ChevronLeft />
-                  </IconButton>
-                  <h3 className={classes.calendarTitle}>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="p-1 text-muted-foreground rounded hover:bg-muted transition-colors"
+                    onClick={handlePrevMonth}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <h3 className="text-lg font-semibold text-foreground m-0">
                     {MONTH_NAMES[currentMonth]} {currentYear}
                   </h3>
-                  <IconButton className={classes.navButton} onClick={handleNextMonth}>
-                    <ChevronRight />
-                  </IconButton>
+                  <button
+                    className="p-1 text-muted-foreground rounded hover:bg-muted transition-colors"
+                    onClick={handleNextMonth}
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
                 </div>
-                <div className={classes.filterBar}>
+                <div className="flex items-center gap-2.5 mt-2">
                   {["All", "Pending", "In Progress", "Overdue", "Completed"].map((filter) => (
                     <Button
                       key={filter}
-                      className={`${classes.filterButton} ${
-                        activeFilter === filter ? classes.filterActive : ""
-                      }`}
+                      className={cn(
+                        "normal-case rounded-full px-4 py-1.5 text-xs font-semibold",
+                        activeFilter === filter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      )}
                       onClick={() => setActiveFilter(filter)}
                     >
                       {filter}
@@ -689,19 +335,24 @@ export default function ServiceCalendar() {
               </div>
             </div>
             {eventsLoading ? (
-              <div className={classes.loadingContainer}>
-                <CircularProgress />
+              <div className="flex justify-center items-center p-10">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <div className={classes.calendarGrid}>
+              <div className="grid grid-cols-7 gap-2 p-4">
                 {WEEKDAYS.map((weekday) => (
-                  <div key={weekday} className={classes.weekdayLabel}>
+                  <div key={weekday} className="text-center text-xs font-semibold text-muted-foreground pb-2">
                     {weekday}
                   </div>
                 ))}
                 {calendarCells.map((cell, index) => {
                   if (cell.empty) {
-                    return <div key={`empty-${index}`} className={`${classes.dayCell} ${classes.dayCellEmpty}`} />;
+                    return (
+                      <div
+                        key={`empty-${index}`}
+                        className="border border-dashed border-border rounded-[10px] min-h-[86px] p-2.5 bg-muted/50"
+                      />
+                    );
                   }
 
                   const dayEvents = filteredEvents.filter((event) => event.service_date === cell.date);
@@ -710,27 +361,39 @@ export default function ServiceCalendar() {
                   return (
                     <div
                       key={cell.date}
-                      className={`${classes.dayCell} ${isTodayCell ? classes.dayCellToday : ""}`}
+                      className={cn(
+                        "border border-border rounded-[10px] min-h-[86px] p-2.5 bg-card flex flex-col gap-1.5 cursor-pointer hover:bg-muted/50",
+                        isTodayCell && "border-primary border-2"
+                      )}
                     >
-                      <span className={isTodayCell ? classes.dayNumberToday : classes.dayNumber}>
+                      <span
+                        className={cn(
+                          "text-sm font-semibold text-foreground",
+                          isTodayCell &&
+                            "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center"
+                        )}
+                      >
                         {cell.day}
                       </span>
                       {dayEvents.slice(0, 2).map((event) => (
                         <span
                           key={event.id}
-                          className={`${classes.eventBadge} ${getBadgeClass(event.computed_status)}`}
+                          className={cn(
+                            "inline-flex items-center gap-1.5 text-[11px] font-semibold rounded-full px-2 py-1 w-fit cursor-pointer",
+                            getBadgeClass(event.computed_status)
+                          )}
                           onClick={() => handleViewHistory(event)}
                         >
                           {event.service_type === "repair" ? (
-                            <Warning style={{ fontSize: "13px" }} />
+                            <AlertTriangle className="h-3 w-3" />
                           ) : (
-                            <Build style={{ fontSize: "13px" }} />
+                            <Wrench className="h-3 w-3" />
                           )}
                           {event.service_items ? event.service_items.substring(0, 12) + (event.service_items.length > 12 ? "..." : "") : "Service"}
                         </span>
                       ))}
                       {dayEvents.length > 2 && (
-                        <span style={{ fontSize: "11px", color: "#6B7280" }}>
+                        <span className="text-[11px] text-muted-foreground">
                           +{dayEvents.length - 2} more
                         </span>
                       )}
@@ -743,44 +406,44 @@ export default function ServiceCalendar() {
         </GridItem>
 
         <GridItem xs={12} lg={4}>
-          <Card className={classes.listCard}>
-            <div className={classes.listHeader}>
-              <h3 className={classes.listTitle}>Upcoming Services</h3>
+          <Card className="rounded-xl border border-border shadow-sm h-full">
+            <div className="px-5 py-[18px] border-b border-border">
+              <h3 className="text-base font-semibold text-foreground m-0">Upcoming Services</h3>
             </div>
-            <div className={classes.listBody}>
+            <div className="px-5 pb-5 pt-2 max-h-[400px] overflow-y-auto">
               {allEventsLoading ? (
-                <div className={classes.loadingContainer}>
-                  <CircularProgress />
+                <div className="flex justify-center items-center p-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               ) : upcomingEvents.length === 0 ? (
-                <div className={classes.emptyState}>No upcoming services</div>
+                <div className="text-center p-10 text-muted-foreground">No upcoming services</div>
               ) : (
                 upcomingEvents.map((event) => (
-                  <div key={event.id} className={classes.listItem}>
-                    <div className={classes.listLeft}>
-                      <span className={classes.listVehicle}>{event.vehicle_name}</span>
+                  <div key={event.id} className="flex items-start justify-between py-4 border-b border-border/50 last:border-b-0">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-semibold text-foreground">{event.vehicle_name}</span>
                       {event.location && (
-                        <span className={classes.listMeta}>
-                          <Room style={{ fontSize: "14px" }} />
+                        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5" />
                           {event.location}
                         </span>
                       )}
                       {event.driver_name && (
-                        <span className={classes.listMeta}>
-                          <Person style={{ fontSize: "14px" }} />
+                        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <User className="h-3.5 w-3.5" />
                           {event.driver_name}
                         </span>
                       )}
-                      <span className={classes.listTag}>
+                      <span className="text-[11px] font-semibold rounded-md px-2 py-0.5 bg-muted text-muted-foreground inline-flex items-center w-fit">
                         {event.service_type === "repair" ? (
-                          <Warning style={{ fontSize: "12px", marginRight: "4px", verticalAlign: "middle" }} />
+                          <AlertTriangle className="h-3 w-3 mr-1 inline" />
                         ) : (
-                          <Build style={{ fontSize: "12px", marginRight: "4px", verticalAlign: "middle" }} />
+                          <Wrench className="h-3 w-3 mr-1 inline" />
                         )}
                         {event.service_items || "Service"}
                       </span>
                     </div>
-                    <div className={classes.listDate}>{event.service_date}</div>
+                    <div className="text-sm font-semibold text-foreground">{event.service_date}</div>
                   </div>
                 ))
               )}
@@ -789,17 +452,17 @@ export default function ServiceCalendar() {
         </GridItem>
       </GridContainer>
 
-      <Card className={classes.tableCard}>
-        <div className={classes.tableHeader}>
-          <h3 className={classes.tableTitle}>Service Work Orders</h3>
+      <Card className="rounded-xl border border-border shadow-sm mt-6">
+        <div className="flex items-center justify-between px-5 py-[18px] border-b border-border">
+          <h3 className="text-base font-semibold text-foreground m-0">Service Work Orders</h3>
         </div>
         <CardBody>
           {allEventsLoading ? (
-            <div className={classes.loadingContainer}>
-              <CircularProgress />
+            <div className="flex justify-center items-center p-10">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : allEvents.length === 0 ? (
-            <div className={classes.emptyState}>No service events found</div>
+            <div className="text-center p-10 text-muted-foreground">No service events found</div>
           ) : (
             <Table
               tableHeaderColor="gray"
@@ -817,38 +480,36 @@ export default function ServiceCalendar() {
                 event.service_date,
                 (
                   <div key={`vehicle-${event.id}`}>
-                    <div style={{ fontWeight: 600, color: "#1f2937" }}>{event.vehicle_name}</div>
-                    <div style={{ fontSize: "12px", color: "#6b7280" }}>{event.plate_number}</div>
+                    <div className="font-semibold text-foreground">{event.vehicle_name}</div>
+                    <div className="text-xs text-muted-foreground">{event.plate_number}</div>
                   </div>
                 ),
                 event.service_items || "-",
                 (
                   <span
                     key={`status-${event.id}`}
-                    className={classes.statusBadge}
-                    style={getStatusStyle(event.computed_status)}
+                    className={cn("inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-2.5 py-1", SERVICE_STATUS_CLASSES[event.computed_status] || "bg-amber-50 text-amber-700")}
                   >
                     {formatStatus(event.computed_status)}
                   </span>
                 ),
                 event.mileage ? `${Number(event.mileage).toLocaleString()} km` : "-",
                 event.location || "-",
-                <div key={`action-${event.id}`} style={{ display: "flex", gap: "6px" }}>
+                <div key={`action-${event.id}`} className="flex gap-1.5">
                   <Button
-                    className={classes.actionButton}
+                    className="px-3.5 py-1.5 normal-case text-xs rounded-md bg-muted/50 border border-border text-foreground hover:bg-muted"
                     onClick={() => handleEditEvent(event)}
                   >
                     Edit
                   </Button>
                   <Button
-                    className={classes.actionButton}
+                    className="px-3.5 py-1.5 normal-case text-xs rounded-md bg-muted/50 border border-border text-foreground hover:bg-muted"
                     onClick={() => handleViewHistory(event)}
                   >
                     View
                   </Button>
                   <Button
-                    className={classes.actionButton}
-                    style={{ color: "#B91C1C" }}
+                    className="px-3.5 py-1.5 normal-case text-xs rounded-md bg-muted/50 border border-border text-red-700 hover:bg-muted"
                     onClick={() => handleDeleteEvent(event)}
                   >
                     Delete
@@ -906,7 +567,56 @@ export default function ServiceCalendar() {
         fleetEventsLoading={allEventsLoading}
       />
 
-      {alert}
+      {/* Delete Confirmation AlertDialog */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Service Event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the service event for{" "}
+              <strong>{deleteTarget?.vehicle_name}</strong> on {deleteTarget?.service_date}. This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setDeleteConfirmOpen(false); setDeleteTarget(null); }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteEvent}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Error AlertDialog */}
+      <AlertDialog open={showError} onOpenChange={setShowError}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Error</AlertDialogTitle>
+            <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowError(false)}>Close</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success AlertDialog */}
+      <AlertDialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deleted!</AlertDialogTitle>
+            <AlertDialogDescription>The service event has been deleted.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowSuccess(false)}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

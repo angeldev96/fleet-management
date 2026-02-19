@@ -92,7 +92,7 @@ export function exportToPDF(serviceEvents, vehicleName) {
   const rows = buildRows(serviceEvents);
 
   // --- Header ---
-  doc.setFillColor(62, 77, 108); // #3E4D6C
+  doc.setFillColor(79, 70, 229); // indigo-600 (matches --color-primary)
   doc.rect(0, 0, pageWidth, 22, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);

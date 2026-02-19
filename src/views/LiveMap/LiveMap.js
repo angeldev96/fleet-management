@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import mapboxgl from "!mapbox-gl";
+import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useVehicles } from "hooks/useVehicles";
 import { useHistory } from "react-router-dom";
 import "./LiveMap.css";
 
 // Mapbox Public Access Token
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN_PUBLIC;
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
 
 // Kingston, Jamaica center coordinates
 const JAMAICA_CENTER = {
@@ -181,9 +181,9 @@ export default function LiveMap() {
           "circle-color": [
             "step",
             ["get", "point_count"],
-            "#22D3EE", // Bright cyan for small clusters (2–10)
+            "#22D3EE", // Bright cyan for small clusters (2-10)
             11,
-            "#0EA5E9", // Vibrant sky blue for medium clusters (11–50)
+            "#0EA5E9", // Vibrant sky blue for medium clusters (11-50)
             51,
             "#2563EB", // Bright blue for large clusters (51+)
           ],
@@ -351,33 +351,33 @@ export default function LiveMap() {
       <div className="livemap-legend">
         <div className="legend-title">Vehicle Status</div>
         <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: "#10B981" }} />
+          <span className="legend-color bg-emerald-500" />
           <span>Online</span>
         </div>
         <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: "#F59E0B" }} />
+          <span className="legend-color bg-amber-500" />
           <span>Idle</span>
         </div>
         <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: "#EF4444" }} />
+          <span className="legend-color bg-red-500" />
           <span>Fault / Event</span>
         </div>
         <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: "#9C27B0" }} />
+          <span className="legend-color bg-purple-600" />
           <span>Offline</span>
         </div>
         <div className="legend-divider" />
         <div className="legend-title">Clusters</div>
         <div className="legend-item">
-          <span className="legend-color legend-cluster" style={{ backgroundColor: "#22D3EE" }} />
+          <span className="legend-color legend-cluster bg-cyan-400" />
           <span>2-10 vehicles</span>
         </div>
         <div className="legend-item">
-          <span className="legend-color legend-cluster" style={{ backgroundColor: "#0EA5E9" }} />
+          <span className="legend-color legend-cluster bg-sky-500" />
           <span>11-50 vehicles</span>
         </div>
         <div className="legend-item">
-          <span className="legend-color legend-cluster" style={{ backgroundColor: "#2563EB" }} />
+          <span className="legend-color legend-cluster bg-blue-600" />
           <span>51+ vehicles</span>
         </div>
       </div>

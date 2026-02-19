@@ -1,29 +1,26 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useHistory } from "react-router-dom";
-import mapboxgl from "!mapbox-gl";
+import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import jsPDF from "jspdf";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import TextField from "@material-ui/core/TextField";
-
-// @material-ui/icons
-import ArrowBack from "@material-ui/icons/ArrowBack";
-import Timeline from "@material-ui/icons/Timeline";
-import Warning from "@material-ui/icons/Warning";
-import Room from "@material-ui/icons/Room";
-import GetApp from "@material-ui/icons/GetApp";
-import PictureAsPdf from "@material-ui/icons/PictureAsPdf";
-import DirectionsCar from "@material-ui/icons/DirectionsCar";
+// lucide icons
+import {
+  ArrowLeft,
+  Activity,
+  AlertTriangle,
+  MapPin,
+  Download,
+  FileText,
+  Car,
+  Loader2,
+} from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
-import Button from "components/CustomButtons/Button.js";
 
 // hooks & utils
 import { useVehicle } from "hooks/useVehicles";
@@ -31,360 +28,12 @@ import { useTravelData } from "hooks/useTravelData";
 import { formatDateOnly, EVENT_LABELS } from "types/database";
 
 // Mapbox
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN_PUBLIC;
-
-const useStyles = makeStyles(() => ({
-  // Print styles
-  "@media print": {
-    "@global": {
-      html: {
-        height: "auto",
-      },
-      body: {
-        "print-color-adjust": "exact",
-        WebkitPrintColorAdjust: "exact",
-        height: "auto",
-        overflow: "visible",
-      },
-      "#root": {
-        height: "auto",
-        overflow: "visible",
-      },
-      "body *": {
-        visibility: "hidden",
-      },
-      ".travel-report-print, .travel-report-print *": {
-        visibility: "visible",
-      },
-      ".travel-report-print": {
-        position: "absolute",
-        left: 0,
-        top: 0,
-        width: "100%",
-      },
-      // Mapbox specific print styles
-      ".mapboxgl-map": {
-        height: "500px !important",
-        minHeight: "500px !important",
-      },
-      ".mapboxgl-canvas": {
-        height: "500px !important",
-        minHeight: "500px !important",
-      },
-    },
-  },
-  pageHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "24px",
-    "@media print": {
-      marginBottom: "16px",
-    },
-  },
-  headerLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-  },
-  backButton: {
-    backgroundColor: "#F3F4F6",
-    color: "#374151",
-    padding: "8px",
-    minWidth: "40px",
-    borderRadius: "8px",
-    "&:hover": {
-      backgroundColor: "#E5E7EB",
-    },
-    "@media print": {
-      display: "none",
-    },
-  },
-  pageTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  pageSubtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    margin: "4px 0 0 0",
-  },
-  exportButtons: {
-    display: "flex",
-    gap: "12px",
-    "@media print": {
-      display: "none",
-    },
-  },
-  exportBtn: {
-    padding: "10px 20px",
-    textTransform: "none",
-    fontWeight: "600",
-    borderRadius: "8px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-  },
-  csvBtn: {
-    backgroundColor: "#059669",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#047857",
-    },
-  },
-  pdfBtn: {
-    backgroundColor: "#DC2626",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#B91C1C",
-    },
-  },
-  filtersCard: {
-    borderRadius: "12px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    border: "1px solid #E5E7EB",
-    marginBottom: "24px",
-    "@media print": {
-      display: "none",
-    },
-  },
-  filtersBody: {
-    padding: "20px 24px",
-    display: "flex",
-    alignItems: "center",
-    gap: "24px",
-  },
-  dateField: {
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "8px",
-    },
-  },
-  statsGrid: {
-    marginBottom: "24px",
-  },
-  statCard: {
-    borderRadius: "12px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    border: "1px solid #E5E7EB",
-    height: "100%",
-    "@media print": {
-      boxShadow: "none",
-      border: "1px solid #ccc",
-      pageBreakInside: "avoid",
-    },
-  },
-  statCardBody: {
-    padding: "24px",
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "16px",
-  },
-  statIcon: {
-    width: "48px",
-    height: "48px",
-    borderRadius: "12px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  statContent: {
-    flex: 1,
-  },
-  statLabel: {
-    fontSize: "14px",
-    color: "#6b7280",
-    margin: "0 0 4px 0",
-    fontWeight: "500",
-  },
-  statValue: {
-    fontSize: "28px",
-    fontWeight: "700",
-    color: "#1f2937",
-    margin: 0,
-    lineHeight: 1.2,
-  },
-  statUnit: {
-    fontSize: "14px",
-    color: "#9ca3af",
-    fontWeight: "500",
-    marginLeft: "4px",
-  },
-  mapCard: {
-    borderRadius: "12px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    border: "1px solid #E5E7EB",
-    "@media print": {
-      pageBreakInside: "avoid",
-      breakInside: "avoid",
-      boxShadow: "none",
-      border: "1px solid #ccc",
-      minHeight: "550px",
-      overflow: "visible",
-      marginBottom: "20px",
-    },
-  },
-  mapHeader: {
-    padding: "16px 24px",
-    borderBottom: "1px solid #E5E7EB",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  mapTitle: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  mapContainer: {
-    height: "400px",
-    position: "relative",
-    "@media print": {
-      height: "500px",
-      minHeight: "500px",
-      pageBreakInside: "avoid",
-      breakInside: "avoid",
-      overflow: "visible",
-    },
-  },
-  map: {
-    width: "100%",
-    height: "100%",
-  },
-  mapLoading: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(249, 250, 251, 0.7)",
-    zIndex: 1,
-  },
-  noData: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F9FAFB",
-    color: "#6b7280",
-    fontSize: "14px",
-  },
-  loadingContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "80px 20px",
-  },
-  summaryCard: {
-    borderRadius: "12px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    border: "1px solid #E5E7EB",
-    "@media print": {
-      boxShadow: "none",
-      border: "1px solid #ccc",
-      pageBreakInside: "avoid",
-    },
-  },
-  summaryHeader: {
-    padding: "16px 24px",
-    borderBottom: "1px solid #E5E7EB",
-  },
-  summaryTitle: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  summaryBody: {
-    padding: "24px",
-  },
-  summaryRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "12px 0",
-    borderBottom: "1px solid #F3F4F6",
-    "&:last-child": {
-      borderBottom: "none",
-    },
-  },
-  summaryLabel: {
-    fontSize: "14px",
-    color: "#6b7280",
-    fontWeight: "500",
-  },
-  summaryValue: {
-    fontSize: "14px",
-    color: "#1f2937",
-    fontWeight: "600",
-  },
-  legend: {
-    display: "flex",
-    gap: "16px",
-    fontSize: "12px",
-    color: "#6b7280",
-  },
-  legendItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-  },
-  legendDot: {
-    width: "10px",
-    height: "10px",
-    borderRadius: "50%",
-  },
-  printContainer: {
-    "@media print": {
-      padding: "0",
-      margin: "0",
-      overflow: "visible",
-      "& .MuiGrid-container": {
-        display: "block",
-      },
-      "& .MuiGrid-item": {
-        maxWidth: "100%",
-        flexBasis: "100%",
-        marginBottom: "16px",
-        pageBreakInside: "avoid",
-      },
-    },
-  },
-  printTitle: {
-    display: "none",
-    "@media print": {
-      display: "block",
-      fontSize: "20px",
-      fontWeight: "700",
-      marginBottom: "8px",
-      color: "#1f2937",
-    },
-  },
-  printMeta: {
-    display: "none",
-    "@media print": {
-      display: "block",
-      fontSize: "12px",
-      color: "#6b7280",
-      marginBottom: "16px",
-    },
-  },
-}));
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
 
 // Default center (Jamaica)
 const DEFAULT_CENTER = { lng: -76.8099, lat: 18.0179 };
 
 export default function VehicleTravelReport() {
-  const classes = useStyles();
   const { vehicleId } = useParams();
   const history = useHistory();
   const map = useRef(null);
@@ -637,12 +286,12 @@ export default function VehicleTravelReport() {
     // === HEADER SECTION ===
     pdf.setFillColor(59, 130, 246);
     pdf.rect(0, 0, pageWidth, 35, "F");
-    
+
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(20);
     pdf.setFont("helvetica", "bold");
     pdf.text("Travel Report", margin, 18);
-    
+
     pdf.setFontSize(12);
     pdf.setFont("helvetica", "normal");
     pdf.text(vehicleDisplayTitle, margin, 28);
@@ -726,20 +375,20 @@ export default function VehicleTravelReport() {
 
     statsData.forEach((stat, index) => {
       const xPos = margin + index * (boxWidth + 5);
-      
+
       // Box background
       pdf.setFillColor(249, 250, 251);
       pdf.roundedRect(xPos, yPosition, boxWidth, boxHeight, 3, 3, "F");
-      
+
       // Colored accent line
       pdf.setFillColor(...stat.color);
       pdf.rect(xPos, yPosition, boxWidth, 3, "F");
-      
+
       // Label
       pdf.setFontSize(8);
       pdf.setTextColor(...secondaryColor);
       pdf.text(stat.label, xPos + boxWidth / 2, yPosition + 11, { align: "center" });
-      
+
       // Value
       pdf.setFontSize(14);
       pdf.setFont("helvetica", "bold");
@@ -761,34 +410,34 @@ export default function VehicleTravelReport() {
       try {
         // Generate Mapbox Static Image URL with route
         const mapImageUrl = generateMapboxStaticUrl(stats.locationPoints);
-        
+
         // Fetch and add map image to PDF
         const mapImage = await loadImage(mapImageUrl);
         const mapWidth = pageWidth - 2 * margin;
         const mapHeight = 100; // Fixed height for map in PDF
-        
+
         // Add border for map
         pdf.setDrawColor(229, 231, 235);
         pdf.setLineWidth(0.5);
         pdf.rect(margin, yPosition, mapWidth, mapHeight);
-        
+
         pdf.addImage(mapImage, "PNG", margin, yPosition, mapWidth, mapHeight);
-        
+
         // Add legend below map
         yPosition += mapHeight + 5;
         pdf.setFontSize(8);
         pdf.setTextColor(...secondaryColor);
-        
+
         // Start marker legend
         pdf.setFillColor(16, 185, 129); // Green
         pdf.circle(margin + 3, yPosition + 2, 2, "F");
         pdf.text("Start", margin + 8, yPosition + 4);
-        
+
         // End marker legend
         pdf.setFillColor(239, 68, 68); // Red
         pdf.circle(margin + 30, yPosition + 2, 2, "F");
         pdf.text("End", margin + 35, yPosition + 4);
-        
+
         // Route legend
         pdf.setFillColor(...accentColor);
         pdf.rect(margin + 55, yPosition + 1, 10, 2, "F");
@@ -814,7 +463,7 @@ export default function VehicleTravelReport() {
 
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "normal");
-      
+
       const tripDetails = [
         ["Start Date:", startDate],
         ["End Date:", endDate],
@@ -1069,8 +718,8 @@ export default function VehicleTravelReport() {
   const generateMapboxStaticUrl = (points) => {
     if (points.length === 0) return null;
 
-    const accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN_PUBLIC;
-    
+    const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
+
     // Calculate bounds with padding
     let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
     points.forEach(p => {
@@ -1090,22 +739,22 @@ export default function VehicleTravelReport() {
 
     // Simplify path for URL (Mapbox has URL length limits ~8192 chars)
     const simplifiedPoints = simplifyPath(points, 80);
-    
+
     // Encode path using polyline encoding for Mapbox
     const encodedPolyline = encodePolyline(simplifiedPoints);
-    
+
     // Start and end markers
     const startPoint = points[0];
     const endPoint = points[points.length - 1];
-    
+
     // Build overlays - use encoded polyline format
     const pathOverlay = `path-4+3B82F6-0.8(${encodeURIComponent(encodedPolyline)})`;
     const startMarker = `pin-s-a+10B981(${startPoint.lng.toFixed(5)},${startPoint.lat.toFixed(5)})`;
     const endMarker = `pin-s-b+EF4444(${endPoint.lng.toFixed(5)},${endPoint.lat.toFixed(5)})`;
-    
+
     // Use explicit bounds format: [minLng,minLat,maxLng,maxLat]
     const boundsStr = `[${minLng.toFixed(5)},${minLat.toFixed(5)},${maxLng.toFixed(5)},${maxLat.toFixed(5)}]`;
-    
+
     return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pathOverlay},${startMarker},${endMarker}/${boundsStr}/800x500@2x?access_token=${accessToken}`;
   };
 
@@ -1118,10 +767,10 @@ export default function VehicleTravelReport() {
     for (const point of points) {
       const lat = Math.round(point.lat * 1e5);
       const lng = Math.round(point.lng * 1e5);
-      
+
       encoded += encodeNumber(lat - prevLat);
       encoded += encodeNumber(lng - prevLng);
-      
+
       prevLat = lat;
       prevLng = lng;
     }
@@ -1132,32 +781,32 @@ export default function VehicleTravelReport() {
   const encodeNumber = (num) => {
     let encoded = '';
     let value = num < 0 ? ~(num << 1) : (num << 1);
-    
+
     while (value >= 0x20) {
       encoded += String.fromCharCode((0x20 | (value & 0x1f)) + 63);
       value >>= 5;
     }
     encoded += String.fromCharCode(value + 63);
-    
+
     return encoded;
   };
 
   // Helper function to simplify path (reduce number of points)
   const simplifyPath = (points, maxPoints) => {
     if (points.length <= maxPoints) return points;
-    
+
     const step = Math.ceil(points.length / maxPoints);
     const simplified = [];
-    
+
     for (let i = 0; i < points.length; i += step) {
       simplified.push(points[i]);
     }
-    
+
     // Always include the last point
     if (simplified[simplified.length - 1] !== points[points.length - 1]) {
       simplified.push(points[points.length - 1]);
     }
-    
+
     return simplified;
   };
 
@@ -1184,8 +833,8 @@ export default function VehicleTravelReport() {
 
   if (vehicleLoading && !vehicle) {
     return (
-      <div className={classes.loadingContainer}>
-        <CircularProgress />
+      <div className="flex items-center justify-center py-20 px-5">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -1195,85 +844,93 @@ export default function VehicleTravelReport() {
     : vehicle?.name || "Vehicle";
 
   return (
-    <div className={`${classes.printContainer} travel-report-print`}>
+    <div className="travel-report-print print:p-0 print:m-0 print:overflow-visible">
       {/* Print-only header */}
-      <h1 className={classes.printTitle}>Travel Report - {vehicleTitle}</h1>
-      <p className={classes.printMeta}>
+      <h1 className="hidden print:block text-xl font-bold mb-2 text-foreground">
+        Travel Report - {vehicleTitle}
+      </h1>
+      <p className="hidden print:block text-xs text-muted-foreground mb-4">
         Period: {startDate} to {endDate} | Generated: {new Date().toLocaleString()}
       </p>
 
       {/* Page Header */}
-      <div className={classes.pageHeader}>
-        <div className={classes.headerLeft}>
-          <Button
-            className={classes.backButton}
+      <div className="flex items-center justify-between mb-6 print:mb-4">
+        <div className="flex items-center gap-4">
+          <button
+            className="rounded-lg bg-muted p-2 text-foreground transition-colors hover:bg-muted print:hidden"
             onClick={() => history.push(`/admin/vehicle/${vehicleId}`)}
           >
-            <ArrowBack style={{ fontSize: "20px" }} />
-          </Button>
+            <ArrowLeft className="h-5 w-5" />
+          </button>
           <div>
-            <h1 className={classes.pageTitle}>Travel Report</h1>
-            <p className={classes.pageSubtitle}>
+            <h1 className="text-2xl font-semibold text-foreground m-0">Travel Report</h1>
+            <p className="text-sm text-muted-foreground mt-1 mb-0">
               {vehicleTitle} - Historical travel data and route visualization
             </p>
           </div>
         </div>
-        <div className={classes.exportButtons}>
-          <Button className={`${classes.exportBtn} ${classes.csvBtn}`} onClick={handleExportCSV}>
-            <GetApp style={{ marginRight: "8px", fontSize: "18px" }} />
+        <div className="flex gap-3 print:hidden">
+          <button
+            className="inline-flex items-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+            onClick={handleExportCSV}
+          >
+            <Download className="mr-2 h-[18px] w-[18px]" />
             Export CSV
-          </Button>
-          <Button className={`${classes.exportBtn} ${classes.pdfBtn}`} onClick={handleExportPDF}>
-            <PictureAsPdf style={{ marginRight: "8px", fontSize: "18px" }} />
+          </button>
+          <button
+            className="inline-flex items-center rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700"
+            onClick={handleExportPDF}
+          >
+            <FileText className="mr-2 h-[18px] w-[18px]" />
             Export PDF
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Date Range Filter */}
-      <Card className={classes.filtersCard}>
-        <div className={classes.filtersBody}>
-          <TextField
-            label="Start Date"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ min: maxStartDate, max: endDate }}
-            variant="outlined"
-            size="small"
-            className={classes.dateField}
-          />
-          <TextField
-            label="End Date"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ min: startDate, max: today }}
-            variant="outlined"
-            size="small"
-            className={classes.dateField}
-          />
-          <span style={{ color: "#6b7280", fontSize: "13px" }}>
+      <Card className="rounded-xl shadow-sm border border-border mb-6 print:hidden">
+        <div className="flex items-center gap-6 px-6 py-5">
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-foreground mb-1">Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              min={maxStartDate}
+              max={endDate}
+              className="flex h-9 rounded-lg border border-border bg-transparent px-3 py-1 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-foreground mb-1">End Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              min={startDate}
+              max={today}
+              className="flex h-9 rounded-lg border border-border bg-transparent px-3 py-1 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <span className="text-muted-foreground text-sm self-end pb-1.5">
             Maximum period: 30 days
           </span>
         </div>
       </Card>
 
       {/* Stats Cards */}
-      <GridContainer className={classes.statsGrid}>
+      <GridContainer className="mb-6">
         <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div className={classes.statIcon} style={{ backgroundColor: "#ECFDF5" }}>
-                <Timeline style={{ fontSize: "24px", color: "#059669" }} />
+          <Card className="rounded-xl shadow-sm border border-border h-full print:shadow-none print:border-border">
+            <CardBody className="p-6 flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl flex-shrink-0 bg-emerald-50">
+                <Activity className="h-6 w-6 text-emerald-600" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Total Distance</p>
-                <p className={classes.statValue}>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground font-medium m-0 mb-1">Total Distance</p>
+                <p className="text-[28px] font-bold text-foreground m-0 leading-tight">
                   {stats.totalDistance.toLocaleString()}
-                  <span className={classes.statUnit}>km</span>
+                  <span className="text-sm text-muted-foreground font-medium ml-1">km</span>
                 </p>
               </div>
             </CardBody>
@@ -1281,42 +938,42 @@ export default function VehicleTravelReport() {
         </GridItem>
 
         <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div className={classes.statIcon} style={{ backgroundColor: "#FEF2F2" }}>
-                <Warning style={{ fontSize: "24px", color: "#DC2626" }} />
+          <Card className="rounded-xl shadow-sm border border-border h-full print:shadow-none print:border-border">
+            <CardBody className="p-6 flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl flex-shrink-0 bg-red-50">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Total Alerts</p>
-                <p className={classes.statValue}>{stats.totalAlerts}</p>
-              </div>
-            </CardBody>
-          </Card>
-        </GridItem>
-
-        <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div className={classes.statIcon} style={{ backgroundColor: "#EEF2FF" }}>
-                <Room style={{ fontSize: "24px", color: "#4F46E5" }} />
-              </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Major Stops</p>
-                <p className={classes.statValue}>{stats.majorStops}</p>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground font-medium m-0 mb-1">Total Alerts</p>
+                <p className="text-[28px] font-bold text-foreground m-0 leading-tight">{stats.totalAlerts}</p>
               </div>
             </CardBody>
           </Card>
         </GridItem>
 
         <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div className={classes.statIcon} style={{ backgroundColor: "#FFFBEB" }}>
-                <DirectionsCar style={{ fontSize: "24px", color: "#D97706" }} />
+          <Card className="rounded-xl shadow-sm border border-border h-full print:shadow-none print:border-border">
+            <CardBody className="p-6 flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl flex-shrink-0 bg-indigo-50">
+                <MapPin className="h-6 w-6 text-indigo-600" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Location Points</p>
-                <p className={classes.statValue}>{stats.locationPoints.length}</p>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground font-medium m-0 mb-1">Major Stops</p>
+                <p className="text-[28px] font-bold text-foreground m-0 leading-tight">{stats.majorStops}</p>
+              </div>
+            </CardBody>
+          </Card>
+        </GridItem>
+
+        <GridItem xs={12} sm={6} md={3}>
+          <Card className="rounded-xl shadow-sm border border-border h-full print:shadow-none print:border-border">
+            <CardBody className="p-6 flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl flex-shrink-0 bg-amber-50">
+                <Car className="h-6 w-6 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground font-medium m-0 mb-1">Location Points</p>
+                <p className="text-[28px] font-bold text-foreground m-0 leading-tight">{stats.locationPoints.length}</p>
               </div>
             </CardBody>
           </Card>
@@ -1326,34 +983,34 @@ export default function VehicleTravelReport() {
       <GridContainer>
         {/* Map */}
         <GridItem xs={12} md={8}>
-          <Card className={classes.mapCard}>
-            <div className={classes.mapHeader}>
-              <h3 className={classes.mapTitle}>Route Visualization</h3>
-              <div className={classes.legend}>
-                <div className={classes.legendItem}>
-                  <div className={classes.legendDot} style={{ backgroundColor: "#10B981" }} />
+          <Card className="rounded-xl shadow-sm border border-border print:shadow-none print:border-border print:min-h-[550px] print:overflow-visible print:mb-5">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h3 className="text-base font-semibold text-foreground m-0">Route Visualization</h3>
+              <div className="flex gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
                   Start
                 </div>
-                <div className={classes.legendItem}>
-                  <div className={classes.legendDot} style={{ backgroundColor: "#EF4444" }} />
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
                   End
                 </div>
-                <div className={classes.legendItem}>
-                  <div className={classes.legendDot} style={{ backgroundColor: "#3B82F6", width: "20px", borderRadius: "2px", height: "4px" }} />
+                <div className="flex items-center gap-1.5">
+                  <div className="h-1 w-5 rounded-sm bg-blue-500" />
                   Route
                 </div>
               </div>
             </div>
-            <div className={classes.mapContainer}>
-              <div ref={mapContainerRef} className={classes.map} />
+            <div className="h-[400px] relative print:h-[500px] print:min-h-[500px]">
+              <div ref={mapContainerRef} className="w-full h-full" />
               {loading && (
-                <div className={classes.mapLoading}>
-                  <CircularProgress size={28} />
+                <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-[1]">
+                  <Loader2 className="h-7 w-7 animate-spin text-primary" />
                 </div>
               )}
               {stats.locationPoints.length === 0 && !loading && (
-                <div className={classes.noData}>
-                  <Timeline style={{ fontSize: "48px", marginBottom: "16px", color: "#D1D5DB" }} />
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/50 text-muted-foreground text-sm">
+                  <Activity className="h-12 w-12 mb-4 text-muted-foreground" />
                   <p>No travel data available for selected period</p>
                 </div>
               )}
@@ -1363,43 +1020,31 @@ export default function VehicleTravelReport() {
 
         {/* Summary */}
         <GridItem xs={12} md={4}>
-          <Card className={classes.summaryCard}>
-            <div className={classes.summaryHeader}>
-              <h3 className={classes.summaryTitle}>Report Summary</h3>
+          <Card className="rounded-xl shadow-sm border border-border print:shadow-none print:border-border">
+            <div className="px-6 py-4 border-b border-border">
+              <h3 className="text-base font-semibold text-foreground m-0">Report Summary</h3>
             </div>
-            <CardBody className={classes.summaryBody}>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Vehicle</span>
-                <span className={classes.summaryValue}>{vehicleTitle}</span>
-              </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Plate Number</span>
-                <span className={classes.summaryValue}>{vehicle?.plate_number || "N/A"}</span>
-              </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Period</span>
-                <span className={classes.summaryValue}>{startDate} to {endDate}</span>
-              </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Distance Traveled</span>
-                <span className={classes.summaryValue}>{stats.totalDistance} km</span>
-              </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Alerts Recorded</span>
-                <span className={classes.summaryValue}>{stats.totalAlerts}</span>
-              </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Major Stops</span>
-                <span className={classes.summaryValue}>{stats.majorStops}</span>
-              </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Data Points</span>
-                <span className={classes.summaryValue}>{stats.locationPoints.length}</span>
-              </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Report Generated</span>
-                <span className={classes.summaryValue}>{formatDateOnly(new Date())}</span>
-              </div>
+            <CardBody className="p-6">
+              {[
+                ["Vehicle", vehicleTitle],
+                ["Plate Number", vehicle?.plate_number || "N/A"],
+                ["Period", `${startDate} to ${endDate}`],
+                ["Distance Traveled", `${stats.totalDistance} km`],
+                ["Alerts Recorded", stats.totalAlerts],
+                ["Major Stops", stats.majorStops],
+                ["Data Points", stats.locationPoints.length],
+                ["Report Generated", formatDateOnly(new Date())],
+              ].map(([label, value], idx, arr) => (
+                <div
+                  key={label}
+                  className={`flex items-center justify-between py-3 ${
+                    idx < arr.length - 1 ? "border-b border-border/50" : ""
+                  }`}
+                >
+                  <span className="text-sm text-muted-foreground font-medium">{label}</span>
+                  <span className="text-sm text-foreground font-semibold">{value}</span>
+                </div>
+              ))}
             </CardBody>
           </Card>
         </GridItem>

@@ -1,47 +1,19 @@
 import React from "react";
-import classNames from "classnames";
-import PropTypes from "prop-types";
 import { useHistory } from "react-router-dom";
-
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import MenuItem from "@material-ui/core/MenuItem";
-import MenuList from "@material-ui/core/MenuList";
-import ClickAwayListener from "@material-ui/core/ClickAwayListener";
-import Paper from "@material-ui/core/Paper";
-import Grow from "@material-ui/core/Grow";
-import Popper from "@material-ui/core/Popper";
-import Divider from "@material-ui/core/Divider";
-
-// @material-ui/icons
-import ExpandMore from "@material-ui/icons/ExpandMore";
-import Person from "@material-ui/icons/Person";
-
-// core components
-import Button from "components/CustomButtons/Button.js";
-
-// auth
+import { User, ChevronDown, LogOut, Settings } from "lucide-react";
 import { useAuth } from "context/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+} from "components/ui/dropdown-menu";
 
-import styles from "assets/jss/material-dashboard-pro-react/components/adminNavbarLinksStyle.js";
-
-const useStyles = makeStyles(styles);
-
-export default function HeaderLinks(props) {
+export default function HeaderLinks() {
   const history = useHistory();
   const { user, userProfile, signOut } = useAuth();
-  const [openProfile, setOpenProfile] = React.useState(null);
-
-  const handleClickProfile = (event) => {
-    if (openProfile && openProfile.contains(event.target)) {
-      setOpenProfile(null);
-    } else {
-      setOpenProfile(event.currentTarget);
-    }
-  };
-  const handleCloseProfile = () => {
-    setOpenProfile(null);
-  };
 
   const handleLogout = async () => {
     try {
@@ -52,94 +24,40 @@ export default function HeaderLinks(props) {
     }
   };
 
-  const classes = useStyles();
-  const { rtlActive } = props;
-  const dropdownItem = classNames(classes.dropdownItem, classes.primaryHover, {
-    [classes.dropdownItemRTL]: rtlActive,
-  });
-  const wrapper = classNames({
-    [classes.wrapperRTL]: rtlActive,
-  });
-  const managerClasses = classNames({
-    [classes.managerClasses]: true,
-  });
   return (
-    <div className={wrapper} style={{ display: "flex", alignItems: "center" }}>
-      <div className={managerClasses}>
-        <Button
-          color="transparent"
-          aria-label="Person"
-          aria-owns={openProfile ? "profile-menu-list" : null}
-          aria-haspopup="true"
-          onClick={handleClickProfile}
-          className={rtlActive ? classes.buttonLinkRTL : classes.buttonLink}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            textTransform: "none",
-          }}
-        >
-          <div
-            style={{
-              width: "35px",
-              height: "35px",
-              borderRadius: "50%",
-              backgroundColor: "#3E4D6C",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: "10px",
-            }}
-          >
-            <Person style={{ color: "#fff", fontSize: "22px" }} />
+    <div className="flex items-center">
+      <DropdownMenu>
+        <DropdownMenuTrigger className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent transition-colors outline-none">
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground ring-2 ring-primary/20">
+            <User className="h-4 w-4" />
           </div>
-          <span style={{ fontSize: "14px", fontWeight: "300", color: "#333" }}>{userProfile?.full_name || "User"}</span>
-          <ExpandMore style={{ marginLeft: "5px", fontSize: "20px", color: "#999" }} />
-        </Button>
-        <Popper
-          open={Boolean(openProfile)}
-          anchorEl={openProfile}
-          transition
-          disablePortal
-          placement="bottom"
-          className={classNames({
-            [classes.popperClose]: !openProfile,
-            [classes.popperResponsive]: true,
-            [classes.popperNav]: true,
-          })}
-        >
-          {({ TransitionProps }) => (
-            <Grow {...TransitionProps} id="profile-menu-list" style={{ transformOrigin: "0 0 0" }}>
-              <Paper className={classes.dropdown}>
-                <ClickAwayListener onClickAway={handleCloseProfile}>
-                  <MenuList role="menu">
-                    {user && (
-                      <MenuItem className={dropdownItem} disabled>
-                        {user.email}
-                      </MenuItem>
-                    )}
-                    <Divider light />
-                    <MenuItem onClick={handleCloseProfile} className={dropdownItem}>
-                      Profile
-                    </MenuItem>
-                    <MenuItem onClick={handleCloseProfile} className={dropdownItem}>
-                      Settings
-                    </MenuItem>
-                    <Divider light />
-                    <MenuItem onClick={handleLogout} className={dropdownItem}>
-                      Log out
-                    </MenuItem>
-                  </MenuList>
-                </ClickAwayListener>
-              </Paper>
-            </Grow>
+          <span className="text-sm text-foreground">{userProfile?.full_name || "User"}</span>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          {user && (
+            <>
+              <DropdownMenuLabel className="font-normal">
+                <span className="text-xs text-muted-foreground">{user.email}</span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+            </>
           )}
-        </Popper>
-      </div>
+          <DropdownMenuItem onClick={() => history.push("/admin/settings")}>
+            <User className="mr-2 h-4 w-4" />
+            Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => history.push("/admin/settings")}>
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Log out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
-
-HeaderLinks.propTypes = {
-  rtlActive: PropTypes.bool,
-};

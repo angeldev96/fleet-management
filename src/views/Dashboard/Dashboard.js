@@ -1,12 +1,7 @@
 import React from "react";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
 
-// @material-ui/icons
-import Warning from "@material-ui/icons/Warning";
-import Edit from "@material-ui/icons/Edit";
-import Send from "@material-ui/icons/Send";
-import ChevronRight from "@material-ui/icons/ChevronRight";
+// Lucide icons
+import { AlertTriangle, Pencil, Send, ChevronRight } from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -18,78 +13,48 @@ import Badge from "components/Badge/Badge.js";
 import Table from "components/Table/Table.js";
 import Button from "components/CustomButtons/Button.js";
 
-import styles from "assets/jss/material-dashboard-pro-react/views/dashboardStyle.js";
-
-const useStyles = makeStyles(styles);
-
 export default function Dashboard() {
-  const classes = useStyles();
-
   const diagnosticsContent = (
     <div>
       <Card>
         <CardBody>
           <GridContainer>
             <GridItem xs={12} md={6}>
-              <div style={{ padding: "20px" }}>
-                <h4 style={{ display: "flex", alignItems: "center" }}>
+              <div className="p-5">
+                <h4 className="flex items-center">
                   Status:{" "}
-                  <span
-                    style={{
-                      color: "#f44336",
-                      marginLeft: "10px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Alert
-                  </span>
+                  <span className="text-red-500 ml-2.5 font-bold">Alert</span>
                 </h4>
                 <br />
                 <GridContainer>
                   <GridItem xs={6}>
-                    <p style={{ color: "#999", marginBottom: "0" }}>Battery Voltage:</p>
+                    <p className="text-gray-400 mb-0">Battery Voltage:</p>
                   </GridItem>
                   <GridItem xs={6}>
-                    <p style={{ fontWeight: "500" }}>12.6 V</p>
+                    <p className="font-medium">12.6 V</p>
                   </GridItem>
                   <GridItem xs={6}>
-                    <p style={{ color: "#999", marginBottom: "0" }}>Last Location:</p>
+                    <p className="text-gray-400 mb-0">Last Location:</p>
                   </GridItem>
                   <GridItem xs={6}>
-                    <p style={{ fontWeight: "500" }}>6 min ago</p>
+                    <p className="font-medium">6 min ago</p>
                   </GridItem>
                 </GridContainer>
-                <div
-                  style={{
-                    marginTop: "20px",
-                    padding: "15px",
-                    backgroundColor: "#f8f9fa",
-                    borderRadius: "8px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <p style={{ margin: 0, fontWeight: "500" }}>Last Update:</p>
-                    <p style={{ margin: "0 0 0 10px", color: "#666" }}>6 min ago</p>
+                <div className="mt-5 p-4 bg-gray-50 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center">
+                    <p className="m-0 font-medium">Last Update:</p>
+                    <p className="m-0 ml-2.5 text-gray-500">6 min ago</p>
                   </div>
-                  <ChevronRight />
+                  <ChevronRight className="h-5 w-5" />
                 </div>
               </div>
             </GridItem>
             <GridItem xs={12} md={6}>
               <div
+                className="h-[200px] w-full bg-gray-200 rounded-lg bg-cover bg-center mt-5"
                 style={{
-                  height: "200px",
-                  width: "100%",
-                  backgroundColor: "#e9ecef",
-                  borderRadius: "8px",
                   backgroundImage:
-                    "url('https://placehold.co/600x300/e9ecef/31343c?text=Vehicle+Location+Map')", // Placeholder image
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  marginTop: "20px",
+                    "url('https://placehold.co/600x300/e9ecef/31343c?text=Vehicle+Location+Map')",
                 }}
               >
                 {/* Normally we would use a proper Map component here */}
@@ -99,8 +64,8 @@ export default function Dashboard() {
         </CardBody>
       </Card>
 
-      <div style={{ marginTop: "30px" }}>
-        <h3 style={{ fontWeight: "400", marginBottom: "20px" }}>Diagnostics</h3>
+      <div className="mt-8">
+        <h3 className="font-normal mb-5">Diagnostics</h3>
         <Card>
           <CardBody>
             <Table
@@ -110,16 +75,16 @@ export default function Dashboard() {
                   "P0301",
                   "Misfire Detected Cylinder 1",
                   <Badge color="danger" key="b1">
-                    <Warning style={{ fontSize: "14px", marginRight: "5px" }} /> Critical
+                    <AlertTriangle className="h-3.5 w-3.5 mr-1" /> Critical
                   </Badge>,
                   "Today at 08:42 AM",
                   "",
-                  <div key="a1" style={{ display: "flex" }}>
-                    <Button justIcon round color="warning" size="sm" style={{ marginRight: "5px" }}>
-                      <Send style={{ fontSize: "14px", color: "white" }} />
+                  <div key="a1" className="flex">
+                    <Button justIcon round color="warning" size="sm" className="mr-1">
+                      <Send className="h-3.5 w-3.5 text-white" />
                     </Button>
-                    <Button justIcon round color="github" size="sm">
-                      <Edit style={{ fontSize: "14px" }} />
+                    <Button justIcon round color="primary" size="sm">
+                      <Pencil className="h-3.5 w-3.5" />
                     </Button>
                   </div>,
                 ],
@@ -127,36 +92,36 @@ export default function Dashboard() {
                   "P0171",
                   "System Too Lean (Bank 1)",
                   <Badge color="warning" key="b2">
-                    <Warning style={{ fontSize: "14px", marginRight: "5px" }} /> Warning
+                    <AlertTriangle className="h-3.5 w-3.5 mr-1" /> Warning
                   </Badge>,
                   "Yesterday at 09:30 PM",
                   "",
-                  <div key="a2" style={{ display: "flex" }}>
-                    <Button justIcon round color="warning" size="sm" style={{ marginRight: "5px" }}>
-                      <Send style={{ fontSize: "14px", color: "white" }} />
+                  <div key="a2" className="flex">
+                    <Button justIcon round color="warning" size="sm" className="mr-1">
+                      <Send className="h-3.5 w-3.5 text-white" />
                     </Button>
-                    <Button justIcon round color="github" size="sm">
-                      <Edit style={{ fontSize: "14px" }} />
+                    <Button justIcon round color="primary" size="sm">
+                      <Pencil className="h-3.5 w-3.5" />
                     </Button>
                   </div>,
                 ],
               ]}
               customCellClasses={[
-                classes.center,
-                classes.center,
-                classes.center,
-                classes.center,
-                classes.center,
-                classes.right,
+                "text-center",
+                "text-center",
+                "text-center",
+                "text-center",
+                "text-center",
+                "text-right",
               ]}
               customClassesForCells={[0, 1, 2, 3, 4, 5]}
               customHeadCellClasses={[
-                classes.center,
-                classes.center,
-                classes.center,
-                classes.center,
-                classes.center,
-                classes.right,
+                "text-center",
+                "text-center",
+                "text-center",
+                "text-center",
+                "text-center",
+                "text-right",
               ]}
               customHeadClassesForCells={[0, 1, 2, 3, 4, 5]}
             />

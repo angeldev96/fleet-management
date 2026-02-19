@@ -1,34 +1,26 @@
 import React from "react";
-// nodejs library that concatenates classes
-import classNames from "classnames";
-// nodejs library to set properties for components
-import PropTypes from "prop-types";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-// @material-ui/icons
+import { cn } from "lib/utils";
 
-// core components
-import styles from "assets/jss/material-dashboard-pro-react/components/cardTextStyle.js";
+const colorClasses = {
+  primary: "bg-primary text-primary-foreground",
+  info: "bg-blue-500 text-white",
+  success: "bg-emerald-500 text-white",
+  warning: "bg-amber-500 text-white",
+  danger: "bg-red-500 text-white",
+  rose: "bg-pink-500 text-white",
+};
 
-const useStyles = makeStyles(styles);
-
-export default function CardText(props) {
-  const classes = useStyles();
-  const { className, children, color, ...rest } = props;
-  const cardTextClasses = classNames({
-    [classes.cardText]: true,
-    [classes[color + "CardHeader"]]: color,
-    [className]: className !== undefined,
-  });
+export default function CardText({ className, children, color, ...rest }) {
   return (
-    <div className={cardTextClasses} {...rest}>
+    <div
+      className={cn(
+        "inline-block rounded-lg px-5 py-3",
+        color ? colorClasses[color] : undefined,
+        className,
+      )}
+      {...rest}
+    >
       {children}
     </div>
   );
 }
-
-CardText.propTypes = {
-  className: PropTypes.string,
-  color: PropTypes.oneOf(["warning", "success", "danger", "info", "primary", "rose"]),
-  children: PropTypes.node,
-};

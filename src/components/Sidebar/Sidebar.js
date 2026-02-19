@@ -1,461 +1,198 @@
-/*eslint-disable*/
 import React from "react";
 import PropTypes from "prop-types";
-// javascript plugin used to create scrollbars on windows
-import PerfectScrollbar from "perfect-scrollbar";
-import { NavLink, useLocation, useHistory } from "react-router-dom";
-import cx from "classnames";
-
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/Drawer";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-import Hidden from "@material-ui/core/Hidden";
-import Collapse from "@material-ui/core/Collapse";
-import Icon from "@material-ui/core/Icon";
-
-// @material-ui/icons
-import DirectionsCar from "@material-ui/icons/DirectionsCar";
-
-// core components
+import { NavLink, useLocation } from "react-router-dom";
+import { cn } from "lib/utils";
+import { Car, ChevronDown } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+} from "components/ui/sheet";
 import AdminNavbarLinks from "components/Navbars/AdminNavbarLinks.js";
 
-import sidebarStyle from "assets/jss/material-dashboard-pro-react/components/sidebarStyle.js";
+function SidebarContent({ routes, color, miniActive, logo, logoText, onLinkClick }) {
+  const location = useLocation();
+  const [collapseState, setCollapseState] = React.useState({});
 
-const useStyles = makeStyles(sidebarStyle);
-
-var ps;
-
-// We've created this component so we can have a ref to the wrapper of the links that appears in our sidebar.
-// This was necessary so that we could initialize PerfectScrollbar on the links.
-// There might be something with the Hidden component from material-ui, and we didn't have access to
-// the links, and couldn't initialize the plugin.
-function SidebarWrapper({ className, user, headerLinks, links }) {
-  const sidebarWrapper = React.useRef();
   React.useEffect(() => {
-    if (navigator.platform.indexOf("Win") > -1) {
-      ps = new PerfectScrollbar(sidebarWrapper.current, {
-        suppressScrollX: true,
-        suppressScrollY: false,
-      });
-    }
-    return function cleanup() {
-      if (navigator.platform.indexOf("Win") > -1) {
-        ps.destroy();
+    const initialState = {};
+    routes.forEach((route) => {
+      if (route.collapse) {
+        initialState[route.state] = route.views?.some(
+          (v) => location.pathname === v.layout + v.path
+        );
       }
-    };
-  });
+    });
+    setCollapseState(initialState);
+  }, []);
+
+  const isActive = (routePath) => location.pathname === routePath;
+
+  const toggleCollapse = (stateKey) => {
+    setCollapseState((prev) => ({ ...prev, [stateKey]: !prev[stateKey] }));
+  };
+
+  const renderLinks = (routeList) => {
+    return routeList.map((route, index) => {
+      if (route.redirect || route.hide) return null;
+
+      if (route.collapse) {
+        const hasActiveChild = route.views?.some(
+          (v) => location.pathname === v.layout + v.path
+        );
+        return (
+          <div key={index}>
+            <button
+              onClick={() => toggleCollapse(route.state)}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent",
+                hasActiveChild && "text-sidebar-foreground bg-sidebar-accent/50",
+              )}
+            >
+              {route.icon && <route.icon className="h-4 w-4 flex-shrink-0" />}
+              {!miniActive && (
+                <>
+                  <span className="flex-1 text-left">{route.sidebarName || route.name}</span>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 transition-transform",
+                      collapseState[route.state] && "rotate-180",
+                    )}
+                  />
+                </>
+              )}
+            </button>
+            {collapseState[route.state] && !miniActive && (
+              <div className="ml-6 mt-1 space-y-1">
+                {route.views?.map((view, vIndex) => {
+                  if (view.redirect || view.hide) return null;
+                  const active = isActive(view.layout + view.path);
+                  return (
+                    <NavLink
+                      key={vIndex}
+                      to={view.layout + view.path}
+                      onClick={onLinkClick}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                        active
+                          ? "bg-sidebar-accent text-sidebar-foreground border-l-[3px] border-primary font-semibold"
+                          : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent border-l-[3px] border-transparent",
+                      )}
+                    >
+                      <span className="w-4 text-center text-xs">{view.mini}</span>
+                      <span>{view.sidebarName || view.name}</span>
+                    </NavLink>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      const active = isActive(route.layout + route.path);
+      return (
+        <NavLink
+          key={index}
+          to={route.layout + route.path}
+          onClick={onLinkClick}
+          className={cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+            active
+              ? "bg-sidebar-accent text-sidebar-foreground border-l-[3px] border-primary font-semibold"
+              : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent border-l-[3px] border-transparent",
+          )}
+        >
+          {route.icon && <route.icon className="h-4 w-4 flex-shrink-0" />}
+          {!miniActive && <span>{route.sidebarName || route.name}</span>}
+        </NavLink>
+      );
+    });
+  };
+
   return (
-    <div className={className} ref={sidebarWrapper}>
-      {user}
-      {headerLinks}
-      {links}
+    <div className="flex flex-col h-full">
+      {/* Logo/Brand */}
+      <div className="flex items-center justify-center h-16 px-4 border-b border-sidebar-border">
+        <NavLink to="/admin/dashboard" className="flex items-center gap-2">
+          {logo ? (
+            <img
+              src={logo}
+              alt="Logo"
+              className={cn(
+                "object-contain",
+                miniActive ? "h-6 w-6" : "h-10 max-w-[180px]",
+              )}
+            />
+          ) : (
+            <>
+              <Car className="h-6 w-6 text-primary" />
+              {!miniActive && (
+                <span className="text-lg font-bold text-sidebar-foreground">{logoText || "Entry"}</span>
+              )}
+            </>
+          )}
+        </NavLink>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        {renderLinks(routes)}
+      </nav>
     </div>
   );
 }
 
-function Sidebar(props) {
-  const classes = useStyles();
-  const [miniActive, setMiniActive] = React.useState(true);
-  // to check for active links and opened collapses
-  let location = useLocation();
-  // this is for the user collapse
-  const [openAvatar, setOpenAvatar] = React.useState(false);
-  // this is for the rest of the collapses
-  const [state, setState] = React.useState({});
-  React.useEffect(() => {
-    setState(getCollapseStates(props.routes));
-  }, []);
-  const mainPanel = React.useRef();
-  // this creates the intial state of this component based on the collapse routes
-  // that it gets through routes
-  const getCollapseStates = (routes) => {
-    let initialState = {};
-    routes.map((prop) => {
-      if (prop.collapse) {
-        initialState = {
-          [prop.state]: getCollapseInitialState(prop.views),
-          ...getCollapseStates(prop.views),
-          ...initialState,
-        };
-      }
-      return null;
-    });
-    return initialState;
-  };
-  // this verifies if any of the collapses should be default opened on a rerender of this component
-  // for example, on the refresh of the page,
-  // while on the src/views/forms/RegularForms.jsx - route /admin/regular-forms
-  const getCollapseInitialState = (routes) => {
-    for (let i = 0; i < routes.length; i++) {
-      if (routes[i].collapse && getCollapseInitialState(routes[i].views)) {
-        return true;
-      } else if (location.pathname === routes[i].layout + routes[i].path) {
-        return true;
-      }
-    }
-    return false;
-  };
-  // verifies if routeName is the one active (in browser input)
-  const activeRoute = (routeName) => {
-    return location.pathname === routeName ? "active" : "";
-  };
-  // this function creates the links and collapses that appear in the sidebar (left menu)
-  const createLinks = (routes) => {
-    const { color, rtlActive } = props;
-    return routes.map((prop, key) => {
-      if (prop.redirect || prop.hide) {
-        return null;
-      }
-      if (prop.collapse) {
-        var st = {};
-        st[prop["state"]] = !state[prop.state];
-        const navLinkClasses =
-          classes.itemLink +
-          " " +
-          cx({
-            [" " + classes.collapseActive]: getCollapseInitialState(prop.views),
-          });
-        const itemText =
-          classes.itemText +
-          " " +
-          cx({
-            [classes.itemTextMini]: props.miniActive && miniActive,
-            [classes.itemTextMiniRTL]:
-              rtlActive && props.miniActive && miniActive,
-            [classes.itemTextRTL]: rtlActive,
-          });
-        const collapseItemText =
-          classes.collapseItemText +
-          " " +
-          cx({
-            [classes.collapseItemTextMini]: props.miniActive && miniActive,
-            [classes.collapseItemTextMiniRTL]:
-              rtlActive && props.miniActive && miniActive,
-            [classes.collapseItemTextRTL]: rtlActive,
-          });
-        const itemIcon =
-          classes.itemIcon +
-          " " +
-          cx({
-            [classes.itemIconRTL]: rtlActive,
-          });
-        const caret =
-          classes.caret +
-          " " +
-          cx({
-            [classes.caretRTL]: rtlActive,
-          });
-        const collapseItemMini =
-          classes.collapseItemMini +
-          " " +
-          cx({
-            [classes.collapseItemMiniRTL]: rtlActive,
-          });
-        return (
-          <ListItem
-            key={key}
-            className={cx(
-              { [classes.item]: prop.icon !== undefined },
-              { [classes.collapseItem]: prop.icon === undefined }
-            )}
-          >
-            <NavLink
-              to={"#"}
-              className={navLinkClasses}
-              onClick={(e) => {
-                e.preventDefault();
-                setState(st);
-              }}
-            >
-              {prop.icon !== undefined ? (
-                typeof prop.icon === "string" ? (
-                  <Icon className={itemIcon}>{prop.icon}</Icon>
-                ) : (
-                  <prop.icon className={itemIcon} />
-                )
-              ) : (
-                <span className={collapseItemMini}>
-                  {rtlActive ? prop.rtlMini : prop.mini}
-                </span>
-              )}
-              <ListItemText
-                primary={rtlActive ? prop.rtlName : (prop.sidebarName || prop.name)}
-                secondary={
-                  <b
-                    className={
-                      caret +
-                      " " +
-                      (state[prop.state] ? classes.caretActive : "")
-                    }
-                  />
-                }
-                disableTypography={true}
-                className={cx(
-                  { [itemText]: prop.icon !== undefined },
-                  { [collapseItemText]: prop.icon === undefined }
-                )}
-              />
-            </NavLink>
-            <Collapse in={state[prop.state]} unmountOnExit>
-              <List className={classes.list + " " + classes.collapseList}>
-                {createLinks(prop.views)}
-              </List>
-            </Collapse>
-          </ListItem>
-        );
-      }
-      const innerNavLinkClasses =
-        classes.collapseItemLink +
-        " " +
-        cx({
-          [" " + classes[color]]: activeRoute(prop.layout + prop.path),
-        });
-      const collapseItemMini =
-        classes.collapseItemMini +
-        " " +
-        cx({
-          [classes.collapseItemMiniRTL]: rtlActive,
-        });
-      const navLinkClasses =
-        classes.itemLink +
-        " " +
-        cx({
-          [" " + classes[color]]: activeRoute(prop.layout + prop.path),
-        });
-      const itemText =
-        classes.itemText +
-        " " +
-        cx({
-          [classes.itemTextMini]: props.miniActive && miniActive,
-          [classes.itemTextMiniRTL]:
-            rtlActive && props.miniActive && miniActive,
-          [classes.itemTextRTL]: rtlActive,
-        });
-      const collapseItemText =
-        classes.collapseItemText +
-        " " +
-        cx({
-          [classes.collapseItemTextMini]: props.miniActive && miniActive,
-          [classes.collapseItemTextMiniRTL]:
-            rtlActive && props.miniActive && miniActive,
-          [classes.collapseItemTextRTL]: rtlActive,
-        });
-      const itemIcon =
-        classes.itemIcon +
-        " " +
-        cx({
-          [classes.itemIconRTL]: rtlActive,
-        });
-      return (
-        <ListItem
-          key={key}
-          className={cx(
-            { [classes.item]: prop.icon !== undefined },
-            { [classes.collapseItem]: prop.icon === undefined }
-          )}
-        >
-          <NavLink
-            to={prop.layout + prop.path}
-            className={cx(
-              { [navLinkClasses]: prop.icon !== undefined },
-              { [innerNavLinkClasses]: prop.icon === undefined }
-            )}
-          >
-            {prop.icon !== undefined ? (
-              typeof prop.icon === "string" ? (
-                <Icon className={itemIcon}>{prop.icon}</Icon>
-              ) : (
-                <prop.icon className={itemIcon} />
-              )
-            ) : (
-              <span className={collapseItemMini}>
-                {rtlActive ? prop.rtlMini : prop.mini}
-              </span>
-            )}
-            <ListItemText
-              primary={rtlActive ? prop.rtlName : (prop.sidebarName || prop.name)}
-              disableTypography={true}
-              className={cx(
-                { [itemText]: prop.icon !== undefined },
-                { [collapseItemText]: prop.icon === undefined }
-              )}
-            />
-          </NavLink>
-        </ListItem>
-      );
-    });
-  };
-  const { logo, image, logoText, routes, bgColor, rtlActive } = props;
-  const itemText =
-    classes.itemText +
-    " " +
-    cx({
-      [classes.itemTextMini]: props.miniActive && miniActive,
-      [classes.itemTextMiniRTL]: rtlActive && props.miniActive && miniActive,
-      [classes.itemTextRTL]: rtlActive,
-    });
-  const collapseItemText =
-    classes.collapseItemText +
-    " " +
-    cx({
-      [classes.collapseItemTextMini]: props.miniActive && miniActive,
-      [classes.collapseItemTextMiniRTL]:
-        rtlActive && props.miniActive && miniActive,
-      [classes.collapseItemTextRTL]: rtlActive,
-    });
-  const userWrapperClass =
-    classes.user +
-    " " +
-    cx({
-      [classes.whiteAfter]: bgColor === "white",
-    });
-  const caret =
-    classes.caret +
-    " " +
-    cx({
-      [classes.caretRTL]: rtlActive,
-    });
-  const collapseItemMini =
-    classes.collapseItemMini +
-    " " +
-    cx({
-      [classes.collapseItemMiniRTL]: rtlActive,
-    });
-  const photo =
-    classes.photo +
-    " " +
-    cx({
-      [classes.photoRTL]: rtlActive,
-    });
-  var user = null; // User section disabled - using navbar dropdown instead
-  var links = <List className={classes.list}>{createLinks(routes)}</List>;
+function Sidebar({
+  routes,
+  logo,
+  logoText,
+  handleDrawerToggle,
+  open,
+  color,
+  bgColor,
+  miniActive: propMiniActive,
+}) {
+  const [hoverExpanded, setHoverExpanded] = React.useState(false);
+  const miniActive = propMiniActive && !hoverExpanded;
 
-  const logoNormal =
-    classes.logoNormal +
-    " " +
-    cx({
-      [classes.logoNormalSidebarMini]: props.miniActive && miniActive,
-      [classes.logoNormalSidebarMiniRTL]:
-        rtlActive && props.miniActive && miniActive,
-      [classes.logoNormalRTL]: rtlActive,
-    });
-  const logoMini =
-    classes.logoMini +
-    " " +
-    cx({
-      [classes.logoMiniRTL]: rtlActive,
-    });
-  const logoClasses =
-    classes.logo +
-    " " +
-    cx({
-      [classes.whiteAfter]: bgColor === "white",
-    });
-  var brand = (
-    <div className={logoClasses}>
-      {props.miniActive && miniActive ? (
-        <NavLink
-          to="/admin/dashboard"
-          className={logoMini}
-          style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-        >
-          {logo ? (
-            <div className={classes.logoBox}>
-              <img src={logo} alt="Logo" style={{ height: "24px", width: "24px", objectFit: "contain" }} />
-            </div>
-          ) : (
-            <DirectionsCar style={{ fontSize: "28px", color: "#fff" }} />
-          )}
-        </NavLink>
-      ) : (
-        <NavLink
-          to="/admin/dashboard"
-          className={logoNormal}
-          style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-        >
-          {logo ? (
-            <div className={classes.logoBox}>
-              <img src={logo} alt="Logo" style={{ height: "48px", width: "220px", objectFit: "contain" }} />
-            </div>
-          ) : (
-            logoText
-          )}
-        </NavLink>
-      )}
-    </div>
-  );
-  const drawerPaper =
-    classes.drawerPaper +
-    " " +
-    cx({
-      [classes.drawerPaperMini]: props.miniActive && miniActive,
-      [classes.drawerPaperRTL]: rtlActive,
-    });
-  const sidebarWrapper =
-    classes.sidebarWrapper +
-    " " +
-    cx({
-      [classes.drawerPaperMini]: props.miniActive && miniActive,
-      [classes.sidebarWrapperWithPerfectScrollbar]:
-        navigator.platform.indexOf("Win") > -1,
-    });
   return (
-    <div ref={mainPanel}>
-      <Hidden mdUp implementation="css">
-        <Drawer
-          variant="temporary"
-          anchor={rtlActive ? "left" : "right"}
-          open={props.open}
-          classes={{
-            paper: drawerPaper + " " + classes[bgColor + "Background"],
-          }}
-          onClose={props.handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-        >
-          {brand}
-          <SidebarWrapper
-            className={sidebarWrapper}
-            headerLinks={<AdminNavbarLinks rtlActive={rtlActive} />}
-            links={links}
+    <>
+      {/* Mobile sidebar (Sheet) */}
+      <Sheet open={open} onOpenChange={handleDrawerToggle}>
+        <SheetContent side="left" className="w-72 p-0 bg-sidebar text-sidebar-foreground" showCloseButton={false}>
+          <div className="p-4 border-b border-sidebar-border">
+            <AdminNavbarLinks />
+          </div>
+          <SidebarContent
+            routes={routes}
+            color={color}
+            miniActive={false}
+            logo={logo}
+            logoText={logoText}
+            onLinkClick={handleDrawerToggle}
           />
-          {image !== undefined ? (
-            <div
-              className={classes.background}
-              style={{ backgroundImage: "url(" + image + ")" }}
-            />
-          ) : null}
-        </Drawer>
-      </Hidden>
-      <Hidden smDown implementation="css">
-        <Drawer
-          onMouseOver={() => setMiniActive(false)}
-          onMouseOut={() => setMiniActive(true)}
-          anchor={rtlActive ? "right" : "left"}
-          variant="permanent"
-          open
-          classes={{
-            paper: drawerPaper + " " + classes[bgColor + "Background"],
-          }}
-        >
-          {brand}
-          <SidebarWrapper
-            className={sidebarWrapper}
-            links={links}
-          />
-          {image !== undefined ? (
-            <div
-              className={classes.background}
-              style={{ backgroundImage: "url(" + image + ")" }}
-            />
-          ) : null}
-        </Drawer>
-      </Hidden>
-    </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop sidebar */}
+      <aside
+        onMouseEnter={() => setHoverExpanded(true)}
+        onMouseLeave={() => setHoverExpanded(false)}
+        className={cn(
+          "hidden md:flex flex-col fixed inset-y-0 left-0 z-40 bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-200",
+          miniActive ? "w-20" : "w-64",
+        )}
+      >
+        <SidebarContent
+          routes={routes}
+          color={color}
+          miniActive={miniActive}
+          logo={logo}
+          logoText={logoText}
+        />
+      </aside>
+    </>
   );
 }
 
@@ -465,30 +202,13 @@ Sidebar.defaultProps = {
 
 Sidebar.propTypes = {
   bgColor: PropTypes.oneOf(["white", "black", "blue"]),
-  rtlActive: PropTypes.bool,
-  color: PropTypes.oneOf([
-    "white",
-    "red",
-    "orange",
-    "green",
-    "blue",
-    "purple",
-    "rose",
-  ]),
+  color: PropTypes.oneOf(["white", "red", "orange", "green", "blue", "purple", "rose"]),
   logo: PropTypes.string,
   logoText: PropTypes.string,
-  image: PropTypes.string,
   routes: PropTypes.arrayOf(PropTypes.object),
   miniActive: PropTypes.bool,
   open: PropTypes.bool,
   handleDrawerToggle: PropTypes.func,
-};
-
-SidebarWrapper.propTypes = {
-  className: PropTypes.string,
-  user: PropTypes.object,
-  headerLinks: PropTypes.object,
-  links: PropTypes.object,
 };
 
 export default Sidebar;

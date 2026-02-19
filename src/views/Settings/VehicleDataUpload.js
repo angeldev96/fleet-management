@@ -1,22 +1,8 @@
 import React, { useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import TextField from "@material-ui/core/TextField";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import LinearProgress from "@material-ui/core/LinearProgress";
-import IconButton from "@material-ui/core/IconButton";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
-
-// @material-ui/icons
-import DirectionsCar from "@material-ui/icons/DirectionsCar";
-import CloudUpload from "@material-ui/icons/CloudUpload";
-import CheckCircle from "@material-ui/icons/CheckCircle";
-import Error from "@material-ui/icons/Error";
-import GetApp from "@material-ui/icons/GetApp";
-import ArrowBack from "@material-ui/icons/ArrowBack";
+// Lucide icons
+import { Car, Upload, CheckCircle2, CircleAlert, Download, ArrowLeft, Loader2 } from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -27,160 +13,33 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardIcon from "components/Card/CardIcon.js";
 import Button from "components/CustomButtons/Button.js";
 
+// shadcn
+import { Progress } from "components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "components/ui/alert-dialog";
+
 // hooks & utils
 import { useAuth } from "context/AuthContext";
 import { addVehicle, batchAddVehicles } from "services/vehicleService";
-import SweetAlert from "react-bootstrap-sweetalert";
-
-const useStyles = makeStyles(() => ({
-  header: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "24px",
-  },
-  backButton: {
-    marginRight: "16px",
-    backgroundColor: "#FFFFFF",
-    border: "1px solid #E0E4E8",
-    "&:hover": {
-      backgroundColor: "#F8F9FB",
-    },
-  },
-  pageTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  pageSubtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    marginTop: "4px",
-  },
-  cardIconTitle: {
-    color: "#3C4858",
-    marginTop: "15px",
-    minHeight: "auto",
-    fontWeight: "300",
-    marginBottom: "0px",
-    textDecoration: "none",
-  },
-  formSection: {
-    marginBottom: "30px",
-  },
-  submitButton: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    marginTop: "16px",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-    },
-  },
-  uploadSection: {
-    border: "2px dashed #E0E4E8",
-    borderRadius: "12px",
-    padding: "40px 20px",
-    textAlign: "center",
-    backgroundColor: "#FAFBFC",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    "&:hover": {
-      borderColor: "#3E4D6C",
-      backgroundColor: "#F5F7FA",
-    },
-  },
-  uploadIcon: {
-    fontSize: "48px",
-    color: "#9CA3AF",
-    marginBottom: "16px",
-  },
-  uploadText: {
-    color: "#6B7280",
-    fontSize: "14px",
-    marginBottom: "8px",
-  },
-  uploadSubtext: {
-    color: "#9CA3AF",
-    fontSize: "12px",
-  },
-  hiddenInput: {
-    display: "none",
-  },
-  resultBox: {
-    marginTop: "20px",
-    padding: "16px",
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "12px",
-  },
-  successBox: {
-    backgroundColor: "#D1FAE5",
-    color: "#065F46",
-  },
-  errorBox: {
-    backgroundColor: "#FEE2E2",
-    color: "#991B1B",
-  },
-  resultIcon: {
-    fontSize: "24px",
-    flexShrink: 0,
-  },
-  resultContent: {
-    flex: 1,
-  },
-  resultTitle: {
-    fontWeight: "600",
-    marginBottom: "4px",
-  },
-  resultDetails: {
-    fontSize: "13px",
-    opacity: 0.9,
-    whiteSpace: "pre-line",
-  },
-  progressContainer: {
-    marginTop: "20px",
-  },
-  progressText: {
-    fontSize: "13px",
-    color: "#6B7280",
-    marginBottom: "8px",
-    textAlign: "center",
-  },
-  templateLink: {
-    display: "inline-flex",
-    alignItems: "center",
-    color: "#3B82F6",
-    fontSize: "13px",
-    marginTop: "16px",
-    cursor: "pointer",
-    textDecoration: "none",
-    "&:hover": {
-      textDecoration: "underline",
-    },
-  },
-  templateIcon: {
-    fontSize: "16px",
-    marginRight: "6px",
-  },
-  tabsContainer: {
-    marginBottom: "20px",
-    borderBottom: "1px solid #E0E4E8",
-  },
-}));
+import { cn } from "lib/utils";
 
 const VEHICLE_CSV_HEADERS = ["make", "model", "year", "plate_number", "driver_name"];
 
 export default function VehicleDataUpload() {
-  const classes = useStyles();
   const history = useHistory();
   const { userProfile } = useAuth();
   const fileInputRef = useRef(null);
 
-  const [alert, setAlert] = useState(null);
+  // Alert dialog state
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({ title: "", message: "", type: "info" });
   const [tabValue, setTabValue] = useState(0);
 
   // Single vehicle form state
@@ -201,25 +60,19 @@ export default function VehicleDataUpload() {
     total: 0,
   });
 
-  const handleTabChange = (event, newValue) => {
+  const showAlert = (title, message, type = "info") => {
+    setAlertConfig({ title, message, type });
+    setAlertOpen(true);
+  };
+
+  const handleTabChange = (newValue) => {
     setTabValue(newValue);
     setUploadResult(null);
   };
 
   const handleAddVehicle = async () => {
     if (!vehicleData.plate_number.trim()) {
-      setAlert(
-        <SweetAlert
-          warning
-          title="Missing Fields"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Got it"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          License plate is required.
-        </SweetAlert>
-      );
+      showAlert("Missing Fields", "License plate is required.", "warning");
       return;
     }
 
@@ -245,18 +98,7 @@ export default function VehicleDataUpload() {
 
       if (error) throw error;
 
-      setAlert(
-        <SweetAlert
-          success
-          title="Vehicle Added!"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Continue"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          The vehicle has been added to your fleet.
-        </SweetAlert>
-      );
+      showAlert("Vehicle Added!", "The vehicle has been added to your fleet.", "success");
       setVehicleData({
         make: "",
         model: "",
@@ -266,18 +108,7 @@ export default function VehicleDataUpload() {
       });
     } catch (err) {
       console.error("Error adding vehicle:", err);
-      setAlert(
-        <SweetAlert
-          error
-          title="Error"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Close"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          {err.message || "Could not add vehicle."}
-        </SweetAlert>
-      );
+      showAlert("Error", err.message || "Could not add vehicle.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -398,13 +229,31 @@ export default function VehicleDataUpload() {
 
   return (
     <div>
-      <div className={classes.header}>
-        <IconButton className={classes.backButton} onClick={() => history.push("/admin/settings")}>
-          <ArrowBack />
-        </IconButton>
+      {/* Alert Dialog */}
+      <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertConfig.title}</AlertDialogTitle>
+            <AlertDialogDescription>{alertConfig.message}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setAlertOpen(false)}>
+              {alertConfig.type === "error" ? "Close" : alertConfig.type === "warning" ? "Got it" : "Continue"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div className="flex items-center mb-6">
+        <button
+          className="mr-4 p-2 bg-white border border-border rounded-lg hover:bg-muted/50 transition-colors"
+          onClick={() => history.push("/admin/settings")}
+        >
+          <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+        </button>
         <div>
-          <h1 className={classes.pageTitle}>Vehicle Data Upload</h1>
-          <div className={classes.pageSubtitle}>
+          <h1 className="text-2xl font-semibold text-foreground m-0">Vehicle Data Upload</h1>
+          <div className="text-sm text-muted-foreground mt-1">
             Add vehicles to your fleet individually or upload customer data in bulk via CSV
           </div>
         </div>
@@ -415,92 +264,118 @@ export default function VehicleDataUpload() {
           <Card>
             <CardHeader color="primary" icon>
               <CardIcon color="primary">
-                <DirectionsCar />
+                <Car className="w-6 h-6" />
               </CardIcon>
-              <h4 className={classes.cardIconTitle}>Add Vehicle Data</h4>
+              <h4 className="text-foreground mt-4 min-h-0 font-light mb-0 no-underline">
+                Add Vehicle Data
+              </h4>
             </CardHeader>
             <CardBody>
-              <Tabs
-                value={tabValue}
-                onChange={handleTabChange}
-                className={classes.tabsContainer}
-                indicatorColor="primary"
-              >
-                <Tab label="Single Vehicle" />
-                <Tab label="Batch Upload" />
-              </Tabs>
+              {/* Tabs */}
+              <div className="mb-5 border-b border-border flex">
+                <button
+                  className={cn(
+                    "px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px",
+                    tabValue === 0
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  )}
+                  onClick={() => handleTabChange(0)}
+                >
+                  Single Vehicle
+                </button>
+                <button
+                  className={cn(
+                    "px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px",
+                    tabValue === 1
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  )}
+                  onClick={() => handleTabChange(1)}
+                >
+                  Batch Upload
+                </button>
+              </div>
 
               {tabValue === 0 && (
-                <div className={classes.formSection}>
+                <div className="mb-8">
                   <GridContainer>
                     <GridItem xs={12} sm={6}>
-                      <TextField
-                        margin="dense"
-                        label="Make"
-                        placeholder="e.g. Toyota"
-                        fullWidth
-                        variant="outlined"
-                        value={vehicleData.make}
-                        onChange={(e) => setVehicleData({ ...vehicleData, make: e.target.value })}
-                      />
+                      <div className="mt-2">
+                        <label className="block text-sm font-medium text-foreground mb-1">Make</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Toyota"
+                          className="w-full px-3 py-2.5 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          value={vehicleData.make}
+                          onChange={(e) => setVehicleData({ ...vehicleData, make: e.target.value })}
+                        />
+                      </div>
                     </GridItem>
                     <GridItem xs={12} sm={6}>
-                      <TextField
-                        margin="dense"
-                        label="Model"
-                        placeholder="e.g. Corolla"
-                        fullWidth
-                        variant="outlined"
-                        value={vehicleData.model}
-                        onChange={(e) => setVehicleData({ ...vehicleData, model: e.target.value })}
-                      />
+                      <div className="mt-2">
+                        <label className="block text-sm font-medium text-foreground mb-1">Model</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Corolla"
+                          className="w-full px-3 py-2.5 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          value={vehicleData.model}
+                          onChange={(e) => setVehicleData({ ...vehicleData, model: e.target.value })}
+                        />
+                      </div>
                     </GridItem>
                     <GridItem xs={12} sm={6}>
-                      <TextField
-                        margin="dense"
-                        label="Year"
-                        type="number"
-                        placeholder="e.g. 2022"
-                        fullWidth
-                        variant="outlined"
-                        value={vehicleData.year}
-                        onChange={(e) => setVehicleData({ ...vehicleData, year: e.target.value })}
-                      />
+                      <div className="mt-2">
+                        <label className="block text-sm font-medium text-foreground mb-1">Year</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 2022"
+                          className="w-full px-3 py-2.5 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          value={vehicleData.year}
+                          onChange={(e) => setVehicleData({ ...vehicleData, year: e.target.value })}
+                        />
+                      </div>
                     </GridItem>
                     <GridItem xs={12} sm={6}>
-                      <TextField
-                        margin="dense"
-                        label="License Plate *"
-                        placeholder="e.g. ABC-1234"
-                        fullWidth
-                        variant="outlined"
-                        value={vehicleData.plate_number}
-                        onChange={(e) =>
-                          setVehicleData({ ...vehicleData, plate_number: e.target.value })
-                        }
-                      />
+                      <div className="mt-2">
+                        <label className="block text-sm font-medium text-foreground mb-1">
+                          License Plate *
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. ABC-1234"
+                          className="w-full px-3 py-2.5 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          value={vehicleData.plate_number}
+                          onChange={(e) =>
+                            setVehicleData({ ...vehicleData, plate_number: e.target.value })
+                          }
+                        />
+                      </div>
                     </GridItem>
                     <GridItem xs={12} sm={6}>
-                      <TextField
-                        margin="dense"
-                        label="Driver Name"
-                        placeholder="e.g. John Doe"
-                        fullWidth
-                        variant="outlined"
-                        value={vehicleData.driver_name}
-                        onChange={(e) =>
-                          setVehicleData({ ...vehicleData, driver_name: e.target.value })
-                        }
-                      />
+                      <div className="mt-2">
+                        <label className="block text-sm font-medium text-foreground mb-1">
+                          Driver Name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. John Doe"
+                          className="w-full px-3 py-2.5 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          value={vehicleData.driver_name}
+                          onChange={(e) =>
+                            setVehicleData({ ...vehicleData, driver_name: e.target.value })
+                          }
+                        />
+                      </div>
                     </GridItem>
                   </GridContainer>
                   <Button
-                    className={classes.submitButton}
+                    className="bg-primary text-primary-foreground px-6 py-2.5 normal-case font-semibold mt-4 hover:bg-primary/90"
                     onClick={handleAddVehicle}
                     disabled={submitting}
                   >
                     {submitting ? (
-                      <CircularProgress size={20} color="inherit" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       "Add Vehicle"
                     )}
@@ -514,48 +389,56 @@ export default function VehicleDataUpload() {
                     type="file"
                     accept=".csv"
                     ref={fileInputRef}
-                    className={classes.hiddenInput}
+                    className="hidden"
                     onChange={handleFileUpload}
                   />
-                  <div className={classes.uploadSection} onClick={() => fileInputRef.current?.click()}>
-                    <CloudUpload className={classes.uploadIcon} />
-                    <div className={classes.uploadText}>Click to upload CSV file</div>
-                    <div className={classes.uploadSubtext}>
+                  <div
+                    className="border-2 border-dashed border-border rounded-xl py-10 px-5 text-center bg-muted/50 cursor-pointer transition-all hover:border-primary hover:bg-muted"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <div className="text-muted-foreground text-sm mb-2">Click to upload CSV file</div>
+                    <div className="text-muted-foreground text-xs">
                       Headers: make, model, year, plate_number, driver_name
                     </div>
                   </div>
-                  <div className={classes.templateLink} onClick={downloadTemplate}>
-                    <GetApp className={classes.templateIcon} />
+                  <button
+                    className="inline-flex items-center text-blue-500 text-[13px] mt-4 cursor-pointer hover:underline"
+                    onClick={downloadTemplate}
+                  >
+                    <Download className="w-4 h-4 mr-1.5" />
                     Download CSV Template
-                  </div>
+                  </button>
 
                   {uploadProgress.active && (
-                    <div className={classes.progressContainer}>
-                      <div className={classes.progressText}>
+                    <div className="mt-5">
+                      <div className="text-[13px] text-muted-foreground mb-2 text-center">
                         Processing {uploadProgress.current} of {uploadProgress.total}...
                       </div>
-                      <LinearProgress
-                        variant="determinate"
-                        value={(uploadProgress.current / uploadProgress.total) * 100}
-                      />
+                      <Progress value={(uploadProgress.current / uploadProgress.total) * 100} />
                     </div>
                   )}
 
                   {uploadResult && (
                     <div
-                      className={`${classes.resultBox} ${
-                        uploadResult.success ? classes.successBox : classes.errorBox
-                      }`}
+                      className={cn(
+                        "mt-5 p-4 rounded-lg flex items-start gap-3",
+                        uploadResult.success
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      )}
                     >
                       {uploadResult.success ? (
-                        <CheckCircle className={classes.resultIcon} />
+                        <CheckCircle2 className="w-6 h-6 shrink-0" />
                       ) : (
-                        <Error className={classes.resultIcon} />
+                        <CircleAlert className="w-6 h-6 shrink-0" />
                       )}
-                      <div className={classes.resultContent}>
-                        <div className={classes.resultTitle}>{uploadResult.message}</div>
+                      <div className="flex-1">
+                        <div className="font-semibold mb-1">{uploadResult.message}</div>
                         {uploadResult.details && (
-                          <div className={classes.resultDetails}>{uploadResult.details}</div>
+                          <div className="text-[13px] opacity-90 whitespace-pre-line">
+                            {uploadResult.details}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -566,8 +449,6 @@ export default function VehicleDataUpload() {
           </Card>
         </GridItem>
       </GridContainer>
-
-      {alert}
     </div>
   );
 }

@@ -1,160 +1,55 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import Dialog from "@material-ui/core/Dialog";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import DialogContent from "@material-ui/core/DialogContent";
-import TextField from "@material-ui/core/TextField";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
-import RadioGroup from "@material-ui/core/RadioGroup";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Radio from "@material-ui/core/Radio";
-import MenuItem from "@material-ui/core/MenuItem";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import Paper from "@material-ui/core/Paper";
-import ClickAwayListener from "@material-ui/core/ClickAwayListener";
-import Search from "@material-ui/icons/Search";
-
-// @material-ui/icons
-import Close from "@material-ui/icons/Close";
+// lucide icons
+import { X, Search, Loader2 } from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Button from "components/CustomButtons/Button.js";
 
+// shadcn ui
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from "components/ui/alert-dialog";
+import { RadioGroup, RadioGroupItem } from "components/ui/radio-group";
+import { Label } from "components/ui/label";
+
 // hooks & utils
 import { useVehicles } from "hooks/useVehicles";
 import { createServiceEvent } from "hooks/useServiceEvents";
 import { useAuth } from "context/AuthContext";
-import SweetAlert from "react-bootstrap-sweetalert";
 
-const useStyles = makeStyles(() => ({
-  dialogPaper: {
-    minWidth: "600px",
-    maxWidth: "800px",
-  },
-  dialogTitle: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: "1px solid #E0E4E8",
-    padding: "16px 24px",
-  },
-  titleText: {
-    fontSize: "20px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  closeButton: {
-    cursor: "pointer",
-    color: "#9CA3AF",
-    "&:hover": {
-      color: "#3E4D6C",
-    },
-  },
-  dialogContent: {
-    padding: "24px",
-  },
-  sectionTitle: {
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: "12px",
-    marginTop: "16px",
-  },
-  vehicleInfo: {
-    backgroundColor: "#F9FAFB",
-    borderRadius: "8px",
-    padding: "12px",
-    marginTop: "8px",
-    fontSize: "13px",
-    color: "#6B7280",
-  },
-  vehicleInfoItem: {
-    marginBottom: "4px",
-    "&:last-child": {
-      marginBottom: 0,
-    },
-  },
-  submitButton: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    marginTop: "24px",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-    },
-  },
-  cancelButton: {
-    backgroundColor: "#FFFFFF",
-    color: "#3E4D6C",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    marginTop: "24px",
-    marginRight: "12px",
-    border: "1px solid #E0E4E8",
-    "&:hover": {
-      backgroundColor: "#F9FAFB",
-    },
-  },
-  buttonContainer: {
-    display: "flex",
-    justifyContent: "flex-end",
-    marginTop: "16px",
-  },
-  formControl: {
-    marginTop: "12px",
-  },
-  radioGroup: {
-    flexDirection: "row",
-    gap: "24px",
-  },
-  vehicleSearchWrapper: {
-    position: "relative",
-  },
-  vehicleDropdown: {
-    position: "absolute",
-    top: "100%",
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    maxHeight: "200px",
-    overflowY: "auto",
-    border: "1px solid #E0E4E8",
-    borderTop: "none",
-    borderRadius: "0 0 4px 4px",
-    backgroundColor: "#FFFFFF",
-  },
-  vehicleOption: {
-    padding: "10px 14px",
-    fontSize: "14px",
-    color: "#374151",
-    cursor: "pointer",
-    "&:hover": {
-      backgroundColor: "#F3F4F6",
-    },
-  },
-  vehicleOptionEmpty: {
-    padding: "10px 14px",
-    fontSize: "14px",
-    color: "#9CA3AF",
-    fontStyle: "italic",
-  },
-}));
+const inputClasses =
+  "flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+
+const selectClasses =
+  "flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none";
 
 export default function NewEventModal({ open, onClose, onSuccess }) {
-  const classes = useStyles();
   const { user } = useAuth();
   const { vehicles, loading: vehiclesLoading } = useVehicles({ fetchAll: true });
-  const [alert, setAlert] = useState(null);
+
+  // AlertDialog states (replacing SweetAlert)
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -174,6 +69,7 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
   const [vehicleSearch, setVehicleSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const searchInputRef = useRef(null);
+  const wrapperRef = useRef(null);
 
   const filteredVehicles = useMemo(() => {
     if (!vehicleSearch.trim()) return vehicles;
@@ -196,6 +92,17 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
       setSelectedVehicle(null);
     }
   }, [formData.vehicle_id, vehicles]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSelectVehicle = (vehicle) => {
     setFormData((prev) => ({ ...prev, vehicle_id: vehicle.id }));
@@ -236,34 +143,14 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
 
   const handleSubmit = async () => {
     if (!formData.vehicle_id) {
-      setAlert(
-        <SweetAlert
-          warning
-          title="Missing Field"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Got it"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          Please select a vehicle.
-        </SweetAlert>
-      );
+      setWarningMessage("Please select a vehicle.");
+      setShowWarning(true);
       return;
     }
 
     if (!formData.service_date) {
-      setAlert(
-        <SweetAlert
-          warning
-          title="Missing Field"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Got it"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          Please select a service date.
-        </SweetAlert>
-      );
+      setWarningMessage("Please select a service date.");
+      setShowWarning(true);
       return;
     }
 
@@ -272,18 +159,10 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
       today.setHours(0, 0, 0, 0);
       const serviceDate = new Date(formData.service_date + "T00:00:00");
       if (serviceDate > today) {
-        setAlert(
-          <SweetAlert
-            warning
-            title="Invalid Date"
-            onConfirm={() => setAlert(null)}
-            confirmBtnText="Got it"
-            focusCancelBtn={false}
-            focusConfirmBtn={false}
-          >
-            A service event cannot be marked as completed with a future date. Please use today or a past date.
-          </SweetAlert>
+        setWarningMessage(
+          "A service event cannot be marked as completed with a future date. Please use today or a past date."
         );
+        setShowWarning(true);
         return;
       }
     }
@@ -333,41 +212,18 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
         }
       }
 
-      setAlert(
-        <SweetAlert
-          success
-          title="Service Event Created!"
-          onConfirm={() => {
-            setAlert(null);
-            resetForm();
-            onSuccess && onSuccess();
-            onClose();
-          }}
-          confirmBtnText="Continue"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          {followUpCreated
-            ? "The service event has been scheduled successfully. A follow-up event has been created for " +
+      setSuccessMessage(
+        followUpCreated
+          ? "The service event has been scheduled successfully. A follow-up event has been created for " +
               formData.next_service_date +
               "."
-            : "The service event has been scheduled successfully."}
-        </SweetAlert>
+          : "The service event has been scheduled successfully."
       );
+      setShowSuccess(true);
     } catch (err) {
       console.error("Error creating service event:", err);
-      setAlert(
-        <SweetAlert
-          error
-          title="Error"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Close"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          {err.message}
-        </SweetAlert>
-      );
+      setErrorMessage(err.message);
+      setShowError(true);
     } finally {
       setSubmitting(false);
     }
@@ -380,70 +236,66 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
 
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        classes={{ paper: classes.dialogPaper }}
-        maxWidth="md"
-      >
-        <DialogTitle disableTypography className={classes.dialogTitle}>
-          <h3 className={classes.titleText}>New Service Event</h3>
-          <Close className={classes.closeButton} onClick={handleClose} />
-        </DialogTitle>
-        <DialogContent className={classes.dialogContent}>
-          <GridContainer>
-            <GridItem xs={12}>
-              <ClickAwayListener onClickAway={() => setDropdownOpen(false)}>
-                <div className={classes.vehicleSearchWrapper}>
-                  <TextField
-                    inputRef={searchInputRef}
-                    margin="dense"
-                    label="Vehicle *"
-                    placeholder="Search by name, plate, make, model..."
-                    fullWidth
-                    variant="outlined"
-                    value={vehicleSearch}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setVehicleSearch(val);
-                      setDropdownOpen(true);
-                      if (formData.vehicle_id) {
-                        handleClearVehicle();
-                      }
-                    }}
-                    onFocus={() => {
-                      if (!formData.vehicle_id) setDropdownOpen(true);
-                    }}
-                    disabled={vehiclesLoading}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Search style={{ color: "#9CA3AF", fontSize: "20px" }} />
-                        </InputAdornment>
-                      ),
-                      endAdornment: vehiclesLoading ? (
-                        <InputAdornment position="end">
-                          <CircularProgress size={18} />
-                        </InputAdornment>
-                      ) : formData.vehicle_id ? (
-                        <InputAdornment position="end">
-                          <Close
-                            style={{ color: "#9CA3AF", fontSize: "18px", cursor: "pointer" }}
-                            onClick={handleClearVehicle}
-                          />
-                        </InputAdornment>
-                      ) : null,
-                    }}
-                  />
+      <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}>
+        <DialogContent className="sm:max-w-[800px]" showCloseButton={false}>
+          <DialogHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
+            <DialogTitle className="text-xl font-semibold text-foreground">New Service Event</DialogTitle>
+            <button
+              className="text-muted-foreground hover:text-primary transition-colors"
+              onClick={handleClose}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </DialogHeader>
+
+          <div className="py-2">
+            <GridContainer>
+              <GridItem xs={12}>
+                <div className="relative" ref={wrapperRef}>
+                  <label className="block text-sm font-medium text-foreground mb-1">Vehicle *</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Search by name, plate, make, model..."
+                      className={`${inputClasses} pl-9 pr-8`}
+                      value={vehicleSearch}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setVehicleSearch(val);
+                        setDropdownOpen(true);
+                        if (formData.vehicle_id) {
+                          handleClearVehicle();
+                        }
+                      }}
+                      onFocus={() => {
+                        if (!formData.vehicle_id) setDropdownOpen(true);
+                      }}
+                      disabled={vehiclesLoading}
+                    />
+                    {vehiclesLoading ? (
+                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                    ) : formData.vehicle_id ? (
+                      <button
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
+                        onClick={handleClearVehicle}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    ) : null}
+                  </div>
                   {dropdownOpen && !formData.vehicle_id && (
-                    <Paper className={classes.vehicleDropdown} elevation={3}>
+                    <div className="absolute top-full left-0 right-0 z-10 max-h-[200px] overflow-y-auto border border-border border-t-0 rounded-b bg-card shadow-md">
                       {filteredVehicles.length === 0 ? (
-                        <div className={classes.vehicleOptionEmpty}>No vehicles match your search</div>
+                        <div className="px-3.5 py-2.5 text-sm text-muted-foreground italic">
+                          No vehicles match your search
+                        </div>
                       ) : (
                         filteredVehicles.map((vehicle) => (
                           <div
                             key={vehicle.id}
-                            className={classes.vehicleOption}
+                            className="px-3.5 py-2.5 text-sm text-foreground cursor-pointer hover:bg-muted"
                             onMouseDown={(e) => {
                               e.preventDefault();
                               handleSelectVehicle(vehicle);
@@ -454,171 +306,218 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
                           </div>
                         ))
                       )}
-                    </Paper>
-                  )}
-                </div>
-              </ClickAwayListener>
-              {selectedVehicle && (
-                <div className={classes.vehicleInfo}>
-                  {selectedVehicle.driver_name && (
-                    <div className={classes.vehicleInfoItem}>
-                      <strong>Driver:</strong> {selectedVehicle.driver_name}
-                    </div>
-                  )}
-                  {(selectedVehicle.make || selectedVehicle.model) && (
-                    <div className={classes.vehicleInfoItem}>
-                      <strong>Vehicle:</strong> {selectedVehicle.make} {selectedVehicle.model}{" "}
-                      {selectedVehicle.year && `(${selectedVehicle.year})`}
                     </div>
                   )}
                 </div>
-              )}
-            </GridItem>
+                {selectedVehicle && (
+                  <div className="bg-muted/50 rounded-lg p-3 mt-2 text-sm text-muted-foreground">
+                    {selectedVehicle.driver_name && (
+                      <div className="mb-1 last:mb-0">
+                        <strong>Driver:</strong> {selectedVehicle.driver_name}
+                      </div>
+                    )}
+                    {(selectedVehicle.make || selectedVehicle.model) && (
+                      <div className="mb-1 last:mb-0">
+                        <strong>Vehicle:</strong> {selectedVehicle.make} {selectedVehicle.model}{" "}
+                        {selectedVehicle.year && `(${selectedVehicle.year})`}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </GridItem>
 
-            <GridItem xs={12}>
-              <FormControl component="fieldset" className={classes.formControl}>
-                <FormLabel component="legend" style={{ fontSize: "12px", color: "#6B7280" }}>
-                  Service Type *
-                </FormLabel>
-                <RadioGroup
-                  className={classes.radioGroup}
-                  value={formData.service_type}
-                  onChange={handleChange("service_type")}
-                >
-                  <FormControlLabel
-                    value="scheduled_maintenance"
-                    control={<Radio color="primary" />}
-                    label="Scheduled Maintenance"
+              <GridItem xs={12}>
+                <div className="mt-3">
+                  <label className="block text-xs text-muted-foreground mb-2">Service Type *</label>
+                  <RadioGroup
+                    className="flex flex-row gap-6"
+                    value={formData.service_type}
+                    onValueChange={(value) => setFormData({ ...formData, service_type: value })}
+                  >
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="scheduled_maintenance" id="type-scheduled" />
+                      <Label htmlFor="type-scheduled" className="text-sm font-normal">Scheduled Maintenance</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="repair" id="type-repair" />
+                      <Label htmlFor="type-repair" className="text-sm font-normal">Repair/Incident</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </GridItem>
+
+              <GridItem xs={12}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Service Items</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Oil Change, Brake Inspection"
+                    className={inputClasses}
+                    value={formData.service_items}
+                    onChange={handleChange("service_items")}
                   />
-                  <FormControlLabel
-                    value="repair"
-                    control={<Radio color="primary" />}
-                    label="Repair/Incident"
+                </div>
+              </GridItem>
+
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Mileage (km)</label>
+                  <input
+                    type="number"
+                    className={inputClasses}
+                    value={formData.mileage}
+                    onChange={handleChange("mileage")}
                   />
-                </RadioGroup>
-              </FormControl>
-            </GridItem>
+                </div>
+              </GridItem>
 
-            <GridItem xs={12}>
-              <TextField
-                margin="dense"
-                label="Service Items"
-                placeholder="e.g. Oil Change, Brake Inspection"
-                fullWidth
-                variant="outlined"
-                value={formData.service_items}
-                onChange={handleChange("service_items")}
-              />
-            </GridItem>
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Cost</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">J$</span>
+                    <input
+                      type="number"
+                      className={`${inputClasses} pl-9`}
+                      value={formData.cost}
+                      onChange={handleChange("cost")}
+                    />
+                  </div>
+                </div>
+              </GridItem>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Mileage (km)"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={formData.mileage}
-                onChange={handleChange("mileage")}
-              />
-            </GridItem>
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Service Date *</label>
+                  <input
+                    type="date"
+                    className={inputClasses}
+                    value={formData.service_date}
+                    onChange={handleChange("service_date")}
+                  />
+                </div>
+              </GridItem>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Cost"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={formData.cost}
-                onChange={handleChange("cost")}
-                InputProps={{
-                  startAdornment: <span style={{ marginRight: "4px", color: "#6B7280" }}>J$</span>,
-                }}
-              />
-            </GridItem>
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Next Service Date</label>
+                  <input
+                    type="date"
+                    className={inputClasses}
+                    value={formData.next_service_date}
+                    onChange={handleChange("next_service_date")}
+                  />
+                </div>
+              </GridItem>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Service Date *"
-                type="date"
-                fullWidth
-                variant="outlined"
-                value={formData.service_date}
-                onChange={handleChange("service_date")}
-                InputLabelProps={{ shrink: true }}
-              />
-            </GridItem>
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Location</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Kingston Depot"
+                    className={inputClasses}
+                    value={formData.location}
+                    onChange={handleChange("location")}
+                  />
+                </div>
+              </GridItem>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Next Service Date"
-                type="date"
-                fullWidth
-                variant="outlined"
-                value={formData.next_service_date}
-                onChange={handleChange("next_service_date")}
-                InputLabelProps={{ shrink: true }}
-              />
-            </GridItem>
+              <GridItem xs={12} sm={6}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Status</label>
+                  <select
+                    className={selectClasses}
+                    value={formData.status}
+                    onChange={handleChange("status")}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+              </GridItem>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Location"
-                placeholder="e.g. Kingston Depot"
-                fullWidth
-                variant="outlined"
-                value={formData.location}
-                onChange={handleChange("location")}
-              />
-            </GridItem>
+              <GridItem xs={12}>
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Additional notes..."
+                    className="flex w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                    value={formData.notes}
+                    onChange={handleChange("notes")}
+                  />
+                </div>
+              </GridItem>
+            </GridContainer>
 
-            <GridItem xs={12} sm={6}>
-              <TextField
-                select
-                margin="dense"
-                label="Status"
-                fullWidth
-                variant="outlined"
-                value={formData.status}
-                onChange={handleChange("status")}
+            <div className="flex justify-end mt-6">
+              <Button
+                className="bg-background text-primary px-6 py-2.5 normal-case font-semibold mr-3 border border-border rounded-lg hover:bg-muted/50"
+                onClick={handleClose}
               >
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="in_progress">In Progress</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
-              </TextField>
-            </GridItem>
-
-            <GridItem xs={12}>
-              <TextField
-                margin="dense"
-                label="Notes"
-                placeholder="Additional notes..."
-                fullWidth
-                multiline
-                rows={3}
-                variant="outlined"
-                value={formData.notes}
-                onChange={handleChange("notes")}
-              />
-            </GridItem>
-          </GridContainer>
-
-          <div className={classes.buttonContainer}>
-            <Button className={classes.cancelButton} onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button className={classes.submitButton} onClick={handleSubmit} disabled={submitting}>
-              {submitting ? <CircularProgress size={20} color="inherit" /> : "Sync to Calendar"}
-            </Button>
+                Cancel
+              </Button>
+              <Button
+                className="bg-primary text-primary-foreground px-6 py-2.5 normal-case font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                onClick={handleSubmit}
+                disabled={submitting}
+              >
+                {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sync to Calendar"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {alert}
+      {/* Warning AlertDialog */}
+      <AlertDialog open={showWarning} onOpenChange={setShowWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Missing Field</AlertDialogTitle>
+            <AlertDialogDescription>{warningMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowWarning(false)}>Got it</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success AlertDialog */}
+      <AlertDialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Service Event Created!</AlertDialogTitle>
+            <AlertDialogDescription>{successMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => {
+                setShowSuccess(false);
+                resetForm();
+                onSuccess && onSuccess();
+                onClose();
+              }}
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Error AlertDialog */}
+      <AlertDialog open={showError} onOpenChange={setShowError}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Error</AlertDialogTitle>
+            <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowError(false)}>Close</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

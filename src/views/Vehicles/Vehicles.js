@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useHistory } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import InputBase from "@material-ui/core/InputBase";
 
-// @material-ui/icons
-import DoubleArrow from "@material-ui/icons/DoubleArrow";
-import Warning from "@material-ui/icons/Warning";
-import CheckCircle from "@material-ui/icons/CheckCircle";
-import Info from "@material-ui/icons/Info";
-import PauseCircleOutline from "@material-ui/icons/PauseCircleOutline";
-import Add from "@material-ui/icons/Add";
-import Search from "@material-ui/icons/Search";
-import Assessment from "@material-ui/icons/Assessment";
-import Edit from "@material-ui/icons/Edit";
-import Image from "@material-ui/icons/Image";
+// lucide icons
+import {
+  ChevronsRight,
+  AlertTriangle,
+  CheckCircle,
+  Info,
+  PauseCircle,
+  Plus,
+  Search,
+  BarChart3,
+  Pencil,
+  Image,
+  Loader2,
+} from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -24,7 +23,6 @@ import GridItem from "components/Grid/GridItem.js";
 import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
 import Table from "components/Table/Table.js";
-import Button from "components/CustomButtons/Button.js";
 import Pagination from "components/Pagination/Pagination.js";
 import AddVehicleModal from "./AddVehicleModal.js";
 import EditVehicleModal from "./EditVehicleModal.js";
@@ -37,216 +35,7 @@ import { useDebounce } from "hooks/useDebounce";
 // utils
 import { formatRelativeTime } from "types/database";
 
-import styles from "assets/jss/material-dashboard-pro-react/views/dashboardStyle.js";
-
-const useStyles = makeStyles(() => ({
-  ...styles,
-  pageHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "24px",
-  },
-  headerLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-    flex: 1,
-  },
-  pageTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  vehicleCount: {
-    fontSize: "14px",
-    color: "#6b7280",
-    fontWeight: "500",
-  },
-  addButton: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    borderRadius: "8px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    },
-  },
-  reportButton: {
-    backgroundColor: "#FFFFFF",
-    color: "#3E4D6C",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    borderRadius: "8px",
-    border: "1px solid #3E4D6C",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    marginRight: "12px",
-    "&:hover": {
-      backgroundColor: "#F8FAFC",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    },
-  },
-  searchContainer: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: "10px",
-    padding: "0 20px",
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "24px",
-    border: "1px solid #E5E7EB",
-    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-    transition: "all 0.2s ease",
-    height: "48px",
-    "&:focus-within": {
-      borderColor: "#3E4D6C",
-      boxShadow: "0 0 0 3px rgba(62, 77, 108, 0.1)",
-    },
-  },
-  searchIcon: {
-    color: "#9CA3AF",
-    marginRight: "12px",
-    fontSize: "22px",
-    flexShrink: 0,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: "14px",
-    color: "#374151",
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    "&::placeholder": {
-      color: "#9CA3AF",
-      opacity: 1,
-    },
-  },
-  filterContainer: {
-    display: "none",
-  },
-  filterSelect: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: "8px",
-    padding: "5px 15px",
-    border: "1px solid #E0E4E8",
-    display: "flex",
-    alignItems: "center",
-    "&:before": { border: "none" },
-    "&:after": { border: "none" },
-    "&:hover:not(.Mui-disabled):before": { border: "none" },
-  },
-  statusBadge: {
-    padding: "6px 12px",
-    borderRadius: "6px",
-    color: "#FFFFFF",
-    display: "inline-flex",
-    alignItems: "center",
-    fontSize: "12px",
-    fontWeight: "600",
-    width: "fit-content",
-    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-    "& svg": {
-      fontSize: "16px",
-      marginRight: "6px",
-    },
-  },
-  behaviorBadge: {
-    padding: "6px 14px",
-    borderRadius: "6px",
-    fontSize: "12px",
-    fontWeight: "600",
-    width: "fit-content",
-    border: "1px solid transparent",
-  },
-  tableActionBtn: {
-    margin: "0",
-    padding: "6px 16px",
-    textTransform: "none",
-    backgroundColor: "#F9FAFB",
-    color: "#3E4D6C",
-    border: "1px solid #E5E7EB",
-    borderRadius: "6px",
-    fontSize: "13px",
-    fontWeight: "500",
-    "&:hover": {
-      backgroundColor: "#F3F4F6",
-      borderColor: "#D1D5DB",
-    },
-  },
-  actionIcon: {
-    marginLeft: "10px",
-    color: "#6B7280",
-    cursor: "pointer",
-    padding: "6px",
-    borderRadius: "6px",
-    border: "1px solid #E5E7EB",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F9FAFB",
-    transition: "all 0.2s ease",
-    "&:hover": {
-      backgroundColor: "#F3F4F6",
-      borderColor: "#D1D5DB",
-      color: "#3E4D6C",
-    },
-  },
-  loadingContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "80px 20px",
-  },
-  emptyState: {
-    textAlign: "center",
-    padding: "60px 20px",
-    color: "#6b7280",
-  },
-  emptyStateLink: {
-    color: "#3E4D6C",
-    cursor: "pointer",
-    display: "inline-flex",
-    alignItems: "center",
-    marginTop: "16px",
-    padding: "8px 16px",
-    borderRadius: "8px",
-    backgroundColor: "#F9FAFB",
-    border: "1px solid #E5E7EB",
-    fontSize: "14px",
-    fontWeight: "500",
-    transition: "all 0.2s ease",
-    "&:hover": {
-      backgroundColor: "#F3F4F6",
-      borderColor: "#D1D5DB",
-      textDecoration: "none",
-    },
-  },
-  vehicleInfo: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  vehicleName: {
-    fontWeight: "600",
-    color: "#1f2937",
-    fontSize: "14px",
-  },
-  vehicleDetails: {
-    fontSize: "13px",
-    color: "#6b7280",
-  },
-  cardContainer: {
-    borderRadius: "12px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    border: "1px solid #E5E7EB",
-  },
-}));
-
 export default function Vehicles() {
-  const classes = useStyles();
   const history = useHistory();
   const location = useLocation();
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -328,35 +117,36 @@ export default function Vehicles() {
   };
 
   const getStatusBadge = (status) => {
+    const baseClasses = "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold text-white shadow-sm";
     switch (status) {
       case "Alert":
         return (
-          <div className={classes.statusBadge} style={{ backgroundColor: "#EF4444" }}>
-            <Warning /> Alert
+          <div className={`${baseClasses} bg-red-500`}>
+            <AlertTriangle className="h-4 w-4" /> Alert
           </div>
         );
       case "Online":
         return (
-          <div className={classes.statusBadge} style={{ backgroundColor: "#10B981" }}>
-            <CheckCircle /> Online
+          <div className={`${baseClasses} bg-emerald-500`}>
+            <CheckCircle className="h-4 w-4" /> Online
           </div>
         );
       case "Warning":
         return (
-          <div className={classes.statusBadge} style={{ backgroundColor: "#F59E0B" }}>
-            <Info /> Warning
+          <div className={`${baseClasses} bg-amber-500`}>
+            <Info className="h-4 w-4" /> Warning
           </div>
         );
       case "Idle":
         return (
-          <div className={classes.statusBadge} style={{ backgroundColor: "#F59E0B" }}>
-            <PauseCircleOutline /> Idle
+          <div className={`${baseClasses} bg-amber-500`}>
+            <PauseCircle className="h-4 w-4" /> Idle
           </div>
         );
       case "Offline":
         return (
-          <div className={classes.statusBadge} style={{ backgroundColor: "#9C27B0" }}>
-            <Info /> Offline
+          <div className={`${baseClasses} bg-purple-600`}>
+            <Info className="h-4 w-4" /> Offline
           </div>
         );
       default:
@@ -369,31 +159,18 @@ export default function Vehicles() {
     const harshCount = alerts?.harshCount || 0;
 
     let behavior = "Good";
-    let bgColor = "#ECFDF5";
-    let textColor = "#059669";
-    let borderColor = "#A7F3D0";
+    let classes = "bg-emerald-50 text-emerald-600 border-emerald-200";
 
     if (harshCount >= 3) {
       behavior = "Poor";
-      bgColor = "#FEF2F2";
-      textColor = "#DC2626";
-      borderColor = "#FECACA";
+      classes = "bg-red-50 text-red-600 border-red-200";
     } else if (harshCount >= 1) {
       behavior = "Fair";
-      bgColor = "#FFFBEB";
-      textColor = "#D97706";
-      borderColor = "#FDE68A";
+      classes = "bg-amber-50 text-amber-600 border-amber-200";
     }
 
     return (
-      <div
-        className={classes.behaviorBadge}
-        style={{
-          backgroundColor: bgColor,
-          color: textColor,
-          borderColor: borderColor
-        }}
-      >
+      <div className={`inline-block rounded-md border px-3.5 py-1.5 text-xs font-semibold ${classes}`}>
         {behavior}
       </div>
     );
@@ -406,15 +183,15 @@ export default function Vehicles() {
 
   if (loading && vehicles.length === 0) {
     return (
-      <div className={classes.loadingContainer}>
-        <CircularProgress />
+      <div className="flex items-center justify-center py-20 px-5">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={classes.emptyState}>
+      <div className="text-center py-16 px-5 text-muted-foreground">
         <p>Error loading vehicles: {error.message}</p>
       </div>
     );
@@ -431,9 +208,9 @@ export default function Vehicles() {
     : vehicles;
 
   const tableData = displayVehicles.map((vehicle) => [
-    <div className={classes.vehicleInfo} key={`name-${vehicle.id}`}>
-      <span className={classes.vehicleName}>{getVehicleDisplayName(vehicle)}</span>
-      <span className={classes.vehicleDetails}>
+    <div className="flex flex-col gap-1" key={`name-${vehicle.id}`}>
+      <span className="font-semibold text-foreground text-sm">{getVehicleDisplayName(vehicle)}</span>
+      <span className="text-sm text-muted-foreground">
         {vehicle.make} {vehicle.model} {vehicle.year ? `(${vehicle.year})` : ""}
       </span>
     </div>,
@@ -441,31 +218,29 @@ export default function Vehicles() {
     formatRelativeTime(vehicle.last_seen_at),
     dtcCounts[vehicle.id] || 0,
     getBehaviorBadge(vehicle),
-    <div style={{ display: "flex", alignItems: "center", gap: "8px" }} key={`actions-${vehicle.id}`}>
-      <Button
-        className={classes.tableActionBtn}
+    <div className="flex items-center gap-2" key={`actions-${vehicle.id}`}>
+      <button
+        className="m-0 rounded-md border border-border bg-muted/50 px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-muted hover:border-border"
         onClick={() => history.push(`/admin/vehicle/${vehicle.id}`)}
       >
         View
-      </Button>
-      <Button
-        className={classes.tableActionBtn}
+      </button>
+      <button
+        className="m-0 rounded-md border border-blue-200 bg-blue-50 px-4 py-1.5 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100 hover:border-blue-300 inline-flex items-center gap-1"
         onClick={() => history.push(`/admin/vehicle/${vehicle.id}/snapshot`)}
-        style={{ backgroundColor: "#EFF6FF", borderColor: "#BFDBFE", color: "#1D4ED8" }}
       >
-        <Image style={{ fontSize: "14px", marginRight: "4px" }} />
+        <Image className="h-3.5 w-3.5" />
         Snapshot
-      </Button>
-      <Button
-        className={classes.tableActionBtn}
+      </button>
+      <button
+        className="m-0 rounded-md border border-amber-300 bg-amber-50 px-4 py-1.5 text-sm font-medium text-amber-800 transition-colors hover:bg-amber-100 hover:border-amber-400 inline-flex items-center gap-1"
         onClick={() => handleEditVehicle(vehicle)}
-        style={{ backgroundColor: "#FEF3C7", borderColor: "#FCD34D", color: "#92400E" }}
       >
-        <Edit style={{ fontSize: "14px", marginRight: "4px" }} />
+        <Pencil className="h-3.5 w-3.5" />
         Edit
-      </Button>
-      <div className={classes.actionIcon}>
-        <DoubleArrow style={{ fontSize: "16px" }} />
+      </button>
+      <div className="ml-2.5 flex items-center justify-center rounded-md border border-border bg-muted/50 p-1.5 text-muted-foreground cursor-pointer transition-colors hover:bg-muted hover:border-border hover:text-primary">
+        <ChevronsRight className="h-4 w-4" />
       </div>
     </div>,
   ]);
@@ -473,73 +248,79 @@ export default function Vehicles() {
   return (
     <div>
       {/* Page Header */}
-      <div className={classes.pageHeader}>
-        <div className={classes.headerLeft}>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4 flex-1">
           <div>
-            <h1 className={classes.pageTitle}>Vehicles</h1>
-            <div className={classes.vehicleCount}>
+            <h1 className="text-2xl font-semibold text-foreground m-0">Vehicles</h1>
+            <div className="text-sm text-muted-foreground font-medium">
               {effectiveTotalCount} {effectiveTotalCount === 1 ? "vehicle" : "vehicles"} total
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <Button className={classes.reportButton} onClick={() => history.push("/admin/reports")}>
-            <Assessment style={{ marginRight: "8px", fontSize: "20px" }} />
+        <div className="flex items-center">
+          <button
+            className="mr-3 inline-flex items-center rounded-lg border border-primary bg-white px-6 py-2.5 text-sm font-semibold text-primary shadow-sm transition-all hover:bg-slate-50 hover:shadow-md"
+            onClick={() => history.push("/admin/reports")}
+          >
+            <BarChart3 className="mr-2 h-5 w-5" />
             Generate Fleet Report
-          </Button>
-          <Button className={classes.addButton} onClick={() => setAddModalOpen(true)}>
-            <Add style={{ marginRight: "8px", fontSize: "20px" }} />
+          </button>
+          <button
+            className="inline-flex items-center rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 hover:shadow-md"
+            onClick={() => setAddModalOpen(true)}
+          >
+            <Plus className="mr-2 h-5 w-5" />
             Add Vehicle
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className={classes.searchContainer}>
-        <Search className={classes.searchIcon} />
-        <InputBase
+      <div className="flex items-center h-12 rounded-[10px] border border-border bg-white px-5 mb-6 shadow-sm transition-all focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/10">
+        <Search className="mr-3 h-[22px] w-[22px] flex-shrink-0 text-muted-foreground" />
+        <input
+          type="text"
           placeholder="Search by plate number, make, or model..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className={classes.searchInput}
-          fullWidth
+          className="flex-1 border-0 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
         />
       </div>
 
       <GridContainer>
         <GridItem xs={12}>
-          <Card className={classes.cardContainer}>
-            <CardBody style={{ padding: "24px" }}>
+          <Card className="rounded-xl shadow-sm border border-border">
+            <CardBody className="p-6">
               {isIssuesFilter && alertsLoading ? (
-                <div className={classes.loadingContainer}>
-                  <CircularProgress />
+                <div className="flex items-center justify-center py-20 px-5">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : effectiveTotalCount === 0 && !debouncedSearchTerm ? (
-                <div className={classes.emptyState}>
-                  <div style={{ fontSize: "16px", fontWeight: "500", color: "#374151", marginBottom: "8px" }}>
+                <div className="text-center py-16 px-5 text-muted-foreground">
+                  <div className="text-base font-medium text-foreground mb-2">
                     {useClientFilter ? "No vehicles match this filter" : "No vehicles found"}
                   </div>
-                  <p style={{ fontSize: "14px", color: "#6b7280", margin: "0 0 20px 0" }}>
+                  <p className="text-sm text-muted-foreground m-0 mb-5">
                     {useClientFilter
                       ? "Try changing filters or clearing search"
                       : "Get started by adding your first vehicle to the fleet"}
                   </p>
                   {!useClientFilter && (
                     <div
-                      className={classes.emptyStateLink}
+                      className="inline-flex items-center cursor-pointer mt-4 px-4 py-2 rounded-lg bg-muted/50 border border-border text-sm font-medium text-primary transition-all hover:bg-muted hover:border-border"
                       onClick={() => setAddModalOpen(true)}
                     >
-                      <Add style={{ fontSize: "18px", marginRight: "8px" }} />
+                      <Plus className="mr-2 h-[18px] w-[18px]" />
                       Add your first vehicle
                     </div>
                   )}
                 </div>
               ) : displayVehicles.length === 0 && debouncedSearchTerm ? (
-                <div className={classes.emptyState}>
-                  <div style={{ fontSize: "16px", fontWeight: "500", color: "#374151", marginBottom: "8px" }}>
+                <div className="text-center py-16 px-5 text-muted-foreground">
+                  <div className="text-base font-medium text-foreground mb-2">
                     No vehicles match your search
                   </div>
-                  <p style={{ fontSize: "14px", color: "#6b7280", margin: "0" }}>
+                  <p className="text-sm text-muted-foreground m-0">
                     Try searching by plate number, make, or model
                   </p>
                 </div>
@@ -549,21 +330,21 @@ export default function Vehicles() {
                     tableHead={["Plate Number", "Status", "Last Seen", "DTCs", "Behavior", "Actions"]}
                     tableData={tableData}
                     customCellClasses={[
-                      classes.textCenter,
-                      classes.textCenter,
-                      classes.textCenter,
-                      classes.textCenter,
-                      classes.textCenter,
-                      classes.textCenter,
+                      "text-center",
+                      "text-center",
+                      "text-center",
+                      "text-center",
+                      "text-center",
+                      "text-center",
                     ]}
                     customClassesForCells={[0, 1, 2, 3, 4, 5]}
                     customHeadCellClasses={[
-                      classes.textCenter,
-                      classes.textCenter,
-                      classes.textCenter,
-                      classes.textCenter,
-                      classes.textCenter,
-                      classes.textCenter,
+                      "text-center",
+                      "text-center",
+                      "text-center",
+                      "text-center",
+                      "text-center",
+                      "text-center",
                     ]}
                     customHeadClassesForCells={[0, 1, 2, 3, 4, 5]}
                   />

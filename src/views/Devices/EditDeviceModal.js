@@ -1,15 +1,26 @@
 import React, { useState, useEffect } from "react";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import Dialog from "@material-ui/core/Dialog";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import DialogContent from "@material-ui/core/DialogContent";
-import TextField from "@material-ui/core/TextField";
-import CircularProgress from "@material-ui/core/CircularProgress";
+// lucide icons
+import { Loader2 } from "lucide-react";
 
-// @material-ui/icons
-import Close from "@material-ui/icons/Close";
+// shadcn components
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "components/ui/alert-dialog";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -18,82 +29,19 @@ import Button from "components/CustomButtons/Button.js";
 
 // hooks & utils
 import { updateDevice, deleteDevice } from "services/deviceService";
-import SweetAlert from "react-bootstrap-sweetalert";
-
-const useStyles = makeStyles(() => ({
-  dialogPaper: {
-    minWidth: "500px",
-    maxWidth: "600px",
-  },
-  dialogTitle: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: "1px solid #E0E4E8",
-    padding: "16px 24px",
-  },
-  titleText: {
-    fontSize: "20px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  closeButton: {
-    cursor: "pointer",
-    color: "#9CA3AF",
-    "&:hover": {
-      color: "#3E4D6C",
-    },
-  },
-  dialogContent: {
-    padding: "24px",
-  },
-  buttonRow: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "12px",
-    marginTop: "24px",
-    paddingTop: "16px",
-    borderTop: "1px solid #E0E4E8",
-  },
-  cancelButton: {
-    backgroundColor: "#F3F4F6",
-    color: "#374151",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    "&:hover": {
-      backgroundColor: "#E5E7EB",
-    },
-  },
-  submitButton: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-    },
-  },
-  deleteButton: {
-    backgroundColor: "#DC2626",
-    color: "#FFFFFF",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    marginRight: "auto",
-    "&:hover": {
-      backgroundColor: "#B91C1C",
-    },
-  },
-}));
 
 export default function EditDeviceModal({ open, onClose, device, onSuccess }) {
-  const classes = useStyles();
-  const [alert, setAlert] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Alert dialog states
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [successCallback, setSuccessCallback] = useState(null);
 
   const [deviceData, setDeviceData] = useState({
     imei: "",
@@ -112,18 +60,9 @@ export default function EditDeviceModal({ open, onClose, device, onSuccess }) {
 
   const handleUpdateDevice = async () => {
     if (!deviceData.imei.trim()) {
-      setAlert(
-        <SweetAlert
-          warning
-          title="Missing Field"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Got it"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          IMEI is required.
-        </SweetAlert>
-      );
+      setAlertTitle("Missing Field");
+      setAlertMessage("IMEI is required.");
+      setShowWarning(true);
       return;
     }
 
@@ -136,97 +75,47 @@ export default function EditDeviceModal({ open, onClose, device, onSuccess }) {
 
       if (error) throw error;
 
-      setAlert(
-        <SweetAlert
-          success
-          title="Device Updated!"
-          onConfirm={() => {
-            setAlert(null);
-            onSuccess && onSuccess();
-            onClose();
-          }}
-          confirmBtnText="Continue"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          The device has been successfully updated.
-        </SweetAlert>
-      );
+      setAlertTitle("Device Updated!");
+      setAlertMessage("The device has been successfully updated.");
+      setSuccessCallback(() => () => {
+        onSuccess && onSuccess();
+        onClose();
+      });
+      setShowSuccess(true);
     } catch (err) {
       console.error("Error updating device:", err);
-      setAlert(
-        <SweetAlert
-          error
-          title="Error"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Close"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          {err.message}
-        </SweetAlert>
-      );
+      setAlertTitle("Error");
+      setAlertMessage(err.message);
+      setShowError(true);
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDeleteDevice = () => {
-    setAlert(
-      <SweetAlert
-        warning
-        showCancel
-        title="Delete Device?"
-        onConfirm={confirmDelete}
-        onCancel={() => setAlert(null)}
-        confirmBtnText="Yes, delete it"
-        cancelBtnText="Cancel"
-        focusCancelBtn={false}
-        focusConfirmBtn={false}
-      >
-        This action cannot be undone. The device will be permanently removed.
-      </SweetAlert>
-    );
+    setShowDeleteConfirm(true);
   };
 
   const confirmDelete = async () => {
-    setAlert(null);
+    setShowDeleteConfirm(false);
     setDeleting(true);
     try {
       const { error } = await deleteDevice(device.id);
 
       if (error) throw error;
 
-      setAlert(
-        <SweetAlert
-          success
-          title="Device Deleted"
-          onConfirm={() => {
-            setAlert(null);
-            onSuccess && onSuccess();
-            onClose();
-          }}
-          confirmBtnText="Continue"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          The device has been permanently deleted.
-        </SweetAlert>
-      );
+      setAlertTitle("Device Deleted");
+      setAlertMessage("The device has been permanently deleted.");
+      setSuccessCallback(() => () => {
+        onSuccess && onSuccess();
+        onClose();
+      });
+      setShowSuccess(true);
     } catch (err) {
       console.error("Error deleting device:", err);
-      setAlert(
-        <SweetAlert
-          error
-          title="Error"
-          onConfirm={() => setAlert(null)}
-          confirmBtnText="Close"
-          focusCancelBtn={false}
-          focusConfirmBtn={false}
-        >
-          {err.message}
-        </SweetAlert>
-      );
+      setAlertTitle("Error");
+      setAlertMessage(err.message);
+      setShowError(true);
     } finally {
       setDeleting(false);
     }
@@ -234,66 +123,147 @@ export default function EditDeviceModal({ open, onClose, device, onSuccess }) {
 
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        classes={{ paper: classes.dialogPaper }}
-        maxWidth="md"
-      >
-        <DialogTitle disableTypography className={classes.dialogTitle}>
-          <h3 className={classes.titleText}>Edit Device</h3>
-          <Close className={classes.closeButton} onClick={onClose} />
-        </DialogTitle>
-        <DialogContent className={classes.dialogContent}>
-          <GridContainer>
-            <GridItem xs={12}>
-              <TextField
-                margin="dense"
-                label="IMEI *"
-                placeholder="e.g. 860000000000001"
-                fullWidth
-                variant="outlined"
-                value={deviceData.imei}
-                onChange={(e) => setDeviceData({ ...deviceData, imei: e.target.value })}
-              />
-            </GridItem>
-            <GridItem xs={12}>
-              <TextField
-                margin="dense"
-                label="Serial Number"
-                fullWidth
-                variant="outlined"
-                value={deviceData.serial_number}
-                onChange={(e) =>
-                  setDeviceData({ ...deviceData, serial_number: e.target.value })
-                }
-              />
-            </GridItem>
-          </GridContainer>
+      <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
+        <DialogContent className="sm:max-w-[600px]" showCloseButton={true}>
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-foreground">
+              Edit Device
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Edit device IMEI and serial number
+            </DialogDescription>
+          </DialogHeader>
 
-          <div className={classes.buttonRow}>
-            <Button
-              className={classes.deleteButton}
-              onClick={handleDeleteDevice}
-              disabled={deleting || submitting}
-            >
-              {deleting ? <CircularProgress size={20} color="inherit" /> : "Delete"}
-            </Button>
-            <Button className={classes.cancelButton} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              className={classes.submitButton}
-              onClick={handleUpdateDevice}
-              disabled={submitting || deleting}
-            >
-              {submitting ? <CircularProgress size={20} color="inherit" /> : "Save Changes"}
-            </Button>
+          <div className="py-2">
+            <GridContainer>
+              <GridItem xs={12}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-foreground mb-1.5">
+                    IMEI *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 860000000000001"
+                    value={deviceData.imei}
+                    onChange={(e) => setDeviceData({ ...deviceData, imei: e.target.value })}
+                    className="w-full h-10 rounded-md border border-border bg-white px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+              </GridItem>
+              <GridItem xs={12}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-foreground mb-1.5">
+                    Serial Number
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter serial number"
+                    value={deviceData.serial_number}
+                    onChange={(e) =>
+                      setDeviceData({ ...deviceData, serial_number: e.target.value })
+                    }
+                    className="w-full h-10 rounded-md border border-border bg-white px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+              </GridItem>
+            </GridContainer>
+
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+              <button
+                className="mr-auto bg-red-600 text-white py-2.5 px-6 rounded-md text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleDeleteDevice}
+                disabled={deleting || submitting}
+              >
+                {deleting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Delete"}
+              </button>
+              <button
+                className="bg-muted text-foreground py-2.5 px-6 rounded-md text-sm font-semibold hover:bg-muted/80 transition-colors"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-primary text-white py-2.5 px-6 rounded-md text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleUpdateDevice}
+                disabled={submitting || deleting}
+              >
+                {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Changes"}
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {alert}
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Device?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The device will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={confirmDelete}
+            >
+              Yes, delete it
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Warning Dialog */}
+      <AlertDialog open={showWarning} onOpenChange={setShowWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowWarning(false)}>
+              Got it
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success Dialog */}
+      <AlertDialog open={showSuccess} onOpenChange={setShowSuccess}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => {
+                setShowSuccess(false);
+                if (successCallback) successCallback();
+              }}
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Error Dialog */}
+      <AlertDialog open={showError} onOpenChange={setShowError}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowError(false)}>
+              Close
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

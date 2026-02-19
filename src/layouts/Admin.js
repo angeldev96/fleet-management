@@ -1,14 +1,7 @@
 import React from "react";
-import cx from "classnames";
 import { Switch, Route, Redirect } from "react-router-dom";
-// creates a beautiful scrollbar
-import PerfectScrollbar from "perfect-scrollbar";
-import "perfect-scrollbar/css/perfect-scrollbar.css";
+import { cn } from "lib/utils";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-
-// core components
 import AdminNavbar from "components/Navbars/AdminNavbar.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
 
@@ -16,15 +9,9 @@ import routes from "routes.js";
 
 import { useAuth } from "context/AuthContext";
 import useRealtimeAlerts from "hooks/useRealtimeAlerts";
-import styles from "assets/jss/material-dashboard-pro-react/layouts/adminStyle.js";
-
-var ps;
-
-const useStyles = makeStyles(styles);
 
 export default function Dashboard(props) {
   const { ...rest } = props;
-  // states and functions
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [miniActive, setMiniActive] = React.useState(false);
   const [color] = React.useState("blue");
@@ -34,42 +21,11 @@ export default function Dashboard(props) {
 
   // Subscribe to physical device connect/disconnect notifications
   useRealtimeAlerts();
-  // styles
-  const classes = useStyles();
-  const mainPanelClasses =
-    classes.mainPanel +
-    " " +
-    cx({
-      [classes.mainPanelSidebarMini]: miniActive,
-      [classes.mainPanelWithPerfectScrollbar]: navigator.platform.indexOf("Win") > -1,
-    });
-  // ref for main panel div
-  const mainPanel = React.createRef();
-  // effect instead of componentDidMount, componentDidUpdate and componentWillUnmount
-  React.useEffect(() => {
-    if (navigator.platform.indexOf("Win") > -1) {
-      ps = new PerfectScrollbar(mainPanel.current, {
-        suppressScrollX: true,
-        suppressScrollY: false,
-      });
-      document.body.style.overflow = "hidden";
-    }
-    window.addEventListener("resize", resizeFunction);
 
-    // Specify how to clean up after this effect:
-    return function cleanup() {
-      if (navigator.platform.indexOf("Win") > -1) {
-        ps.destroy();
-      }
-      window.removeEventListener("resize", resizeFunction);
-    };
-  });
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
-  const getRoute = () => {
-    return window.location.pathname !== "/admin/full-screen-maps";
-  };
+
   const getActiveRoute = (routes) => {
     let activeRoute = "Entry";
     for (let i = 0; i < routes.length; i++) {
@@ -86,6 +42,7 @@ export default function Dashboard(props) {
     }
     return activeRoute;
   };
+
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
       if (prop.collapse) {
@@ -98,17 +55,13 @@ export default function Dashboard(props) {
       }
     });
   };
+
   const sidebarMinimize = () => {
     setMiniActive(!miniActive);
   };
-  const resizeFunction = () => {
-    if (window.innerWidth >= 960) {
-      setMobileOpen(false);
-    }
-  };
 
   return (
-    <div className={classes.wrapper}>
+    <div className="flex h-screen bg-background">
       <Sidebar
         routes={routes}
         logoText={""}
@@ -120,32 +73,27 @@ export default function Dashboard(props) {
         miniActive={miniActive}
         {...rest}
       />
-      <div className={mainPanelClasses} ref={mainPanel}>
+      <div
+        className={cn(
+          "flex-1 flex flex-col min-h-0 transition-all duration-200",
+          miniActive ? "md:ml-20" : "md:ml-64",
+        )}
+      >
         <AdminNavbar
-          sidebarMinimize={sidebarMinimize.bind(this)}
+          sidebarMinimize={sidebarMinimize}
           miniActive={miniActive}
           brandText={getActiveRoute(routes)}
           handleDrawerToggle={handleDrawerToggle}
           {...rest}
         />
-        {/* On the /maps/full-screen-maps route we want the map to be on full screen - this is not possible if the content and conatiner classes are present because they have some paddings which would make the map smaller */}
-        {getRoute() ? (
-          <div className={classes.content}>
-            <div className={classes.container}>
-              <Switch>
-                {getRoutes(routes)}
-                <Redirect from="/admin" to="/admin/dashboard" />
-              </Switch>
-            </div>
-          </div>
-        ) : (
-          <div className={classes.map}>
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6 max-w-[1400px] mx-auto w-full">
             <Switch>
               {getRoutes(routes)}
               <Redirect from="/admin" to="/admin/dashboard" />
             </Switch>
           </div>
-        )}
+        </main>
       </div>
     </div>
   );

@@ -1,16 +1,8 @@
 import React, { useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import IconButton from "@material-ui/core/IconButton";
-
-// @material-ui/icons
-import ArrowBack from "@material-ui/icons/ArrowBack";
-import CloudUpload from "@material-ui/icons/CloudUpload";
-import Delete from "@material-ui/icons/Delete";
-import Business from "@material-ui/icons/Business";
+// Lucide icons
+import { ArrowLeft, Upload, Trash2, Building, Loader2 } from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -21,178 +13,26 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardIcon from "components/Card/CardIcon.js";
 import Button from "components/CustomButtons/Button.js";
 
+// shadcn
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "components/ui/alert-dialog";
+
 // hooks & services
 import { useAuth } from "context/AuthContext";
 import { uploadFleetLogo, removeFleetLogo } from "services/fleetService";
-import SweetAlert from "react-bootstrap-sweetalert";
 
 const ACCEPTED_TYPES = ["image/png", "image/jpeg", "image/svg+xml", "image/webp"];
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
-const useStyles = makeStyles(() => ({
-  header: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "24px",
-  },
-  backButton: {
-    marginRight: "16px",
-    backgroundColor: "#FFFFFF",
-    border: "1px solid #E0E4E8",
-    "&:hover": {
-      backgroundColor: "#F8F9FB",
-    },
-  },
-  pageTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  pageSubtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    marginTop: "4px",
-  },
-  cardIconTitle: {
-    color: "#3C4858",
-    marginTop: "15px",
-    minHeight: "auto",
-    fontWeight: "300",
-    marginBottom: "0px",
-    textDecoration: "none",
-  },
-  logoSection: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "32px 20px",
-  },
-  currentLogoContainer: {
-    width: "240px",
-    height: "120px",
-    borderRadius: "12px",
-    border: "2px solid #E0E4E8",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FAFBFC",
-    marginBottom: "24px",
-    overflow: "hidden",
-  },
-  currentLogo: {
-    maxWidth: "220px",
-    maxHeight: "100px",
-    objectFit: "contain",
-  },
-  placeholderIcon: {
-    fontSize: "48px",
-    color: "#D1D5DB",
-  },
-  placeholderText: {
-    color: "#9CA3AF",
-    fontSize: "13px",
-    marginTop: "8px",
-  },
-  uploadArea: {
-    border: "2px dashed #E0E4E8",
-    borderRadius: "12px",
-    padding: "32px 20px",
-    textAlign: "center",
-    backgroundColor: "#FAFBFC",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    width: "100%",
-    maxWidth: "400px",
-    "&:hover": {
-      borderColor: "#3E4D6C",
-      backgroundColor: "#F5F7FA",
-    },
-  },
-  uploadIcon: {
-    fontSize: "40px",
-    color: "#9CA3AF",
-    marginBottom: "12px",
-  },
-  uploadText: {
-    color: "#6B7280",
-    fontSize: "14px",
-    marginBottom: "4px",
-  },
-  uploadSubtext: {
-    color: "#9CA3AF",
-    fontSize: "12px",
-  },
-  hiddenInput: {
-    display: "none",
-  },
-  previewContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "16px",
-    width: "100%",
-    maxWidth: "400px",
-  },
-  previewImage: {
-    maxWidth: "220px",
-    maxHeight: "100px",
-    objectFit: "contain",
-    borderRadius: "8px",
-    border: "1px solid #E0E4E8",
-    padding: "8px",
-    backgroundColor: "#fff",
-  },
-  previewFileName: {
-    fontSize: "13px",
-    color: "#6B7280",
-  },
-  buttonRow: {
-    display: "flex",
-    gap: "12px",
-    marginTop: "8px",
-  },
-  submitButton: {
-    backgroundColor: "#3E4D6C",
-    color: "#FFFFFF",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    "&:hover": {
-      backgroundColor: "#2E3B55",
-    },
-  },
-  cancelButton: {
-    backgroundColor: "#F3F4F6",
-    color: "#374151",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    "&:hover": {
-      backgroundColor: "#E5E7EB",
-    },
-  },
-  removeButton: {
-    backgroundColor: "#FEE2E2",
-    color: "#991B1B",
-    padding: "10px 24px",
-    textTransform: "none",
-    fontWeight: "600",
-    "&:hover": {
-      backgroundColor: "#FECACA",
-    },
-  },
-  divider: {
-    width: "100%",
-    maxWidth: "400px",
-    height: "1px",
-    backgroundColor: "#E5E7EB",
-    margin: "16px 0",
-  },
-}));
-
 export default function FleetSettings() {
-  const classes = useStyles();
   const history = useHistory();
   const fileInputRef = useRef(null);
   const { fleetId, fleetName, fleetLogoUrl, refreshProfile } = useAuth();
@@ -201,37 +41,30 @@ export default function FleetSettings() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
-  const [alert, setAlert] = useState(null);
+
+  // Alert dialog state
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({ title: "", message: "", type: "info" });
+
+  // Remove confirmation dialog
+  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
+
+  const showAlert = (title, message, type = "info") => {
+    setAlertConfig({ title, message, type });
+    setAlertOpen(true);
+  };
 
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      setAlert(
-        <SweetAlert
-          warning
-          title="Invalid file type"
-          onConfirm={() => setAlert(null)}
-          confirmBtnCssClass={classes.submitButton}
-        >
-          Please select a PNG, JPG, SVG, or WebP image.
-        </SweetAlert>
-      );
+      showAlert("Invalid file type", "Please select a PNG, JPG, SVG, or WebP image.", "warning");
       return;
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      setAlert(
-        <SweetAlert
-          warning
-          title="File too large"
-          onConfirm={() => setAlert(null)}
-          confirmBtnCssClass={classes.submitButton}
-        >
-          Maximum file size is 2 MB.
-        </SweetAlert>
-      );
+      showAlert("File too large", "Maximum file size is 2 MB.", "warning");
       return;
     }
 
@@ -247,16 +80,7 @@ export default function FleetSettings() {
     setUploading(false);
 
     if (error) {
-      setAlert(
-        <SweetAlert
-          danger
-          title="Upload failed"
-          onConfirm={() => setAlert(null)}
-          confirmBtnCssClass={classes.submitButton}
-        >
-          {error.message || "An error occurred while uploading the logo."}
-        </SweetAlert>
-      );
+      showAlert("Upload failed", error.message || "An error occurred while uploading the logo.", "error");
       return;
     }
 
@@ -266,65 +90,22 @@ export default function FleetSettings() {
     if (fileInputRef.current) fileInputRef.current.value = "";
     await refreshProfile();
 
-    setAlert(
-      <SweetAlert
-        success
-        title="Logo updated"
-        onConfirm={() => setAlert(null)}
-        confirmBtnCssClass={classes.submitButton}
-      >
-        Your fleet logo has been updated successfully.
-      </SweetAlert>
-    );
+    showAlert("Logo updated", "Your fleet logo has been updated successfully.", "success");
   };
 
-  const handleRemove = async () => {
-    setAlert(
-      <SweetAlert
-        warning
-        showCancel
-        title="Remove logo?"
-        onConfirm={async () => {
-          setAlert(null);
-          setRemoving(true);
-          const { error } = await removeFleetLogo(fleetId);
-          setRemoving(false);
+  const handleRemoveConfirm = async () => {
+    setRemoveConfirmOpen(false);
+    setRemoving(true);
+    const { error } = await removeFleetLogo(fleetId);
+    setRemoving(false);
 
-          if (error) {
-            setAlert(
-              <SweetAlert
-                danger
-                title="Error"
-                onConfirm={() => setAlert(null)}
-                confirmBtnCssClass={classes.submitButton}
-              >
-                {error.message || "Failed to remove the logo."}
-              </SweetAlert>
-            );
-            return;
-          }
+    if (error) {
+      showAlert("Error", error.message || "Failed to remove the logo.", "error");
+      return;
+    }
 
-          await refreshProfile();
-          setAlert(
-            <SweetAlert
-              success
-              title="Logo removed"
-              onConfirm={() => setAlert(null)}
-              confirmBtnCssClass={classes.submitButton}
-            >
-              The fleet logo has been removed. The default logo will be used.
-            </SweetAlert>
-          );
-        }}
-        onCancel={() => setAlert(null)}
-        confirmBtnCssClass={classes.removeButton}
-        cancelBtnCssClass={classes.cancelButton}
-        confirmBtnText="Yes, remove it"
-        cancelBtnText="Cancel"
-      >
-        This will remove the current fleet logo and revert to the default.
-      </SweetAlert>
-    );
+    await refreshProfile();
+    showAlert("Logo removed", "The fleet logo has been removed. The default logo will be used.", "success");
   };
 
   const handleCancelSelection = () => {
@@ -335,18 +116,54 @@ export default function FleetSettings() {
 
   return (
     <div>
-      {alert}
-      <div className={classes.header}>
-        <IconButton
-          className={classes.backButton}
+      {/* Info/Warning/Success Alert Dialog */}
+      <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertConfig.title}</AlertDialogTitle>
+            <AlertDialogDescription>{alertConfig.message}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setAlertOpen(false)}>
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Remove Confirmation AlertDialog */}
+      <AlertDialog open={removeConfirmOpen} onOpenChange={setRemoveConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove logo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the current fleet logo and revert to the default.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setRemoveConfirmOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemoveConfirm}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              Yes, remove it
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div className="flex items-center mb-6">
+        <button
+          className="mr-4 p-2 bg-white border border-border rounded-lg hover:bg-muted/50 transition-colors"
           onClick={() => history.push("/admin/settings")}
-          size="small"
         >
-          <ArrowBack style={{ fontSize: "20px", color: "#374151" }} />
-        </IconButton>
+          <ArrowLeft className="w-5 h-5 text-foreground" />
+        </button>
         <div>
-          <h1 className={classes.pageTitle}>Fleet Settings</h1>
-          <div className={classes.pageSubtitle}>
+          <h1 className="text-2xl font-semibold text-foreground m-0">Fleet Settings</h1>
+          <div className="text-sm text-muted-foreground mt-1">
             Customize branding for {fleetName || "your fleet"}
           </div>
         </div>
@@ -357,53 +174,55 @@ export default function FleetSettings() {
           <Card>
             <CardHeader color="info" icon>
               <CardIcon color="info">
-                <Business />
+                <Building className="w-6 h-6" />
               </CardIcon>
-              <h4 className={classes.cardIconTitle}>Fleet Logo</h4>
+              <h4 className="text-foreground mt-4 min-h-0 font-light mb-0 no-underline">
+                Fleet Logo
+              </h4>
             </CardHeader>
             <CardBody>
-              <div className={classes.logoSection}>
+              <div className="flex flex-col items-center py-8 px-5">
                 {/* Current logo */}
-                <div className={classes.currentLogoContainer}>
+                <div className="w-60 h-[120px] rounded-xl border-2 border-border flex items-center justify-center bg-muted/50 mb-6 overflow-hidden">
                   {fleetLogoUrl ? (
                     <img
                       src={fleetLogoUrl}
                       alt="Fleet logo"
-                      className={classes.currentLogo}
+                      className="max-w-[220px] max-h-[100px] object-contain"
                     />
                   ) : (
-                    <div style={{ textAlign: "center" }}>
-                      <Business className={classes.placeholderIcon} />
-                      <div className={classes.placeholderText}>No logo set</div>
+                    <div className="text-center">
+                      <Building className="w-12 h-12 text-muted-foreground mx-auto" />
+                      <div className="text-muted-foreground text-[13px] mt-2">No logo set</div>
                     </div>
                   )}
                 </div>
 
                 {/* File selection or upload area */}
                 {selectedFile && previewUrl ? (
-                  <div className={classes.previewContainer}>
+                  <div className="flex flex-col items-center gap-4 w-full max-w-[400px]">
                     <img
                       src={previewUrl}
                       alt="Preview"
-                      className={classes.previewImage}
+                      className="max-w-[220px] max-h-[100px] object-contain rounded-lg border border-border p-2 bg-white"
                     />
-                    <div className={classes.previewFileName}>
+                    <div className="text-[13px] text-muted-foreground">
                       {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
                     </div>
-                    <div className={classes.buttonRow}>
+                    <div className="flex gap-3 mt-2">
                       <Button
-                        className={classes.submitButton}
+                        className="bg-primary text-primary-foreground px-6 py-2.5 normal-case font-semibold hover:bg-primary/90"
                         onClick={handleUpload}
                         disabled={uploading}
                       >
                         {uploading ? (
-                          <CircularProgress size={20} style={{ color: "#fff" }} />
+                          <Loader2 className="w-5 h-5 animate-spin text-white" />
                         ) : (
                           "Upload Logo"
                         )}
                       </Button>
                       <Button
-                        className={classes.cancelButton}
+                        className="bg-muted text-foreground px-6 py-2.5 normal-case font-semibold hover:bg-muted"
                         onClick={handleCancelSelection}
                         disabled={uploading}
                       >
@@ -413,14 +232,14 @@ export default function FleetSettings() {
                   </div>
                 ) : (
                   <div
-                    className={classes.uploadArea}
+                    className="border-2 border-dashed border-border rounded-xl py-8 px-5 text-center bg-muted/50 cursor-pointer transition-all w-full max-w-[400px] hover:border-primary hover:bg-muted"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <CloudUpload className={classes.uploadIcon} />
-                    <div className={classes.uploadText}>
+                    <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                    <div className="text-muted-foreground text-sm mb-1">
                       Click to select a logo image
                     </div>
-                    <div className={classes.uploadSubtext}>
+                    <div className="text-muted-foreground text-xs">
                       PNG, JPG, SVG, or WebP &bull; Max 2 MB
                     </div>
                   </div>
@@ -430,24 +249,24 @@ export default function FleetSettings() {
                   ref={fileInputRef}
                   type="file"
                   accept={ACCEPTED_TYPES.join(",")}
-                  className={classes.hiddenInput}
+                  className="hidden"
                   onChange={handleFileSelect}
                 />
 
                 {/* Remove button - only show if a logo exists and no file is selected */}
                 {fleetLogoUrl && !selectedFile && (
                   <>
-                    <div className={classes.divider} />
+                    <div className="w-full max-w-[400px] h-px bg-muted my-4" />
                     <Button
-                      className={classes.removeButton}
-                      onClick={handleRemove}
+                      className="bg-red-50 text-red-800 px-6 py-2.5 normal-case font-semibold hover:bg-red-100"
+                      onClick={() => setRemoveConfirmOpen(true)}
                       disabled={removing}
                     >
                       {removing ? (
-                        <CircularProgress size={20} style={{ color: "#991B1B" }} />
+                        <Loader2 className="w-5 h-5 animate-spin text-red-800" />
                       ) : (
                         <>
-                          <Delete style={{ fontSize: "18px", marginRight: "6px" }} />
+                          <Trash2 className="w-[18px] h-[18px] mr-1.5" />
                           Remove Logo
                         </>
                       )}

@@ -1,105 +1,61 @@
 import React from "react";
-// nodejs library to set properties for components
-import PropTypes from "prop-types";
-// nodejs library that concatenates classes
-import classNames from "classnames";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import FormControl from "@material-ui/core/FormControl";
-import InputLabel from "@material-ui/core/InputLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
-import Input from "@material-ui/core/Input";
+import { cn } from "lib/utils";
 
-import styles from "assets/jss/material-dashboard-pro-react/components/customInputStyle.js";
-
-const useStyles = makeStyles(styles);
-
-export default function CustomInput(props) {
-  const classes = useStyles();
-  const {
-    formControlProps,
-    labelText,
-    id,
-    labelProps,
-    inputProps,
-    error,
-    white,
-    inputRootCustomClasses,
-    success,
-    helperText,
-    rtlActive,
-  } = props;
-
-  const labelClasses = classNames({
-    [" " + classes.labelRootError]: error,
-    [" " + classes.labelRootSuccess]: success && !error,
-    [classes.labelRTL]: rtlActive,
-  });
-  const underlineClasses = classNames({
-    [classes.underlineError]: error,
-    [classes.underlineSuccess]: success && !error,
-    [classes.underline]: true,
-    [classes.whiteUnderline]: white,
-  });
-  const marginTop = classNames({
-    [inputRootCustomClasses]: inputRootCustomClasses !== undefined,
-  });
-  const inputClasses = classNames({
-    [classes.input]: true,
-    [classes.whiteInput]: white,
-  });
-  var formControlClasses;
-  if (formControlProps !== undefined) {
-    formControlClasses = classNames(formControlProps.className, classes.formControl);
-  } else {
-    formControlClasses = classes.formControl;
-  }
-  var helpTextClasses = classNames({
-    [classes.labelRootError]: error,
-    [classes.labelRootSuccess]: success && !error,
-  });
-  let newInputProps = {
-    maxLength: inputProps && inputProps.maxLength ? inputProps.maxLength : undefined,
-    minLength: inputProps && inputProps.minLength ? inputProps.minLength : undefined,
-    step: inputProps && inputProps.step ? inputProps.step : undefined,
-  };
+export default function CustomInput({
+  formControlProps,
+  labelText,
+  id,
+  labelProps,
+  inputProps,
+  error,
+  white,
+  inputRootCustomClasses,
+  success,
+  helperText,
+  rtlActive,
+}) {
   return (
-    <FormControl {...formControlProps} className={formControlClasses}>
+    <div
+      {...formControlProps}
+      className={cn("mb-4 w-full relative", formControlProps?.className)}
+    >
       {labelText !== undefined ? (
-        <InputLabel className={classes.labelRoot + " " + labelClasses} htmlFor={id} {...labelProps}>
+        <label
+          htmlFor={id}
+          className={cn(
+            "mb-1.5 block text-sm font-medium text-muted-foreground",
+            error && "text-red-500",
+            success && !error && "text-emerald-500",
+          )}
+          {...labelProps}
+        >
           {labelText}
-        </InputLabel>
+        </label>
       ) : null}
-      <Input
-        classes={{
-          input: inputClasses,
-          root: marginTop,
-          disabled: classes.disabled,
-          underline: underlineClasses,
-        }}
+      <input
         id={id}
+        className={cn(
+          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary",
+          "placeholder:text-muted-foreground",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          error && "border-red-500 focus-visible:ring-red-500",
+          success && !error && "border-emerald-500 focus-visible:ring-emerald-500",
+          white && "text-white border-white/30 placeholder:text-white/50",
+          inputRootCustomClasses,
+        )}
         {...inputProps}
-        inputProps={newInputProps}
       />
       {helperText !== undefined ? (
-        <FormHelperText id={id + "-text"} className={helpTextClasses}>
+        <p
+          className={cn(
+            "mt-1 text-xs",
+            error ? "text-red-500" : success ? "text-emerald-500" : "text-muted-foreground",
+          )}
+        >
           {helperText}
-        </FormHelperText>
+        </p>
       ) : null}
-    </FormControl>
+    </div>
   );
 }
-
-CustomInput.propTypes = {
-  labelText: PropTypes.node,
-  labelProps: PropTypes.object,
-  id: PropTypes.string,
-  inputProps: PropTypes.object,
-  formControlProps: PropTypes.object,
-  inputRootCustomClasses: PropTypes.string,
-  error: PropTypes.bool,
-  success: PropTypes.bool,
-  white: PropTypes.bool,
-  helperText: PropTypes.node,
-  rtlActive: PropTypes.bool,
-};

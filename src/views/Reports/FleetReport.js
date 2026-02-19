@@ -1,18 +1,8 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import CircularProgress from "@material-ui/core/CircularProgress";
 
-// @material-ui/icons
-import ArrowBack from "@material-ui/icons/ArrowBack";
-import DirectionsCar from "@material-ui/icons/DirectionsCar";
-import Warning from "@material-ui/icons/Warning";
-import Speed from "@material-ui/icons/Speed";
-import Timeline from "@material-ui/icons/Timeline";
-import AttachMoney from "@material-ui/icons/AttachMoney";
-import GetApp from "@material-ui/icons/GetApp";
-import PictureAsPdf from "@material-ui/icons/PictureAsPdf";
+// Lucide icons
+import { ArrowLeft, Car, AlertTriangle, Gauge, TrendingUp, DollarSign, Download, FileText, Loader2 } from "lucide-react";
 
 import jsPDF from "jspdf";
 
@@ -27,219 +17,7 @@ import Button from "components/CustomButtons/Button.js";
 import { useFleetReport } from "hooks/useFleetReport";
 import { formatDateOnly } from "types/database";
 
-const useStyles = makeStyles(() => ({
-  // Print styles
-  "@media print": {
-    "@global": {
-      body: {
-        "print-color-adjust": "exact",
-        WebkitPrintColorAdjust: "exact",
-      },
-    },
-  },
-  pageHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "32px",
-    "@media print": {
-      marginBottom: "16px",
-    },
-  },
-  headerLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-  },
-  backButton: {
-    backgroundColor: "#F3F4F6",
-    color: "#374151",
-    padding: "8px",
-    minWidth: "40px",
-    borderRadius: "8px",
-    "&:hover": {
-      backgroundColor: "#E5E7EB",
-    },
-    "@media print": {
-      display: "none",
-    },
-  },
-  pageTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  pageSubtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    margin: "4px 0 0 0",
-  },
-  exportButtons: {
-    display: "flex",
-    gap: "12px",
-    "@media print": {
-      display: "none",
-    },
-  },
-  exportBtn: {
-    padding: "10px 20px",
-    textTransform: "none",
-    fontWeight: "600",
-    borderRadius: "8px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-  },
-  csvBtn: {
-    backgroundColor: "#059669",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#047857",
-    },
-  },
-  pdfBtn: {
-    backgroundColor: "#DC2626",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#B91C1C",
-    },
-  },
-  statsGrid: {
-    marginBottom: "32px",
-  },
-  statCard: {
-    borderRadius: "12px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    border: "1px solid #E5E7EB",
-    height: "100%",
-    "@media print": {
-      boxShadow: "none",
-      pageBreakInside: "avoid",
-    },
-  },
-  statCardBody: {
-    padding: "24px",
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "16px",
-  },
-  statIcon: {
-    width: "48px",
-    height: "48px",
-    borderRadius: "12px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  statContent: {
-    flex: 1,
-  },
-  statLabel: {
-    fontSize: "14px",
-    color: "#6b7280",
-    margin: "0 0 4px 0",
-    fontWeight: "500",
-  },
-  statValue: {
-    fontSize: "32px",
-    fontWeight: "700",
-    color: "#1f2937",
-    margin: 0,
-    lineHeight: 1.2,
-  },
-  statUnit: {
-    fontSize: "14px",
-    color: "#9ca3af",
-    fontWeight: "500",
-    marginLeft: "4px",
-  },
-  summaryCard: {
-    borderRadius: "12px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    border: "1px solid #E5E7EB",
-    "@media print": {
-      boxShadow: "none",
-      pageBreakInside: "avoid",
-    },
-  },
-  summaryHeader: {
-    padding: "20px 24px",
-    borderBottom: "1px solid #E5E7EB",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  summaryTitle: {
-    fontSize: "18px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  summaryBody: {
-    padding: "24px",
-  },
-  summaryRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "16px 0",
-    borderBottom: "1px solid #F3F4F6",
-    "&:last-child": {
-      borderBottom: "none",
-    },
-  },
-  summaryLabel: {
-    fontSize: "14px",
-    color: "#6b7280",
-    fontWeight: "500",
-  },
-  summaryValue: {
-    fontSize: "16px",
-    color: "#1f2937",
-    fontWeight: "600",
-  },
-  loadingContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "80px 20px",
-  },
-  reportDate: {
-    fontSize: "13px",
-    color: "#9ca3af",
-    padding: "8px 16px",
-    backgroundColor: "#F9FAFB",
-    borderRadius: "6px",
-  },
-  printContainer: {
-    "@media print": {
-      padding: "0",
-      margin: "0",
-    },
-  },
-  printTitle: {
-    display: "none",
-    "@media print": {
-      display: "block",
-      fontSize: "22px",
-      fontWeight: "700",
-      marginBottom: "8px",
-      color: "#1f2937",
-    },
-  },
-  printMeta: {
-    display: "none",
-    "@media print": {
-      display: "block",
-      fontSize: "12px",
-      color: "#6b7280",
-      marginBottom: "20px",
-    },
-  },
-}));
-
 export default function FleetReport() {
-  const classes = useStyles();
   const history = useHistory();
 
   const { stats, loading } = useFleetReport();
@@ -344,77 +122,74 @@ export default function FleetReport() {
     const footerY = pageHeight - 12;
     pdf.setTextColor(...secondaryColor);
     pdf.setFontSize(8);
-    pdf.text("Generated by Entry Fleet • Confidential", margin, footerY);
+    pdf.text("Generated by Entry Fleet \u2022 Confidential", margin, footerY);
 
     pdf.save(`fleet-report-${new Date().toISOString().split("T")[0]}.pdf`);
   };
 
   if (loading) {
     return (
-      <div className={classes.loadingContainer}>
-        <CircularProgress />
+      <div className="flex justify-center items-center py-20 px-5">
+        <Loader2 className="animate-spin text-muted-foreground" size={40} />
       </div>
     );
   }
 
   return (
-    <div className={classes.printContainer}>
+    <div className="print:p-0 print:m-0">
       {/* Print-only header */}
-      <h1 className={classes.printTitle}>Fleet Summary Report</h1>
-      <p className={classes.printMeta}>
+      <h1 className="hidden print:block text-[22px] font-bold mb-2 text-foreground">Fleet Summary Report</h1>
+      <p className="hidden print:block text-xs text-muted-foreground mb-5">
         Generated: {new Date().toLocaleString()}
       </p>
 
       {/* Page Header */}
-      <div className={classes.pageHeader}>
-        <div className={classes.headerLeft}>
+      <div className="flex items-center justify-between mb-8 print:mb-4">
+        <div className="flex items-center gap-4">
           <Button
-            className={classes.backButton}
+            className="bg-muted text-foreground p-2 min-w-[40px] rounded-lg hover:bg-muted print:hidden"
             onClick={() => history.push("/admin/reports")}
           >
-            <ArrowBack style={{ fontSize: "20px" }} />
+            <ArrowLeft size={20} />
           </Button>
           <div>
-            <h1 className={classes.pageTitle}>Fleet Summary Report</h1>
-            <p className={classes.pageSubtitle}>
+            <h1 className="text-2xl font-semibold text-foreground m-0">Fleet Summary Report</h1>
+            <p className="text-sm text-muted-foreground mt-1 mb-0">
               Overview of your entire fleet performance and statistics
             </p>
           </div>
         </div>
-        <div className={classes.exportButtons}>
+        <div className="flex gap-3 print:hidden">
           <Button
-            className={`${classes.exportBtn} ${classes.csvBtn}`}
+            className="px-5 py-2.5 normal-case font-semibold rounded-lg shadow-sm bg-emerald-600 text-white hover:bg-emerald-700"
             onClick={handleExportCSV}
           >
-            <GetApp style={{ marginRight: "8px", fontSize: "18px" }} />
+            <Download className="mr-2" size={18} />
             Export CSV
           </Button>
           <Button
-            className={`${classes.exportBtn} ${classes.pdfBtn}`}
+            className="px-5 py-2.5 normal-case font-semibold rounded-lg shadow-sm bg-red-600 text-white hover:bg-red-700"
             onClick={handleExportPDF}
           >
-            <PictureAsPdf style={{ marginRight: "8px", fontSize: "18px" }} />
+            <FileText className="mr-2" size={18} />
             Export PDF
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <GridContainer className={classes.statsGrid}>
+      <GridContainer className="mb-8">
         <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div
-                className={classes.statIcon}
-                style={{ backgroundColor: "#EEF2FF" }}
-              >
-                <DirectionsCar style={{ fontSize: "24px", color: "#4F46E5" }} />
+          <Card className="rounded-xl shadow-sm border border-border h-full print:shadow-none print:break-inside-avoid">
+            <CardBody className="p-6 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-indigo-50">
+                <Car size={24} className="text-indigo-600" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Active Vehicles</p>
-                <p className={classes.statValue}>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-1 font-medium">Active Vehicles</p>
+                <p className="text-[32px] font-bold text-foreground m-0 leading-tight">
                   {stats.activeVehicles}
-                  <span className={classes.statUnit}>/ {stats.totalVehicles}</span>
+                  <span className="text-sm text-muted-foreground font-medium ml-1">/ {stats.totalVehicles}</span>
                 </p>
               </div>
             </CardBody>
@@ -422,19 +197,16 @@ export default function FleetReport() {
         </GridItem>
 
         <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div
-                className={classes.statIcon}
-                style={{ backgroundColor: "#ECFDF5" }}
-              >
-                <Timeline style={{ fontSize: "24px", color: "#059669" }} />
+          <Card className="rounded-xl shadow-sm border border-border h-full print:shadow-none print:break-inside-avoid">
+            <CardBody className="p-6 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-emerald-50">
+                <TrendingUp size={24} className="text-emerald-600" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Total Distance</p>
-                <p className={classes.statValue}>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-1 font-medium">Total Distance</p>
+                <p className="text-[32px] font-bold text-foreground m-0 leading-tight">
                   {stats.totalDistance.toLocaleString()}
-                  <span className={classes.statUnit}>km</span>
+                  <span className="text-sm text-muted-foreground font-medium ml-1">km</span>
                 </p>
               </div>
             </CardBody>
@@ -442,34 +214,28 @@ export default function FleetReport() {
         </GridItem>
 
         <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div
-                className={classes.statIcon}
-                style={{ backgroundColor: "#FEF2F2" }}
-              >
-                <Warning style={{ fontSize: "24px", color: "#DC2626" }} />
+          <Card className="rounded-xl shadow-sm border border-border h-full print:shadow-none print:break-inside-avoid">
+            <CardBody className="p-6 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-red-50">
+                <AlertTriangle size={24} className="text-red-600" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Total DTCs</p>
-                <p className={classes.statValue}>{stats.totalDTCs}</p>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-1 font-medium">Total DTCs</p>
+                <p className="text-[32px] font-bold text-foreground m-0 leading-tight">{stats.totalDTCs}</p>
               </div>
             </CardBody>
           </Card>
         </GridItem>
 
         <GridItem xs={12} sm={6} md={3}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div
-                className={classes.statIcon}
-                style={{ backgroundColor: "#FFFBEB" }}
-              >
-                <Speed style={{ fontSize: "24px", color: "#D97706" }} />
+          <Card className="rounded-xl shadow-sm border border-border h-full print:shadow-none print:break-inside-avoid">
+            <CardBody className="p-6 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-amber-50">
+                <Gauge size={24} className="text-amber-600" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Behavior Alerts</p>
-                <p className={classes.statValue}>{stats.totalBehaviorAlerts}</p>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-1 font-medium">Behavior Alerts</p>
+                <p className="text-[32px] font-bold text-foreground m-0 leading-tight">{stats.totalBehaviorAlerts}</p>
               </div>
             </CardBody>
           </Card>
@@ -479,19 +245,16 @@ export default function FleetReport() {
       {/* Service Cost Card */}
       <GridContainer style={{ marginBottom: "32px" }}>
         <GridItem xs={12} sm={6} md={4}>
-          <Card className={classes.statCard}>
-            <CardBody className={classes.statCardBody}>
-              <div
-                className={classes.statIcon}
-                style={{ backgroundColor: "#ECFDF5" }}
-              >
-                <AttachMoney style={{ fontSize: "24px", color: "#059669" }} />
+          <Card className="rounded-xl shadow-sm border border-border h-full print:shadow-none print:break-inside-avoid">
+            <CardBody className="p-6 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-emerald-50">
+                <DollarSign size={24} className="text-emerald-600" />
               </div>
-              <div className={classes.statContent}>
-                <p className={classes.statLabel}>Total Service Cost</p>
-                <p className={classes.statValue}>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-1 font-medium">Total Service Cost</p>
+                <p className="text-[32px] font-bold text-foreground m-0 leading-tight">
                   J${stats.totalServiceCost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  <span className={classes.statUnit}>JMD</span>
+                  <span className="text-sm text-muted-foreground font-medium ml-1">JMD</span>
                 </p>
               </div>
             </CardBody>
@@ -502,77 +265,77 @@ export default function FleetReport() {
       {/* Detailed Summary */}
       <GridContainer>
         <GridItem xs={12} md={8}>
-          <Card className={classes.summaryCard}>
-            <div className={classes.summaryHeader}>
-              <h3 className={classes.summaryTitle}>Detailed Summary</h3>
-              <span className={classes.reportDate}>
+          <Card className="rounded-xl shadow-sm border border-border print:shadow-none print:break-inside-avoid">
+            <div className="px-6 py-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-foreground m-0">Detailed Summary</h3>
+              <span className="text-[13px] text-muted-foreground px-4 py-2 bg-muted/50 rounded-md">
                 Report generated: {formatDateOnly(new Date())}
               </span>
             </div>
-            <CardBody className={classes.summaryBody}>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Total Vehicles in Fleet</span>
-                <span className={classes.summaryValue}>{stats.totalVehicles} vehicles</span>
+            <CardBody className="p-6">
+              <div className="flex justify-between items-center py-4 border-b border-border/50">
+                <span className="text-sm text-muted-foreground font-medium">Total Vehicles in Fleet</span>
+                <span className="text-base text-foreground font-semibold">{stats.totalVehicles} vehicles</span>
               </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Currently Active Vehicles</span>
-                <span className={classes.summaryValue}>{stats.activeVehicles} vehicles</span>
+              <div className="flex justify-between items-center py-4 border-b border-border/50">
+                <span className="text-sm text-muted-foreground font-medium">Currently Active Vehicles</span>
+                <span className="text-base text-foreground font-semibold">{stats.activeVehicles} vehicles</span>
               </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Offline Vehicles</span>
-                <span className={classes.summaryValue}>{stats.totalVehicles - stats.activeVehicles} vehicles</span>
+              <div className="flex justify-between items-center py-4 border-b border-border/50">
+                <span className="text-sm text-muted-foreground font-medium">Offline Vehicles</span>
+                <span className="text-base text-foreground font-semibold">{stats.totalVehicles - stats.activeVehicles} vehicles</span>
               </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Overall Distance Traveled</span>
-                <span className={classes.summaryValue}>{stats.totalDistance.toLocaleString()} km</span>
+              <div className="flex justify-between items-center py-4 border-b border-border/50">
+                <span className="text-sm text-muted-foreground font-medium">Overall Distance Traveled</span>
+                <span className="text-base text-foreground font-semibold">{stats.totalDistance.toLocaleString()} km</span>
               </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Diagnostic Trouble Codes (DTCs)</span>
-                <span className={classes.summaryValue}>{stats.totalDTCs} codes</span>
+              <div className="flex justify-between items-center py-4 border-b border-border/50">
+                <span className="text-sm text-muted-foreground font-medium">Diagnostic Trouble Codes (DTCs)</span>
+                <span className="text-base text-foreground font-semibold">{stats.totalDTCs} codes</span>
               </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Driving Behavior Alerts</span>
-                <span className={classes.summaryValue}>{stats.totalBehaviorAlerts} alerts</span>
+              <div className="flex justify-between items-center py-4 border-b border-border/50">
+                <span className="text-sm text-muted-foreground font-medium">Driving Behavior Alerts</span>
+                <span className="text-base text-foreground font-semibold">{stats.totalBehaviorAlerts} alerts</span>
               </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Total Service Cost</span>
-                <span className={classes.summaryValue}>
+              <div className="flex justify-between items-center py-4 border-b border-border/50">
+                <span className="text-sm text-muted-foreground font-medium">Total Service Cost</span>
+                <span className="text-base text-foreground font-semibold">
                   J${stats.totalServiceCost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} JMD
                 </span>
               </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Alert Types Included</span>
-                <span className={classes.summaryValue}>Harsh Braking, Acceleration, Cornering, Overspeed</span>
+              <div className="flex justify-between items-center py-4">
+                <span className="text-sm text-muted-foreground font-medium">Alert Types Included</span>
+                <span className="text-base text-foreground font-semibold">Harsh Braking, Acceleration, Cornering, Overspeed</span>
               </div>
             </CardBody>
           </Card>
         </GridItem>
 
         <GridItem xs={12} md={4}>
-          <Card className={classes.summaryCard}>
-            <div className={classes.summaryHeader}>
-              <h3 className={classes.summaryTitle}>Fleet Health</h3>
+          <Card className="rounded-xl shadow-sm border border-border print:shadow-none print:break-inside-avoid">
+            <div className="px-6 py-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-foreground m-0">Fleet Health</h3>
             </div>
-            <CardBody className={classes.summaryBody}>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Online Rate</span>
-                <span className={classes.summaryValue}>
+            <CardBody className="p-6">
+              <div className="flex justify-between items-center py-4 border-b border-border/50">
+                <span className="text-sm text-muted-foreground font-medium">Online Rate</span>
+                <span className="text-base text-foreground font-semibold">
                   {stats.totalVehicles > 0
                     ? Math.round((stats.activeVehicles / stats.totalVehicles) * 100)
                     : 0}%
                 </span>
               </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Avg DTCs per Vehicle</span>
-                <span className={classes.summaryValue}>
+              <div className="flex justify-between items-center py-4 border-b border-border/50">
+                <span className="text-sm text-muted-foreground font-medium">Avg DTCs per Vehicle</span>
+                <span className="text-base text-foreground font-semibold">
                   {stats.totalVehicles > 0
                     ? (stats.totalDTCs / stats.totalVehicles).toFixed(1)
                     : 0}
                 </span>
               </div>
-              <div className={classes.summaryRow}>
-                <span className={classes.summaryLabel}>Avg Alerts per Vehicle</span>
-                <span className={classes.summaryValue}>
+              <div className="flex justify-between items-center py-4">
+                <span className="text-sm text-muted-foreground font-medium">Avg Alerts per Vehicle</span>
+                <span className="text-base text-foreground font-semibold">
                   {stats.totalVehicles > 0
                     ? (stats.totalBehaviorAlerts / stats.totalVehicles).toFixed(1)
                     : 0}

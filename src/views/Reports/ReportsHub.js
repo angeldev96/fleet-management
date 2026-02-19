@@ -1,21 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useHistory } from "react-router-dom";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-import TextField from "@material-ui/core/TextField";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import Paper from "@material-ui/core/Paper";
-import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 
-// @material-ui/icons
-import Assessment from "@material-ui/icons/Assessment";
-import DirectionsCar from "@material-ui/icons/DirectionsCar";
-import Timeline from "@material-ui/icons/Timeline";
-import History from "@material-ui/icons/History";
-import ArrowForward from "@material-ui/icons/ArrowForward";
-import Search from "@material-ui/icons/Search";
-import Clear from "@material-ui/icons/Clear";
+// Lucide icons
+import { BarChart3, Car, TrendingUp, Clock, ArrowRight, Search, X, Loader2 } from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -30,342 +17,7 @@ import { useVehicles } from "hooks/useVehicles";
 // utils
 import { formatDateOnly } from "types/database";
 
-const useStyles = makeStyles(() => ({
-  pageHeader: {
-    marginBottom: "32px",
-  },
-  pageTitle: {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  pageSubtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    margin: "4px 0 0 0",
-  },
-  sectionTitle: {
-    fontSize: "18px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: "0 0 16px 0",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  reportCard: {
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    border: "1px solid #E5E7EB",
-    borderRadius: "12px",
-    height: "100%",
-    "&:hover": {
-      transform: "translateY(-2px)",
-      boxShadow: "0 8px 25px rgba(0, 0, 0, 0.1)",
-      borderColor: "#3B82F6",
-    },
-  },
-  reportCardBody: {
-    padding: "24px",
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-  },
-  reportIcon: {
-    width: "48px",
-    height: "48px",
-    borderRadius: "12px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: "16px",
-    "& svg": {
-      fontSize: "24px",
-      color: "#FFFFFF",
-    },
-  },
-  fleetIcon: {
-    backgroundColor: "#3B82F6",
-  },
-  reportTitle: {
-    fontSize: "18px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: "0 0 8px 0",
-  },
-  reportDescription: {
-    fontSize: "14px",
-    color: "#6b7280",
-    margin: "0 0 16px 0",
-    flex: 1,
-  },
-  reportAction: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  generateBtn: {
-    textTransform: "none",
-    fontWeight: "600",
-    borderRadius: "8px",
-    padding: "8px 16px",
-  },
-  fleetBtn: {
-    backgroundColor: "#3B82F6",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#2563EB",
-    },
-  },
-  vehicleBtn: {
-    backgroundColor: "#10B981",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#059669",
-    },
-  },
-  vehicleSelectCard: {
-    border: "1px solid #E5E7EB",
-    borderRadius: "12px",
-  },
-  vehicleSelectBody: {
-    padding: "24px",
-  },
-  selectHeader: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    marginBottom: "20px",
-  },
-  selectIcon: {
-    width: "40px",
-    height: "40px",
-    borderRadius: "10px",
-    backgroundColor: "#10B981",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    "& svg": {
-      fontSize: "20px",
-      color: "#FFFFFF",
-    },
-  },
-  selectTitle: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: 0,
-  },
-  selectSubtitle: {
-    fontSize: "13px",
-    color: "#6b7280",
-    margin: "2px 0 0 0",
-  },
-  searchContainer: {
-    position: "relative",
-    marginBottom: "16px",
-  },
-  searchInput: {
-    width: "100%",
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "8px",
-    },
-  },
-  dropdown: {
-    position: "absolute",
-    top: "100%",
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-    maxHeight: "280px",
-    overflowY: "auto",
-    marginTop: "4px",
-    borderRadius: "8px",
-    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
-  },
-  vehicleOption: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    padding: "12px 16px",
-    cursor: "pointer",
-    borderBottom: "1px solid #F3F4F6",
-    "&:hover": {
-      backgroundColor: "#F9FAFB",
-    },
-    "&:last-child": {
-      borderBottom: "none",
-    },
-  },
-  vehicleOptionIcon: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "8px",
-    backgroundColor: "#F3F4F6",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-    "& svg": {
-      fontSize: "18px",
-      color: "#6b7280",
-    },
-  },
-  vehicleOptionInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  vehicleOptionName: {
-    fontWeight: "500",
-    color: "#1f2937",
-    fontSize: "14px",
-  },
-  vehicleOptionMeta: {
-    fontSize: "12px",
-    color: "#6b7280",
-    display: "flex",
-    gap: "8px",
-    flexWrap: "wrap",
-  },
-  vehicleOptionPlate: {
-    backgroundColor: "#E5E7EB",
-    padding: "2px 6px",
-    borderRadius: "4px",
-    fontWeight: "500",
-  },
-  selectedVehiclePreview: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    padding: "12px",
-    backgroundColor: "#F0FDF4",
-    borderRadius: "8px",
-    marginBottom: "16px",
-    border: "1px solid #BBF7D0",
-  },
-  selectedVehicleIcon: {
-    width: "40px",
-    height: "40px",
-    borderRadius: "8px",
-    backgroundColor: "#10B981",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    "& svg": {
-      fontSize: "20px",
-      color: "#FFFFFF",
-    },
-  },
-  selectedVehicleInfo: {
-    flex: 1,
-  },
-  selectedVehicleName: {
-    fontWeight: "600",
-    color: "#065F46",
-    fontSize: "14px",
-  },
-  selectedVehicleMeta: {
-    fontSize: "12px",
-    color: "#047857",
-  },
-  clearBtn: {
-    cursor: "pointer",
-    color: "#9CA3AF",
-    "&:hover": {
-      color: "#6B7280",
-    },
-  },
-  noResults: {
-    padding: "16px",
-    textAlign: "center",
-    color: "#6b7280",
-    fontSize: "14px",
-  },
-  loadingContainer: {
-    display: "flex",
-    justifyContent: "center",
-    padding: "16px",
-  },
-  recentSection: {
-    marginTop: "40px",
-  },
-  recentCard: {
-    border: "1px solid #E5E7EB",
-    borderRadius: "12px",
-  },
-  recentCardBody: {
-    padding: "24px",
-  },
-  recentList: {
-    listStyle: "none",
-    padding: 0,
-    margin: 0,
-  },
-  recentItem: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "12px 0",
-    borderBottom: "1px solid #F3F4F6",
-    "&:last-child": {
-      borderBottom: "none",
-    },
-  },
-  recentInfo: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-  recentIcon: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "8px",
-    backgroundColor: "#F3F4F6",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    "& svg": {
-      fontSize: "18px",
-      color: "#6b7280",
-    },
-  },
-  recentText: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  recentTitle: {
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#1f2937",
-  },
-  recentMeta: {
-    fontSize: "12px",
-    color: "#9CA3AF",
-  },
-  viewBtn: {
-    textTransform: "none",
-    color: "#3B82F6",
-    fontWeight: "500",
-    padding: "4px 12px",
-    "&:hover": {
-      backgroundColor: "#EFF6FF",
-    },
-  },
-  emptyState: {
-    textAlign: "center",
-    padding: "32px",
-    color: "#9CA3AF",
-  },
-  emptyIcon: {
-    fontSize: "48px",
-    marginBottom: "12px",
-    opacity: 0.5,
-  },
-}));
-
 export default function ReportsHub() {
-  const classes = useStyles();
   const history = useHistory();
   const searchRef = useRef(null);
 
@@ -472,36 +124,50 @@ export default function ReportsHub() {
     return `Vehicle ${vehicle.plate_number}`;
   };
 
+  // Click-away handler for dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div>
       {/* Page Header */}
-      <div className={classes.pageHeader}>
-        <h1 className={classes.pageTitle}>Reports</h1>
-        <p className={classes.pageSubtitle}>Generate and view fleet and vehicle reports</p>
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-foreground m-0">Reports</h1>
+        <p className="text-sm text-muted-foreground mt-1 mb-0">Generate and view fleet and vehicle reports</p>
       </div>
 
       {/* Generate Reports Section */}
-      <h2 className={classes.sectionTitle}>
-        <Assessment style={{ color: "#6b7280" }} />
+      <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+        <BarChart3 className="text-muted-foreground" size={20} />
         Generate Report
       </h2>
 
       <GridContainer>
         {/* Fleet Summary Report Card */}
         <GridItem xs={12} sm={6} md={4}>
-          <Card className={classes.reportCard} onClick={handleFleetReport}>
-            <CardBody className={classes.reportCardBody}>
-              <div className={`${classes.reportIcon} ${classes.fleetIcon}`}>
-                <Assessment />
+          <Card
+            className="cursor-pointer transition-all duration-200 border border-border rounded-xl h-full hover:-translate-y-0.5 hover:shadow-lg hover:border-blue-500"
+            onClick={handleFleetReport}
+          >
+            <CardBody className="p-6 flex flex-col h-full">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-blue-500">
+                <BarChart3 size={24} className="text-white" />
               </div>
-              <h3 className={classes.reportTitle}>Fleet Summary Report</h3>
-              <p className={classes.reportDescription}>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Fleet Summary Report</h3>
+              <p className="text-sm text-muted-foreground mb-4 flex-1">
                 Overview of your entire fleet including vehicle status, alerts, mileage statistics, and performance metrics.
               </p>
-              <div className={classes.reportAction}>
-                <Button className={`${classes.generateBtn} ${classes.fleetBtn}`}>
+              <div className="flex items-center justify-between">
+                <Button className="normal-case font-semibold rounded-lg px-4 py-2 bg-blue-500 text-white hover:bg-blue-600">
                   Generate Report
-                  <ArrowForward style={{ marginLeft: "8px", fontSize: "18px" }} />
+                  <ArrowRight className="ml-2" size={18} />
                 </Button>
               </div>
             </CardBody>
@@ -510,15 +176,15 @@ export default function ReportsHub() {
 
         {/* Vehicle Travel Report Card */}
         <GridItem xs={12} sm={6} md={8}>
-          <Card className={classes.vehicleSelectCard}>
-            <CardBody className={classes.vehicleSelectBody}>
-              <div className={classes.selectHeader}>
-                <div className={classes.selectIcon}>
-                  <DirectionsCar />
+          <Card className="border border-border rounded-xl">
+            <CardBody className="p-6">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-[10px] bg-emerald-500 flex items-center justify-center">
+                  <Car size={20} className="text-white" />
                 </div>
                 <div>
-                  <h3 className={classes.selectTitle}>Vehicle Travel Report</h3>
-                  <p className={classes.selectSubtitle}>
+                  <h3 className="text-base font-semibold text-foreground m-0">Vehicle Travel Report</h3>
+                  <p className="text-[13px] text-muted-foreground mt-0.5 mb-0">
                     Detailed travel history, route visualization, and statistics for a specific vehicle
                   </p>
                 </div>
@@ -526,11 +192,12 @@ export default function ReportsHub() {
 
               {/* Search Input with Dropdown */}
               {!selectedVehicle && (
-                <ClickAwayListener onClickAway={() => setShowDropdown(false)}>
-                  <div className={classes.searchContainer} ref={searchRef}>
-                    <TextField
-                      className={classes.searchInput}
-                      variant="outlined"
+                <div className="relative mb-4" ref={searchRef}>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                    <input
+                      type="text"
+                      className="w-full rounded-lg border border-border py-2.5 pl-10 pr-10 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       placeholder="Search by plate number, make, or model..."
                       value={searchInput}
                       onChange={(e) => {
@@ -538,96 +205,88 @@ export default function ReportsHub() {
                         setShowDropdown(true);
                       }}
                       onFocus={() => setShowDropdown(true)}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Search style={{ color: "#9CA3AF" }} />
-                          </InputAdornment>
-                        ),
-                        endAdornment: vehiclesLoading ? (
-                          <InputAdornment position="end">
-                            <CircularProgress size={20} />
-                          </InputAdornment>
-                        ) : null,
-                      }}
                     />
-
-                    {/* Dropdown */}
-                    {showDropdown && searchInput.length > 0 && (
-                      <Paper className={classes.dropdown}>
-                        {vehiclesLoading ? (
-                          <div className={classes.loadingContainer}>
-                            <CircularProgress size={24} />
-                          </div>
-                        ) : vehicles.length > 0 ? (
-                          vehicles.slice(0, 10).map((vehicle) => (
-                            <div
-                              key={vehicle.id}
-                              className={classes.vehicleOption}
-                              onClick={() => handleSelectVehicle(vehicle)}
-                            >
-                              <div className={classes.vehicleOptionIcon}>
-                                <DirectionsCar />
-                              </div>
-                              <div className={classes.vehicleOptionInfo}>
-                                <div className={classes.vehicleOptionName}>
-                                  {getVehicleDisplayName(vehicle)}
-                                </div>
-                                <div className={classes.vehicleOptionMeta}>
-                                  <span className={classes.vehicleOptionPlate}>
-                                    {vehicle.plate_number}
-                                  </span>
-                                  {vehicle.year && <span>{vehicle.year}</span>}
-                                  {vehicle.make && vehicle.model && (
-                                    <span>{vehicle.make} {vehicle.model}</span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className={classes.noResults}>
-                            No vehicles found for &ldquo;{searchInput}&rdquo;
-                          </div>
-                        )}
-                      </Paper>
+                    {vehiclesLoading && (
+                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" size={20} />
                     )}
                   </div>
-                </ClickAwayListener>
+
+                  {/* Dropdown */}
+                  {showDropdown && searchInput.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 z-[1000] max-h-[280px] overflow-y-auto mt-1 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.15)] bg-white">
+                      {vehiclesLoading ? (
+                        <div className="flex justify-center p-4">
+                          <Loader2 className="animate-spin text-muted-foreground" size={24} />
+                        </div>
+                      ) : vehicles.length > 0 ? (
+                        vehicles.slice(0, 10).map((vehicle) => (
+                          <div
+                            key={vehicle.id}
+                            className="flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-border/50 last:border-b-0 hover:bg-muted/50"
+                            onClick={() => handleSelectVehicle(vehicle)}
+                          >
+                            <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                              <Car size={18} className="text-muted-foreground" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-foreground text-sm">
+                                {getVehicleDisplayName(vehicle)}
+                              </div>
+                              <div className="text-xs text-muted-foreground flex gap-2 flex-wrap">
+                                <span className="bg-muted px-1.5 py-0.5 rounded font-medium">
+                                  {vehicle.plate_number}
+                                </span>
+                                {vehicle.year && <span>{vehicle.year}</span>}
+                                {vehicle.make && vehicle.model && (
+                                  <span>{vehicle.make} {vehicle.model}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-4 text-center text-muted-foreground text-sm">
+                          No vehicles found for &ldquo;{searchInput}&rdquo;
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Selected Vehicle Preview */}
               {selectedVehicle && (
-                <div className={classes.selectedVehiclePreview}>
-                  <div className={classes.selectedVehicleIcon}>
-                    <DirectionsCar />
+                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg mb-4 border border-green-200">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500 flex items-center justify-center">
+                    <Car size={20} className="text-white" />
                   </div>
-                  <div className={classes.selectedVehicleInfo}>
-                    <div className={classes.selectedVehicleName}>
+                  <div className="flex-1">
+                    <div className="font-semibold text-emerald-900 text-sm">
                       {getVehicleDisplayName(selectedVehicle)}
                     </div>
-                    <div className={classes.selectedVehicleMeta}>
+                    <div className="text-xs text-emerald-700">
                       {selectedVehicle.plate_number}
-                      {selectedVehicle.year && ` • ${selectedVehicle.year}`}
+                      {selectedVehicle.year && ` \u2022 ${selectedVehicle.year}`}
                       {selectedVehicle.make && selectedVehicle.model &&
-                        ` • ${selectedVehicle.make} ${selectedVehicle.model}`
+                        ` \u2022 ${selectedVehicle.make} ${selectedVehicle.model}`
                       }
                     </div>
                   </div>
-                  <Clear
-                    className={classes.clearBtn}
+                  <X
+                    className="cursor-pointer text-muted-foreground hover:text-muted-foreground"
+                    size={20}
                     onClick={handleClearSelection}
                   />
                 </div>
               )}
 
               <Button
-                className={`${classes.generateBtn} ${classes.vehicleBtn}`}
+                className="normal-case font-semibold rounded-lg px-4 py-2 bg-emerald-500 text-white hover:bg-emerald-600"
                 onClick={handleVehicleReport}
                 disabled={!selectedVehicle}
               >
                 Generate Report
-                <ArrowForward style={{ marginLeft: "8px", fontSize: "18px" }} />
+                <ArrowRight className="ml-2" size={18} />
               </Button>
             </CardBody>
           </Card>
@@ -635,33 +294,33 @@ export default function ReportsHub() {
       </GridContainer>
 
       {/* Recent Reports Section */}
-      <div className={classes.recentSection}>
-        <h2 className={classes.sectionTitle}>
-          <History style={{ color: "#6b7280" }} />
+      <div className="mt-10">
+        <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Clock className="text-muted-foreground" size={20} />
           Recent Reports
         </h2>
 
-        <Card className={classes.recentCard}>
-          <CardBody className={classes.recentCardBody}>
+        <Card className="border border-border rounded-xl">
+          <CardBody className="p-6">
             {recentReports.length > 0 ? (
-              <ul className={classes.recentList}>
+              <ul className="list-none p-0 m-0">
                 {recentReports.map((report, index) => (
-                  <li key={index} className={classes.recentItem}>
-                    <div className={classes.recentInfo}>
-                      <div className={classes.recentIcon}>
-                        <Timeline />
+                  <li key={index} className="flex items-center justify-between py-3 border-b border-border/50 last:border-b-0">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
+                        <TrendingUp size={18} className="text-muted-foreground" />
                       </div>
-                      <div className={classes.recentText}>
-                        <span className={classes.recentTitle}>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-foreground">
                           {report.vehicleName} - Travel Report
                         </span>
-                        <span className={classes.recentMeta}>
-                          {report.plate} • Viewed {formatDate(report.accessedAt)}
+                        <span className="text-xs text-muted-foreground">
+                          {report.plate} &bull; Viewed {formatDate(report.accessedAt)}
                         </span>
                       </div>
                     </div>
                     <Button
-                      className={classes.viewBtn}
+                      className="normal-case text-blue-500 font-medium px-3 py-1 hover:bg-blue-50"
                       onClick={() => handleViewRecent(report.vehicleId)}
                     >
                       View
@@ -670,10 +329,10 @@ export default function ReportsHub() {
                 ))}
               </ul>
             ) : (
-              <div className={classes.emptyState}>
-                <History className={classes.emptyIcon} />
+              <div className="text-center py-8 text-muted-foreground">
+                <Clock size={48} className="mx-auto mb-3 opacity-50" />
                 <p>No recent reports</p>
-                <p style={{ fontSize: "13px" }}>
+                <p className="text-[13px]">
                   Reports you generate will appear here for quick access
                 </p>
               </div>
