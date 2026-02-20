@@ -1,12 +1,9 @@
-import { ComponentType } from "react";
+import { ComponentType, lazy } from "react";
 import { LucideIcon } from "lucide-react";
 
 import Overview from "views/Overview/Overview";
-import LiveMap from "views/LiveMap/LiveMap";
 import Vehicles from "views/Vehicles/Vehicles";
-import VehicleDetails from "views/Vehicles/VehicleDetails";
 import VehicleSnapshot from "views/Vehicles/VehicleSnapshot";
-import VehicleTravelReport from "views/Vehicles/VehicleTravelReport";
 import Alerts from "views/Alerts/Alerts";
 import Devices from "views/Devices/Devices";
 import SettingsPage from "views/Settings/Settings";
@@ -15,10 +12,15 @@ import VehicleDataUpload from "views/Settings/VehicleDataUpload";
 import UserManagement from "views/Settings/UserManagement";
 import FleetSettings from "views/Settings/FleetSettings";
 import ReportsHub from "views/Reports/ReportsHub";
-import FleetReport from "views/Reports/FleetReport";
 import ServiceCalendar from "views/ServiceCalendar/ServiceCalendar";
 import LoginPage from "views/Pages/LoginPage";
 import RegisterPage from "views/Pages/RegisterPage";
+
+// Lazy-load heavy components (mapbox-gl ~200KB, jspdf ~80KB)
+const LiveMap = lazy(() => import("views/LiveMap/LiveMap"));
+const VehicleDetails = lazy(() => import("views/Vehicles/VehicleDetails"));
+const VehicleTravelReport = lazy(() => import("views/Vehicles/VehicleTravelReport"));
+const FleetReport = lazy(() => import("views/Reports/FleetReport"));
 
 import { Home, MapPin, Car, Bell, Tablet, FileText, CalendarDays, Settings, Image } from "lucide-react";
 

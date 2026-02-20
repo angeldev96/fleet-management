@@ -1,18 +1,7 @@
 import React, { useMemo, useState, useCallback } from "react";
 
 // lucide icons
-import {
-  CalendarDays,
-  Wrench,
-  Clock,
-  AlertTriangle,
-  CheckCircle2,
-  MapPin,
-  User,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-} from "lucide-react";
+import { CalendarDays, Wrench, Clock, AlertTriangle, CheckCircle2, MapPin, User, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 // core components
 import GridContainer from "components/Grid/GridContainer";
@@ -109,7 +98,7 @@ export default function ServiceCalendar() {
     const todayStr = today.toISOString().split("T")[0];
     return allEvents
       .filter((event) => event.computed_status !== "completed" && event.service_date >= todayStr)
-      .sort((a, b) => a.service_date.localeCompare(b.service_date))
+      .toSorted((a, b) => a.service_date.localeCompare(b.service_date))
       .slice(0, 6);
   }, [allEvents, today]);
 

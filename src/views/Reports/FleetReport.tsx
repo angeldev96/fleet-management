@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 // Lucide icons
 import { ArrowLeft, Car, AlertTriangle, Gauge, TrendingUp, DollarSign, Download, FileText, Loader2 } from "lucide-react";
 
-import jsPDF from "jspdf";
+import type jsPDF from "jspdf";
 
 // core components
 import GridContainer from "components/Grid/GridContainer";
@@ -49,8 +49,9 @@ export default function FleetReport() {
     document.body.removeChild(link);
   };
 
-  const handleExportPDF = () => {
-    const pdf: any = new jsPDF("p", "mm", "a4");
+  const handleExportPDF = async () => {
+    const { default: JsPDF } = await import("jspdf");
+    const pdf: any = new JsPDF("p", "mm", "a4");
     const pageWidth: number = pdf.internal.pageSize.getWidth();
     const pageHeight: number = pdf.internal.pageSize.getHeight();
     const margin = 15;

@@ -87,26 +87,29 @@ export function useStats({ refreshInterval = 30000 }: UseStatsOptions = {}) {
       );
       const sinceStartOfDay = startOfDayUTC.toISOString();
 
-      const { data: alerts, error: alertsError } = await supabase
-        .from("events")
-        .select("id, severity, event_type")
-        .in("severity", ["warning", "critical"])
-        .in("vehicle_id", vehicleIds)
-        .neq("event_type", "location_update")
-        .neq("event_type", "device_offline")
-        .neq("event_type", "device_online")
-        .neq("event_type", "power_event")
-        .gte("event_at", sinceStartOfDay);
+      const [
+        { data: alerts, error: alertsError },
+        { data: vehicleAlerts, error: vehicleAlertsError },
+      ] = await Promise.all([
+        supabase
+          .from("events")
+          .select("id, severity, event_type")
+          .in("severity", ["warning", "critical"])
+          .in("vehicle_id", vehicleIds)
+          .neq("event_type", "location_update")
+          .neq("event_type", "device_offline")
+          .neq("event_type", "device_online")
+          .neq("event_type", "power_event")
+          .gte("event_at", sinceStartOfDay),
+        supabase
+          .from("events")
+          .select("vehicle_id")
+          .in("vehicle_id", vehicleIds)
+          .in("event_type", ["dtc_detected", "collision_detected"])
+          .gte("event_at", sinceStartOfDay),
+      ]);
 
       if (alertsError) throw alertsError;
-
-      const { data: vehicleAlerts, error: vehicleAlertsError } = await supabase
-        .from("events")
-        .select("vehicle_id")
-        .in("vehicle_id", vehicleIds)
-        .in("event_type", ["dtc_detected", "collision_detected"])
-        .gte("event_at", sinceStartOfDay);
-
       if (vehicleAlertsError) throw vehicleAlertsError;
 
       const vehiclesWithIssues = new Set(vehicleAlerts?.map((e: any) => e.vehicle_id) || []).size;

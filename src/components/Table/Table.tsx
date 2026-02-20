@@ -95,7 +95,7 @@ export default function CustomTable({
               <tr
                 key={key}
                 className={cn(
-                  "border-b border-border/40 transition-colors duration-150",
+                  "border-b border-border/40 transition-colors duration-150 cv-auto-row",
                   "hover:bg-primary/3",
                   striped && key % 2 === 0 && "bg-muted/20",
                 )}

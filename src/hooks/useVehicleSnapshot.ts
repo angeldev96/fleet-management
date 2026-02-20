@@ -79,12 +79,6 @@ export function useVehicleSnapshot(
         pidQuery = pidQuery.eq("vehicles.fleet_id", fleetId);
       }
 
-      const { data: pidEvents, error: pidError } = await pidQuery;
-
-      if (pidError) {
-        console.warn("Error fetching PID events:", pidError);
-      }
-
       let locationQuery = supabase
         .from("events")
         .select("event_data, event_at, speed, event_type, vehicles!inner(fleet_id)")
@@ -97,7 +91,14 @@ export function useVehicleSnapshot(
         locationQuery = locationQuery.eq("vehicles.fleet_id", fleetId);
       }
 
-      const { data: recentEvents, error: locationError } = await locationQuery;
+      const [
+        { data: pidEvents, error: pidError },
+        { data: recentEvents, error: locationError },
+      ] = await Promise.all([pidQuery, locationQuery]);
+
+      if (pidError) {
+        console.warn("Error fetching PID events:", pidError);
+      }
 
       if (locationError) {
         console.warn("Error fetching latest telemetry events:", locationError);

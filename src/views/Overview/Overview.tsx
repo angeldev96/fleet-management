@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { useHistory } from "react-router-dom";
 
 // Lucide icons
@@ -22,7 +22,7 @@ import GridContainer from "components/Grid/GridContainer";
 import GridItem from "components/Grid/GridItem";
 import Card from "components/Card/Card";
 import CardBody from "components/Card/CardBody";
-import MapPreview from "components/MapPreview/MapPreview";
+const MapPreview = lazy(() => import("components/MapPreview/MapPreview"));
 
 // hooks
 import { useStats } from "hooks/useStats";
@@ -260,7 +260,9 @@ export default function Overview() {
               </button>
             </div>
             <div className="w-full h-[400px] relative">
-              <MapPreview />
+              <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
+                <MapPreview />
+              </Suspense>
             </div>
           </Card>
         </GridItem>

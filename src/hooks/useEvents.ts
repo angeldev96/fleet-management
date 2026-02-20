@@ -320,26 +320,30 @@ export function useVehicleAlerts(vehicleIds: string[] = []) {
       );
       const sinceStartOfDay = startOfDayUTC.toISOString();
 
-      const { data: alerts, error: alertsError } = await supabase
-        .from("events")
-        .select("vehicle_id, severity, event_type")
-        .in("severity", ["info", "warning", "critical"])
-        .neq("event_type", "location_update")
-        .neq("event_type", "device_offline")
-        .neq("event_type", "device_online")
-        .neq("event_type", "power_event")
-        .neq("event_type", "pid_reading")
-        .gte("event_at", sinceStartOfDay);
+      const [
+        { data: alerts, error: alertsError },
+        { data: dtcs, error: dtcsError },
+      ] = await Promise.all([
+        supabase
+          .from("events")
+          .select("vehicle_id, severity, event_type")
+          .in("severity", ["info", "warning", "critical"])
+          .neq("event_type", "location_update")
+          .neq("event_type", "device_offline")
+          .neq("event_type", "device_online")
+          .neq("event_type", "power_event")
+          .neq("event_type", "pid_reading")
+          .gte("event_at", sinceStartOfDay),
+        supabase
+          .from("events")
+          .select("vehicle_id")
+          .in("vehicle_id", vehicleIds)
+          .eq("event_type", "dtc_detected"),
+      ]);
 
       if (alertsError) {
         console.error("Error fetching vehicle alerts:", alertsError);
       }
-
-      const { data: dtcs, error: dtcsError } = await supabase
-        .from("events")
-        .select("vehicle_id")
-        .in("vehicle_id", vehicleIds)
-        .eq("event_type", "dtc_detected");
 
       if (dtcsError) {
         console.error("Error fetching DTC counts:", dtcsError);

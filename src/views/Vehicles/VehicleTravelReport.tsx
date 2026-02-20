@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import jsPDF from "jspdf";
+import type jsPDF from "jspdf";
 
 // lucide icons
 import {
@@ -272,7 +272,8 @@ export default function VehicleTravelReport() {
       : vehicleName;
 
     // Create PDF (A4 size)
-    const pdf = new jsPDF("p", "mm", "a4");
+    const { default: JsPDF } = await import("jspdf");
+    const pdf = new JsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 15;

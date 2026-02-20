@@ -75,36 +75,40 @@ export function useFleetReport() {
         return;
       }
 
-      const { count: dtcCount } = await supabase
-        .from("events")
-        .select("id", { count: "exact", head: true })
-        .in("vehicle_id", vehicleIds)
-        .eq("event_type", "dtc_detected");
-
-      const { count: behaviorCount } = await supabase
-        .from("events")
-        .select("id", { count: "exact", head: true })
-        .in("vehicle_id", vehicleIds)
-        .in("event_type", ["harsh_braking", "harsh_acceleration", "harsh_cornering", "overspeed"]);
-
-      const { data: locationEvents } = await supabase
-        .from("events")
-        .select("event_data")
-        .in("vehicle_id", vehicleIds)
-        .eq("event_type", "location_update")
-        .not("event_data", "is", null);
+      const [
+        { count: dtcCount },
+        { count: behaviorCount },
+        { data: locationEvents },
+        { data: serviceEvents },
+      ] = await Promise.all([
+        supabase
+          .from("events")
+          .select("id", { count: "exact", head: true })
+          .in("vehicle_id", vehicleIds)
+          .eq("event_type", "dtc_detected"),
+        supabase
+          .from("events")
+          .select("id", { count: "exact", head: true })
+          .in("vehicle_id", vehicleIds)
+          .in("event_type", ["harsh_braking", "harsh_acceleration", "harsh_cornering", "overspeed"]),
+        supabase
+          .from("events")
+          .select("event_data")
+          .in("vehicle_id", vehicleIds)
+          .eq("event_type", "location_update")
+          .not("event_data", "is", null),
+        supabase
+          .from("service_events")
+          .select("cost")
+          .in("vehicle_id", vehicleIds)
+          .not("cost", "is", null),
+      ]);
 
       let totalDistance = 0;
       locationEvents?.forEach((event: any) => {
         const speed = event.event_data?.speed || 0;
         totalDistance += (speed * 30) / 3600;
       });
-
-      const { data: serviceEvents } = await supabase
-        .from("service_events")
-        .select("cost")
-        .in("vehicle_id", vehicleIds)
-        .not("cost", "is", null);
 
       let totalServiceCost = 0;
       serviceEvents?.forEach((event: any) => {

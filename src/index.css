@@ -117,4 +117,9 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  .cv-auto-row {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 52px;
+  }
 }

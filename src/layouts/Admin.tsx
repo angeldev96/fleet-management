@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import { cn } from "lib/utils";
 
@@ -86,10 +86,18 @@ export default function Dashboard() {
         />
         <main className="flex-1 overflow-y-auto bg-background">
           <div className="px-4 md:px-6 py-5 max-w-360 mx-auto w-full">
-            <Switch>
-              {getRoutes(routes)}
-              <Redirect from="/admin" to="/admin/dashboard" />
-            </Switch>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center py-20">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                </div>
+              }
+            >
+              <Switch>
+                {getRoutes(routes)}
+                <Redirect from="/admin" to="/admin/dashboard" />
+              </Switch>
+            </Suspense>
           </div>
         </main>
       </div>

@@ -89,8 +89,6 @@ export function useTravelData(vehicleId: string | undefined, startDate: string, 
         locationQuery = locationQuery.eq("vehicles.fleet_id", fleetId);
       }
 
-      const { data: locationEvents } = await locationQuery;
-
       let alertsQuery = supabase
         .from("events")
         .select(
@@ -107,7 +105,10 @@ export function useTravelData(vehicleId: string | undefined, startDate: string, 
         alertsQuery = alertsQuery.eq("vehicles.fleet_id", fleetId);
       }
 
-      const { data: alertData } = await alertsQuery;
+      const [{ data: locationEvents }, { data: alertData }] = await Promise.all([
+        locationQuery,
+        alertsQuery,
+      ]);
 
       const points: LocationPoint[] = [];
       let totalDistance = 0;
