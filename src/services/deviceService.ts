@@ -1,51 +1,49 @@
 import { supabase } from "lib/supabase";
+import type { Device, Vehicle, ServiceResult, BatchResult } from "types/database";
 
-/**
- * Insert a single device
- * @param {Object} deviceData - { vehicle_id, imei, serial_number }
- * @returns {Promise<{ data: Object|null, error: Error|null }>}
- */
-export async function addDevice(deviceData) {
+interface DeviceInput {
+  vehicle_id?: string | null;
+  imei: string;
+  serial_number?: string | null;
+}
+
+interface DeviceCsvRow {
+  imei: string;
+  serial_number?: string;
+  plate_number?: string;
+}
+
+export async function addDevice(deviceData: DeviceInput): Promise<ServiceResult<Device>> {
   try {
-    const { data, error } = await supabase
-      .from("devices")
-      .insert(deviceData)
-      .select()
-      .single();
+    const { data, error } = await supabase.from("devices").insert(deviceData).select().single();
 
     if (error) throw error;
     return { data, error: null };
   } catch (err) {
     console.error("Error adding device:", err);
-    return { data: null, error: err };
+    return { data: null, error: err as Error };
   }
 }
 
-/**
- * Insert devices in batch from parsed CSV rows
- * @param {Array<Object>} rows - Parsed CSV rows with { imei, serial_number, plate_number? (optional) }
- * @param {Array<Object>} vehicles - Array of vehicle objects for plate_number -> vehicle_id lookup (if plate_number provided)
- * @param {Function} onProgress - Callback(current, total) for progress updates
- * @returns {Promise<{ successCount: number, errorCount: number, errors: string[] }>}
- */
-export async function batchAddDevices(rows, vehicles, onProgress) {
+export async function batchAddDevices(
+  rows: DeviceCsvRow[],
+  vehicles: Vehicle[],
+  onProgress?: (current: number, total: number) => void,
+): Promise<BatchResult> {
   let successCount = 0;
   let errorCount = 0;
-  const errors = [];
+  const errors: string[] = [];
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     if (onProgress) onProgress(i + 1, rows.length);
 
     try {
-      let vehicleId = null;
+      let vehicleId: string | null = null;
 
-      // If plate_number provided, look up the vehicle
       if (row.plate_number) {
         const plateValue = row.plate_number.toLowerCase().trim();
-        const vehicle = vehicles.find(
-          (v) => v.plate_number?.toLowerCase().trim() === plateValue
-        );
+        const vehicle = vehicles.find((v) => v.plate_number?.toLowerCase().trim() === plateValue);
 
         if (!vehicle) {
           throw new Error(`Vehicle with plate "${row.plate_number}" not found`);
@@ -64,20 +62,17 @@ export async function batchAddDevices(rows, vehicles, onProgress) {
       successCount++;
     } catch (err) {
       errorCount++;
-      errors.push(`Row ${i + 2}: ${err.message}`);
+      errors.push(`Row ${i + 2}: ${(err as Error).message}`);
     }
   }
 
   return { successCount, errorCount, errors };
 }
 
-/**
- * Update an existing device
- * @param {string} deviceId - The device UUID
- * @param {Object} updates - Fields to update (e.g. { imei, serial_number, firmware_version })
- * @returns {Promise<{ data: Object|null, error: Error|null }>}
- */
-export async function updateDevice(deviceId, updates) {
+export async function updateDevice(
+  deviceId: string,
+  updates: Partial<DeviceInput>,
+): Promise<ServiceResult<Device>> {
   try {
     const { data, error } = await supabase
       .from("devices")
@@ -90,26 +85,18 @@ export async function updateDevice(deviceId, updates) {
     return { data, error: null };
   } catch (err) {
     console.error("Error updating device:", err);
-    return { data: null, error: err };
+    return { data: null, error: err as Error };
   }
 }
 
-/**
- * Delete a device
- * @param {string} deviceId - The device UUID
- * @returns {Promise<{ data: null, error: Error|null }>}
- */
-export async function deleteDevice(deviceId) {
+export async function deleteDevice(deviceId: string): Promise<ServiceResult<null>> {
   try {
-    const { error } = await supabase
-      .from("devices")
-      .delete()
-      .eq("id", deviceId);
+    const { error } = await supabase.from("devices").delete().eq("id", deviceId);
 
     if (error) throw error;
     return { data: null, error: null };
   } catch (err) {
     console.error("Error deleting device:", err);
-    return { data: null, error: err };
+    return { data: null, error: err as Error };
   }
 }

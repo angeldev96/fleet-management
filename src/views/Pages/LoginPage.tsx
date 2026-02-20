@@ -3,7 +3,7 @@ import { useHistory } from "react-router-dom";
 import { Loader2, Mail, Lock, Shield } from "lucide-react";
 
 // core components
-import Snackbar from "components/Snackbar/Snackbar.js";
+import Snackbar from "components/Snackbar/Snackbar";
 
 // auth
 import { useAuth } from "context/AuthContext";
@@ -22,7 +22,7 @@ export default function LoginPage() {
 
   React.useEffect(() => {
     isMounted.current = true;
-    let id = setTimeout(function () {
+    const id = setTimeout(function () {
       if (isMounted.current) {
         setCardAnimation("");
       }
@@ -33,7 +33,7 @@ export default function LoginPage() {
     };
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -48,7 +48,7 @@ export default function LoginPage() {
     try {
       await signIn(email, password);
       history.push("/admin/dashboard");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Login error:", err);
       if (isMounted.current) {
         setError(err.message || "Invalid email or password");

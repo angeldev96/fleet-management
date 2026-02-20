@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { X, Wrench, Clock, Download, FileText, Loader2 } from "lucide-react";
 
 // core components
-import Table from "components/Table/Table.js";
-import Button from "components/CustomButtons/Button.js";
+import Table from "components/Table/Table";
+import Button from "components/CustomButtons/Button";
 
 // shadcn ui
 import {
@@ -30,17 +30,27 @@ import { useVehicleServiceHistory, deleteServiceEvent } from "hooks/useServiceEv
 import { SERVICE_TYPE_LABELS, SERVICE_STATUS_CLASSES } from "types/database";
 import { exportToCSV, exportToPDF } from "./exportService";
 
-export default function ServiceHistoryModal({ open, onClose, vehicleId, vehicleName, plateNumber, onEditEvent, onDeleteSuccess }) {
+interface ServiceHistoryModalProps {
+  open: boolean;
+  onClose: () => void;
+  vehicleId: string;
+  vehicleName?: string;
+  plateNumber?: string;
+  onEditEvent?: (event: any) => void;
+  onDeleteSuccess?: () => void;
+}
+
+export default function ServiceHistoryModal({ open, onClose, vehicleId, vehicleName, plateNumber, onEditEvent, onDeleteSuccess }: ServiceHistoryModalProps) {
   const { events, loading, refetch } = useVehicleServiceHistory(vehicleId);
 
   // AlertDialog states (replacing SweetAlert)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleDelete = (event) => {
+  const handleDelete = (event: any) => {
     setDeleteTarget(event);
     setDeleteConfirmOpen(true);
   };
@@ -55,12 +65,12 @@ export default function ServiceHistoryModal({ open, onClose, vehicleId, vehicleN
     } else {
       setShowSuccess(true);
       refetch();
-      onDeleteSuccess && onDeleteSuccess();
+      onDeleteSuccess?.();
     }
     setDeleteTarget(null);
   };
 
-  const formatDate = (dateStr) => {
+  const formatDate = (dateStr: string | null | undefined): string => {
     if (!dateStr) return "-";
     const date = new Date(dateStr + "T00:00:00");
     return date.toLocaleDateString("en-US", {
@@ -140,16 +150,16 @@ export default function ServiceHistoryModal({ open, onClose, vehicleId, vehicleN
                     (
                       <span key={`type-${event.id}`} className="inline-flex items-center gap-1.5 text-sm">
                         <Wrench className="h-3.5 w-3.5 text-muted-foreground" />
-                        {SERVICE_TYPE_LABELS[event.service_type] || event.service_type}
+                        {SERVICE_TYPE_LABELS[event.service_type as keyof typeof SERVICE_TYPE_LABELS] || event.service_type}
                       </span>
                     ),
                     event.service_items || "-",
                     (
                       <span
                         key={`status-${event.id}`}
-                        className={`inline-flex items-center text-xs font-semibold rounded-full px-2.5 py-1 ${SERVICE_STATUS_CLASSES[event.computed_status || event.status] || "bg-amber-50 text-amber-700"}`}
+                        className={`inline-flex items-center text-xs font-semibold rounded-full px-2.5 py-1 ${SERVICE_STATUS_CLASSES[(event.computed_status || event.status) as keyof typeof SERVICE_STATUS_CLASSES] || "bg-amber-50 text-amber-700"}`}
                       >
-                        {(event.computed_status || event.status || "").replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                        {(event.computed_status || event.status || "").replace("_", " ").replace(/\b\w/g, (c: any) => c.toUpperCase())}
                       </span>
                     ),
                     event.mileage ? `${Number(event.mileage).toLocaleString()} km` : "-",

@@ -1,19 +1,23 @@
 import { supabase } from "lib/supabase";
+import type { Vehicle, ServiceResult, BatchResult } from "types/database";
 
-/**
- * Insert a single vehicle
- * @param {Object} vehicleData - { name, plate_number, make, model, year, driver_name }
- * @param {string} fleetId - The fleet ID to associate
- * @returns {Promise<{ data: Object|null, error: Error|null }>}
- */
-export async function addVehicle(vehicleData, fleetId) {
+interface VehicleInput {
+  name?: string;
+  plate_number?: string;
+  make?: string;
+  model?: string;
+  year?: string | number;
+  driver_name?: string;
+}
+
+export async function addVehicle(vehicleData: VehicleInput, fleetId: string): Promise<ServiceResult<Vehicle>> {
   try {
     const { data, error } = await supabase
       .from("vehicles")
       .insert({
         ...vehicleData,
         fleet_id: fleetId,
-        year: vehicleData.year ? parseInt(vehicleData.year) : null,
+        year: vehicleData.year ? parseInt(String(vehicleData.year)) : null,
       })
       .select()
       .single();
@@ -22,21 +26,18 @@ export async function addVehicle(vehicleData, fleetId) {
     return { data, error: null };
   } catch (err) {
     console.error("Error adding vehicle:", err);
-    return { data: null, error: err };
+    return { data: null, error: err as Error };
   }
 }
 
-/**
- * Insert vehicles in batch from parsed CSV rows
- * @param {Array<Object>} rows - Parsed CSV rows with { name, plate_number, make, model, year, driver_name }
- * @param {string} fleetId - The fleet ID to associate
- * @param {Function} onProgress - Callback(current, total) for progress updates
- * @returns {Promise<{ successCount: number, errorCount: number, errors: string[] }>}
- */
-export async function batchAddVehicles(rows, fleetId, onProgress) {
+export async function batchAddVehicles(
+  rows: VehicleInput[],
+  fleetId: string,
+  onProgress?: (current: number, total: number) => void,
+): Promise<BatchResult> {
   let successCount = 0;
   let errorCount = 0;
-  const errors = [];
+  const errors: string[] = [];
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
@@ -54,7 +55,7 @@ export async function batchAddVehicles(rows, fleetId, onProgress) {
         plate_number: plate,
         make,
         model,
-        year: row.year ? parseInt(row.year) : null,
+        year: row.year ? parseInt(String(row.year)) : null,
         driver_name: row.driver_name || null,
         fleet_id: fleetId,
       };
@@ -64,20 +65,17 @@ export async function batchAddVehicles(rows, fleetId, onProgress) {
       successCount++;
     } catch (err) {
       errorCount++;
-      errors.push(`Row ${i + 2}: ${err.message}`);
+      errors.push(`Row ${i + 2}: ${(err as Error).message}`);
     }
   }
 
   return { successCount, errorCount, errors };
 }
 
-/**
- * Update an existing vehicle
- * @param {string} vehicleId
- * @param {Object} updates - { name, plate_number, make, model, year, driver_name }
- * @returns {Promise<{ data: Object|null, error: Error|null }>}
- */
-export async function updateVehicle(vehicleId, updates) {
+export async function updateVehicle(
+  vehicleId: string,
+  updates: Partial<VehicleInput>,
+): Promise<ServiceResult<Vehicle>> {
   try {
     const { data, error } = await supabase
       .from("vehicles")
@@ -90,26 +88,18 @@ export async function updateVehicle(vehicleId, updates) {
     return { data, error: null };
   } catch (err) {
     console.error("Error updating vehicle:", err);
-    return { data: null, error: err };
+    return { data: null, error: err as Error };
   }
 }
 
-/**
- * Delete a vehicle
- * @param {string} vehicleId
- * @returns {Promise<{ data: Object|null, error: Error|null }>}
- */
-export async function deleteVehicle(vehicleId) {
+export async function deleteVehicle(vehicleId: string): Promise<ServiceResult<null>> {
   try {
-    const { error } = await supabase
-      .from("vehicles")
-      .delete()
-      .eq("id", vehicleId);
+    const { error } = await supabase.from("vehicles").delete().eq("id", vehicleId);
 
     if (error) throw error;
     return { data: null, error: null };
   } catch (err) {
     console.error("Error deleting vehicle:", err);
-    return { data: null, error: err };
+    return { data: null, error: err as Error };
   }
 }

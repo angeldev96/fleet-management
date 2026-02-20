@@ -1,7 +1,9 @@
 import React from "react";
 import { cn } from "lib/utils";
 
-const colorClasses = {
+type CardColor = "primary" | "info" | "success" | "warning" | "danger" | "rose";
+
+const colorClasses: Record<CardColor, string> = {
   primary: "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground",
   info: "bg-gradient-to-br from-blue-500 to-blue-600 text-white",
   success: "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white",
@@ -9,6 +11,19 @@ const colorClasses = {
   danger: "bg-gradient-to-br from-red-500 to-red-600 text-white",
   rose: "bg-gradient-to-br from-pink-500 to-pink-600 text-white",
 };
+
+interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  className?: string;
+  children?: React.ReactNode;
+  color?: CardColor;
+  plain?: boolean;
+  image?: boolean;
+  contact?: boolean;
+  signup?: boolean;
+  stats?: boolean;
+  icon?: boolean;
+  text?: boolean;
+}
 
 export default function CardHeader({
   className,
@@ -22,7 +37,7 @@ export default function CardHeader({
   icon,
   text,
   ...rest
-}) {
+}: CardHeaderProps) {
   return (
     <div
       className={cn(

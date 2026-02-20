@@ -1,18 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "lib/supabase";
 import { useAuth } from "context/AuthContext";
+import type { TelemetryEvent, Severity, EventType } from "types/database";
 
-/**
- * Hook to fetch events/alerts
- * @param {Object} options
- * @param {string} options.fleetId - Fleet ID to filter
- * @param {Array<string>} options.severity - Filter by severity ['warning', 'critical']
- * @param {Array<string>} options.eventTypes - Filter by event types
- * @param {number} options.limit - Limit results (default: 50)
- * @param {number} options.hoursAgo - Filter events from last N hours (default: 24)
- * @param {number} options.refreshInterval - Polling interval in ms (default: 30000)
- * @returns {{ events: Array, loading: boolean, error: Error | null, refetch: Function }}
- */
+interface UseEventsOptions {
+  fleetId?: string | null;
+  severity?: Severity[];
+  eventTypes?: EventType[] | null;
+  limit?: number;
+  hoursAgo?: number;
+  refreshInterval?: number;
+}
+
 export function useEvents({
   fleetId = null,
   severity = ["info", "warning", "critical"],
@@ -20,12 +19,12 @@ export function useEvents({
   limit = 50,
   hoursAgo = 24,
   refreshInterval = 30000,
-} = {}) {
+}: UseEventsOptions = {}) {
   const { fleetId: authFleetId, isSuperAdmin, loading: authLoading } = useAuth();
   const effectiveFleetId = fleetId ?? authFleetId;
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -59,7 +58,7 @@ export function useEvents({
             plate_number,
             fleet_id
           )
-        `
+        `,
         )
         .in("severity", severity)
         .gte("event_at", sinceDate)
@@ -71,10 +70,8 @@ export function useEvents({
       }
 
       if (eventTypes && eventTypes.length > 0) {
-        // When specific event types are requested, use them directly
         query = query.in("event_type", eventTypes);
       } else {
-        // Default view: exclude noise event types
         query = query
           .neq("event_type", "location_update")
           .neq("event_type", "device_offline")
@@ -94,7 +91,7 @@ export function useEvents({
     } catch (err) {
       console.error("Error fetching events:", err);
       if (isMounted.current) {
-        setError(err);
+        setError(err as Error);
       }
     } finally {
       if (isMounted.current) {
@@ -114,17 +111,19 @@ export function useEvents({
   return { events, loading, error, refetch: fetchEvents };
 }
 
-/**
- * Hook to fetch events for a specific vehicle
- * @param {string} vehicleId
- * @param {Object} options
- * @returns {{ events: Array, loading: boolean, error: Error | null }}
- */
-export function useVehicleEvents(vehicleId, { limit = 50, eventTypes = null } = {}) {
+interface UseVehicleEventsOptions {
+  limit?: number;
+  eventTypes?: EventType[] | null;
+}
+
+export function useVehicleEvents(
+  vehicleId: string | undefined,
+  { limit = 50, eventTypes = null }: UseVehicleEventsOptions = {},
+) {
   const { fleetId, isSuperAdmin, loading: authLoading } = useAuth();
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -179,7 +178,7 @@ export function useVehicleEvents(vehicleId, { limit = 50, eventTypes = null } = 
       } catch (err) {
         console.error("Error fetching vehicle events:", err);
         if (isMounted.current) {
-          setError(err);
+          setError(err as Error);
         }
       } finally {
         if (isMounted.current) {
@@ -194,17 +193,16 @@ export function useVehicleEvents(vehicleId, { limit = 50, eventTypes = null } = 
   return { events, loading, error };
 }
 
-/**
- * Hook to fetch recent alerts (warning + critical)
- * @param {Object} options
- * @param {number} options.limit - Number of alerts to fetch
- * @returns {{ alerts: Array, loading: boolean, error: Error | null, refetch: Function }}
- */
-export function useRecentAlerts({ limit = 10, refreshInterval = 30000 } = {}) {
+interface UseRecentAlertsOptions {
+  limit?: number;
+  refreshInterval?: number;
+}
+
+export function useRecentAlerts({ limit = 10, refreshInterval = 30000 }: UseRecentAlertsOptions = {}) {
   const { fleetId, isSuperAdmin, loading: authLoading } = useAuth();
-  const [alerts, setAlerts] = useState([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -236,7 +234,7 @@ export function useRecentAlerts({ limit = 10, refreshInterval = 30000 } = {}) {
             plate_number,
             fleet_id
           )
-        `
+        `,
         )
         .in("severity", ["info", "warning", "critical"])
         .neq("event_type", "location_update")
@@ -262,7 +260,7 @@ export function useRecentAlerts({ limit = 10, refreshInterval = 30000 } = {}) {
     } catch (err) {
       console.error("Error fetching alerts:", err);
       if (isMounted.current) {
-        setError(err);
+        setError(err as Error);
       }
     } finally {
       if (isMounted.current) {
@@ -282,14 +280,15 @@ export function useRecentAlerts({ limit = 10, refreshInterval = 30000 } = {}) {
   return { alerts, loading, error, refetch: fetchAlerts };
 }
 
-/**
- * Hook to fetch vehicle alerts and DTC counts for a list of vehicles
- * @param {Array<string>} vehicleIds - Array of vehicle IDs to fetch alerts for
- * @returns {{ vehicleAlerts: Object, dtcCounts: Object, loading: boolean }}
- */
-export function useVehicleAlerts(vehicleIds = []) {
-  const [vehicleAlerts, setVehicleAlerts] = useState({});
-  const [dtcCounts, setDtcCounts] = useState({});
+interface VehicleAlertInfo {
+  hasCritical: boolean;
+  hasWarning: boolean;
+  harshCount: number;
+}
+
+export function useVehicleAlerts(vehicleIds: string[] = []) {
+  const [vehicleAlerts, setVehicleAlerts] = useState<Record<string, VehicleAlertInfo>>({});
+  const [dtcCounts, setDtcCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const isMounted = useRef(true);
 
@@ -312,15 +311,15 @@ export function useVehicleAlerts(vehicleIds = []) {
     setLoading(true);
 
     try {
-      // Start of today in Jamaica timezone (America/Jamaica = UTC-5, no DST)
       const now = new Date();
-      const jamaicaOffset = -5 * 60; // Jamaica is UTC-5
+      const jamaicaOffset = -5 * 60;
       const jamaicaTime = new Date(now.getTime() + (jamaicaOffset + now.getTimezoneOffset()) * 60000);
       const startOfDay = new Date(jamaicaTime.getFullYear(), jamaicaTime.getMonth(), jamaicaTime.getDate());
-      const startOfDayUTC = new Date(startOfDay.getTime() - (jamaicaOffset + now.getTimezoneOffset()) * 60000);
+      const startOfDayUTC = new Date(
+        startOfDay.getTime() - (jamaicaOffset + now.getTimezoneOffset()) * 60000,
+      );
       const sinceStartOfDay = startOfDayUTC.toISOString();
 
-      // Get today's alerts for all vehicles (fleet-scoped via RLS)
       const { data: alerts, error: alertsError } = await supabase
         .from("events")
         .select("vehicle_id, severity, event_type")
@@ -336,7 +335,6 @@ export function useVehicleAlerts(vehicleIds = []) {
         console.error("Error fetching vehicle alerts:", alertsError);
       }
 
-      // Get DTC counts
       const { data: dtcs, error: dtcsError } = await supabase
         .from("events")
         .select("vehicle_id")
@@ -347,11 +345,10 @@ export function useVehicleAlerts(vehicleIds = []) {
         console.error("Error fetching DTC counts:", dtcsError);
       }
 
-      // Group alerts by vehicle
-      const alertsByVehicle = {};
+      const alertsByVehicle: Record<string, VehicleAlertInfo> = {};
       (alerts || [])
-        .filter((alert) => vehicleIds.includes(alert.vehicle_id))
-        .forEach((alert) => {
+        .filter((alert: any) => vehicleIds.includes(alert.vehicle_id))
+        .forEach((alert: any) => {
           if (!alertsByVehicle[alert.vehicle_id]) {
             alertsByVehicle[alert.vehicle_id] = {
               hasCritical: false,
@@ -359,10 +356,11 @@ export function useVehicleAlerts(vehicleIds = []) {
               harshCount: 0,
             };
           }
-          // Only DTCs and collisions count as "issues" (Warning/Alert status badge)
           const isIssue = ["dtc_detected", "collision_detected"].includes(alert.event_type);
-          if (isIssue && alert.severity === "critical") alertsByVehicle[alert.vehicle_id].hasCritical = true;
-          if (isIssue && alert.severity === "warning") alertsByVehicle[alert.vehicle_id].hasWarning = true;
+          if (isIssue && alert.severity === "critical")
+            alertsByVehicle[alert.vehicle_id].hasCritical = true;
+          if (isIssue && alert.severity === "warning")
+            alertsByVehicle[alert.vehicle_id].hasWarning = true;
           if (["harsh_braking", "harsh_acceleration", "harsh_cornering"].includes(alert.event_type)) {
             alertsByVehicle[alert.vehicle_id].harshCount++;
           }
@@ -371,9 +369,8 @@ export function useVehicleAlerts(vehicleIds = []) {
       if (isMounted.current) {
         setVehicleAlerts(alertsByVehicle);
 
-        // Count DTCs by vehicle
-        const dtcsByVehicle = {};
-        dtcs?.forEach((dtc) => {
+        const dtcsByVehicle: Record<string, number> = {};
+        dtcs?.forEach((dtc: any) => {
           dtcsByVehicle[dtc.vehicle_id] = (dtcsByVehicle[dtc.vehicle_id] || 0) + 1;
         });
         setDtcCounts(dtcsByVehicle);

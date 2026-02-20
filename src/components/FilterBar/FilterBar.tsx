@@ -1,7 +1,20 @@
 import React from "react";
 import { cn } from "lib/utils";
 
-export default function FilterBar({ filters, activeFilter, onFilterChange, className }) {
+interface Filter {
+  value: string;
+  label: string;
+  count?: number | null;
+}
+
+interface FilterBarProps {
+  filters: Filter[];
+  activeFilter: string;
+  onFilterChange: (value: string) => void;
+  className?: string;
+}
+
+export default function FilterBar({ filters, activeFilter, onFilterChange, className }: FilterBarProps) {
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
       {filters.map((filter) => (

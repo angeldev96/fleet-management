@@ -16,14 +16,14 @@ import {
 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import Table from "components/Table/Table.js";
-import Pagination from "components/Pagination/Pagination.js";
-import AddVehicleModal from "./AddVehicleModal.js";
-import EditVehicleModal from "./EditVehicleModal.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
+import Table from "components/Table/Table";
+import Pagination from "components/Pagination/Pagination";
+import AddVehicleModal from "./AddVehicleModal";
+import EditVehicleModal from "./EditVehicleModal";
 
 // hooks
 import { useVehicles } from "hooks/useVehicles";
@@ -39,7 +39,7 @@ export default function Vehicles() {
   const location = useLocation();
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -92,11 +92,11 @@ export default function Vehicles() {
   const hasNextPage = page < totalPages;
   const hasPrevPage = page > 1;
 
-  const goToPage = (newPage) => {
+  const goToPage = (newPage: number) => {
     setPage(Math.max(1, Math.min(newPage, totalPages)));
   };
 
-  const handlePageSizeChange = (newSize) => {
+  const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize);
     setPage(1);
   };
@@ -106,7 +106,7 @@ export default function Vehicles() {
     setPage(1);
   }, [debouncedSearchTerm, listFilter]);
 
-  const getVehicleStatus = (vehicle) => {
+  const getVehicleStatus = (vehicle: any) => {
     const alerts = vehicleAlerts[vehicle.id];
     if (alerts?.hasCritical) return "Alert";
     if (alerts?.hasWarning) return "Warning";
@@ -131,16 +131,16 @@ export default function Vehicles() {
     Offline: Info,
   };
 
-  const getStatusBadge = (status) => {
-    const Icon = statusIcons[status];
+  const getStatusBadge = (status: any) => {
+    const Icon = (statusIcons as Record<string, any>)[status];
     return (
-      <div className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold", statusStyles[status])}>
+      <div className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold", (statusStyles as Record<string, string>)[status])}>
         <Icon className="h-3 w-3" /> {status}
       </div>
     );
   };
 
-  const getBehaviorBadge = (vehicle) => {
+  const getBehaviorBadge = (vehicle: any) => {
     const alerts = vehicleAlerts[vehicle.id];
     const harshCount = alerts?.harshCount || 0;
 
@@ -162,7 +162,7 @@ export default function Vehicles() {
     );
   };
 
-  const getVehicleDisplayName = (vehicle) => {
+  const getVehicleDisplayName = (vehicle: any) => {
     return vehicle.plate_number || vehicle.name || vehicle.id.slice(0, 8);
   };
 
@@ -183,7 +183,7 @@ export default function Vehicles() {
   }
 
   // Handle edit vehicle
-  const handleEditVehicle = (vehicle) => {
+  const handleEditVehicle = (vehicle: any) => {
     setSelectedVehicle(vehicle);
     setEditModalOpen(true);
   };
@@ -200,8 +200,8 @@ export default function Vehicles() {
       </span>
     </div>,
     getStatusBadge(getVehicleStatus(vehicle)),
-    <span className="text-sm text-muted-foreground">{formatRelativeTime(vehicle.last_seen_at)}</span>,
-    <span className="text-sm tabular-nums">{dtcCounts[vehicle.id] || 0}</span>,
+    <span key={`seen-${vehicle.id}`} className="text-sm text-muted-foreground">{formatRelativeTime(vehicle.last_seen_at ?? null)}</span>,
+    <span key={`dtc-${vehicle.id}`} className="text-sm tabular-nums">{dtcCounts[vehicle.id] || 0}</span>,
     getBehaviorBadge(vehicle),
     <div className="flex items-center gap-1.5" key={`actions-${vehicle.id}`}>
       <button

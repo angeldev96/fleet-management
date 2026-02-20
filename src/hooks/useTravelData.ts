@@ -2,11 +2,23 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "lib/supabase";
 import { useAuth } from "context/AuthContext";
 
-/**
- * Haversine formula to calculate distance between two points in km
- */
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
+interface LocationPoint {
+  lat: number;
+  lng: number;
+  speed: number;
+  time: string;
+}
+
+interface TravelStats {
+  totalDistance: number;
+  totalAlerts: number;
+  majorStops: number;
+  locationPoints: LocationPoint[];
+  alertEvents: any[];
+}
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -19,16 +31,9 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-/**
- * Hook to fetch travel data for a vehicle within a date range
- * @param {string} vehicleId
- * @param {string} startDate - Date string (YYYY-MM-DD)
- * @param {string} endDate - Date string (YYYY-MM-DD)
- * @returns {{ stats: Object, loading: boolean, error: Error|null }}
- */
-export function useTravelData(vehicleId, startDate, endDate) {
+export function useTravelData(vehicleId: string | undefined, startDate: string, endDate: string) {
   const { fleetId, isSuperAdmin, loading: authLoading } = useAuth();
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<TravelStats>({
     totalDistance: 0,
     totalAlerts: 0,
     majorStops: 0,
@@ -36,7 +41,7 @@ export function useTravelData(vehicleId, startDate, endDate) {
     alertEvents: [],
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const isMounted = useRef(true);
 
   const fetchTravelData = useCallback(async () => {
@@ -60,16 +65,17 @@ export function useTravelData(vehicleId, startDate, endDate) {
         return;
       }
 
-      // Convert selected dates to Jamaica timezone (UTC-5) boundaries
-      // "2026-02-12" in Jamaica = 2026-02-12 05:00:00 UTC to 2026-02-13 04:59:59 UTC
-      const jamaicaOffsetMs = 5 * 60 * 60 * 1000; // Jamaica is UTC-5
+      const jamaicaOffsetMs = 5 * 60 * 60 * 1000;
       const startDateTime = new Date(`${startDate}T00:00:00`);
-      startDateTime.setTime(startDateTime.getTime() + jamaicaOffsetMs + startDateTime.getTimezoneOffset() * 60000);
+      startDateTime.setTime(
+        startDateTime.getTime() + jamaicaOffsetMs + startDateTime.getTimezoneOffset() * 60000,
+      );
 
       const endDateTime = new Date(`${endDate}T23:59:59.999`);
-      endDateTime.setTime(endDateTime.getTime() + jamaicaOffsetMs + endDateTime.getTimezoneOffset() * 60000);
+      endDateTime.setTime(
+        endDateTime.getTime() + jamaicaOffsetMs + endDateTime.getTimezoneOffset() * 60000,
+      );
 
-      // Fetch location updates
       let locationQuery = supabase
         .from("events")
         .select("event_at, latitude, longitude, speed, vehicles!inner(fleet_id)")
@@ -85,11 +91,10 @@ export function useTravelData(vehicleId, startDate, endDate) {
 
       const { data: locationEvents } = await locationQuery;
 
-      // Fetch alert events (full details for report)
       let alertsQuery = supabase
         .from("events")
         .select(
-          "id, event_type, event_subtype, event_data, event_at, severity, latitude, longitude, speed, vehicles!inner(fleet_id)"
+          "id, event_type, event_subtype, event_data, event_at, severity, latitude, longitude, speed, vehicles!inner(fleet_id)",
         )
         .eq("vehicle_id", vehicleId)
         .in("severity", ["warning", "critical"])
@@ -104,21 +109,21 @@ export function useTravelData(vehicleId, startDate, endDate) {
 
       const { data: alertData } = await alertsQuery;
 
-      // Process location points
-      const points = [];
+      const points: LocationPoint[] = [];
       let totalDistance = 0;
       let stops = 0;
-      let lastPoint = null;
+      let lastPoint: LocationPoint | null = null;
       let stoppedTime = 0;
 
       const events = locationEvents || [];
-      events.forEach((event) => {
+      events.forEach((event: any) => {
         const lat = event.latitude !== null ? parseFloat(event.latitude) : null;
         const lng = event.longitude !== null ? parseFloat(event.longitude) : null;
-        const speed = event.speed !== null && event.speed !== undefined ? Number(event.speed) : 0;
+        const speed =
+          event.speed !== null && event.speed !== undefined ? Number(event.speed) : 0;
 
         if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
-          const point = { lat, lng, speed, time: event.event_at };
+          const point: LocationPoint = { lat, lng, speed, time: event.event_at };
           points.push(point);
 
           if (lastPoint) {
@@ -152,7 +157,7 @@ export function useTravelData(vehicleId, startDate, endDate) {
     } catch (err) {
       console.error("Error fetching travel data:", err);
       if (isMounted.current) {
-        setError(err);
+        setError(err as Error);
         setLoading(false);
       }
     }

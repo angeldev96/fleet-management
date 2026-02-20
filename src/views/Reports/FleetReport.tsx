@@ -7,11 +7,11 @@ import { ArrowLeft, Car, AlertTriangle, Gauge, TrendingUp, DollarSign, Download,
 import jsPDF from "jspdf";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import Button from "components/CustomButtons/Button.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
+import Button from "components/CustomButtons/Button";
 
 // hooks & utils
 import { useFleetReport } from "hooks/useFleetReport";
@@ -50,16 +50,16 @@ export default function FleetReport() {
   };
 
   const handleExportPDF = () => {
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pdf: any = new jsPDF("p", "mm", "a4");
+    const pageWidth: number = pdf.internal.pageSize.getWidth();
+    const pageHeight: number = pdf.internal.pageSize.getHeight();
     const margin = 15;
     let y = 18;
 
-    const primaryColor = [31, 41, 55]; // #1f2937
-    const secondaryColor = [107, 114, 128]; // #6b7280
-    const headerBlue = [59, 130, 246]; // #3B82F6
-    const cardBorder = [229, 231, 235]; // #E5E7EB
+    const primaryColor: [number, number, number] = [31, 41, 55]; // #1f2937
+    const secondaryColor: [number, number, number] = [107, 114, 128]; // #6b7280
+    const headerBlue: [number, number, number] = [59, 130, 246]; // #3B82F6
+    const cardBorder: [number, number, number] = [229, 231, 235]; // #E5E7EB
 
     // Header
     pdf.setFillColor(...headerBlue);
@@ -93,7 +93,7 @@ export default function FleetReport() {
     const cardWidth = (pageWidth - margin * 2 - 10) / 3;
     const cardHeight = 26;
 
-    const drawStatCard = (x, yPos, color, label, value) => {
+    const drawStatCard = (x: number, yPos: number, color: [number, number, number], label: string, value: string) => {
       pdf.setDrawColor(...cardBorder);
       pdf.setFillColor(255, 255, 255);
       pdf.rect(x, yPos, cardWidth, cardHeight, "FD");

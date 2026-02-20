@@ -23,14 +23,21 @@ import {
 } from "components/ui/alert-dialog";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Button from "components/CustomButtons/Button.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Button from "components/CustomButtons/Button";
 
 // hooks & utils
 import { updateDevice, deleteDevice } from "services/deviceService";
 
-export default function EditDeviceModal({ open, onClose, device, onSuccess }) {
+interface EditDeviceModalProps {
+  open: boolean;
+  onClose: () => void;
+  device: any;
+  onSuccess?: () => void;
+}
+
+export default function EditDeviceModal({ open, onClose, device, onSuccess }: EditDeviceModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -41,7 +48,7 @@ export default function EditDeviceModal({ open, onClose, device, onSuccess }) {
   const [showWarning, setShowWarning] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertTitle, setAlertTitle] = useState("");
-  const [successCallback, setSuccessCallback] = useState(null);
+  const [successCallback, setSuccessCallback] = useState<(() => void) | null>(null);
 
   const [deviceData, setDeviceData] = useState({
     imei: "",
@@ -78,11 +85,11 @@ export default function EditDeviceModal({ open, onClose, device, onSuccess }) {
       setAlertTitle("Device Updated!");
       setAlertMessage("The device has been successfully updated.");
       setSuccessCallback(() => () => {
-        onSuccess && onSuccess();
+        onSuccess?.();
         onClose();
       });
       setShowSuccess(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error updating device:", err);
       setAlertTitle("Error");
       setAlertMessage(err.message);
@@ -107,11 +114,11 @@ export default function EditDeviceModal({ open, onClose, device, onSuccess }) {
       setAlertTitle("Device Deleted");
       setAlertMessage("The device has been permanently deleted.");
       setSuccessCallback(() => () => {
-        onSuccess && onSuccess();
+        onSuccess?.();
         onClose();
       });
       setShowSuccess(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error deleting device:", err);
       setAlertTitle("Error");
       setAlertMessage(err.message);

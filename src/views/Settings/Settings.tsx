@@ -5,8 +5,8 @@ import { useHistory } from "react-router-dom";
 import { Car, Smartphone, User, Bell, Shield, Building, ChevronRight } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
 
 import { cn } from "lib/utils";
 
@@ -81,7 +81,7 @@ const settingsOptions = [
 export default function Settings() {
   const history = useHistory();
 
-  const handleCardClick = (option) => {
+  const handleCardClick = (option: typeof settingsOptions[number]) => {
     if (option.enabled) {
       history.push(option.path);
     }
@@ -98,7 +98,7 @@ export default function Settings() {
 
       <GridContainer spacing={3}>
         {settingsOptions.map((option) => {
-          const colors = colorMap[option.color] || colorMap.blue;
+          const colors = colorMap[option.color as keyof typeof colorMap] || colorMap.blue;
           return (
             <GridItem xs={12} sm={6} lg={4} key={option.id}>
               <div

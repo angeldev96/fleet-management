@@ -15,7 +15,7 @@ import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "./index.css";
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   <BrowserRouter>
     <AuthProvider>
@@ -27,5 +27,5 @@ root.render(
         </Switch>
       </NotificationProvider>
     </AuthProvider>
-  </BrowserRouter>
+  </BrowserRouter>,
 );

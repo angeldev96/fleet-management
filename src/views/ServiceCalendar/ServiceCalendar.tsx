@@ -15,12 +15,12 @@ import {
 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import Button from "components/CustomButtons/Button.js";
-import Table from "components/Table/Table.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
+import Button from "components/CustomButtons/Button";
+import Table from "components/Table/Table";
 
 // shadcn ui
 import {
@@ -56,14 +56,14 @@ export default function ServiceCalendar() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [newEventModalOpen, setNewEventModalOpen] = useState(false);
   const [editEventModalOpen, setEditEventModalOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<{ id: string; name: string; plateNumber?: string } | null>(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
 
   // AlertDialog states (replacing SweetAlert)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -86,8 +86,8 @@ export default function ServiceCalendar() {
     const startOffset = firstDay.getDay();
     const daysInMonth = lastDay.getDate();
 
-    const emptyCells = Array.from({ length: startOffset }, () => ({ empty: true }));
-    const dayCells = Array.from({ length: daysInMonth }, (_, index) => ({
+    const emptyCells: { empty: true; day?: undefined; date?: undefined }[] = Array.from({ length: startOffset }, () => ({ empty: true as const }));
+    const dayCells: { empty?: undefined; day: number; date: string }[] = Array.from({ length: daysInMonth }, (_, index) => ({
       day: index + 1,
       date: `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(index + 1).padStart(2, "0")}`,
     }));
@@ -102,7 +102,7 @@ export default function ServiceCalendar() {
       "Overdue": "overdue",
       "Completed": "completed",
     };
-    return events.filter((event) => event.computed_status === statusMap[activeFilter]);
+    return events.filter((event) => event.computed_status === statusMap[activeFilter as keyof typeof statusMap]);
   }, [events, activeFilter]);
 
   const upcomingEvents = useMemo(() => {
@@ -113,7 +113,7 @@ export default function ServiceCalendar() {
       .slice(0, 6);
   }, [allEvents, today]);
 
-  const getBadgeClass = (status) => {
+  const getBadgeClass = (status: string): string => {
     switch (status) {
       case "pending":
         return "bg-amber-100 text-amber-700";
@@ -128,8 +128,8 @@ export default function ServiceCalendar() {
     }
   };
 
-  const formatStatus = (status) => {
-    const statusMap = {
+  const formatStatus = (status: string): string => {
+    const statusMap: Record<string, string> = {
       pending: "Pending",
       in_progress: "In Progress",
       completed: "Completed",
@@ -162,7 +162,7 @@ export default function ServiceCalendar() {
     refetchAllEvents();
   };
 
-  const handleEditEvent = (event) => {
+  const handleEditEvent = (event: any) => {
     setSelectedEvent(event);
     setEditEventModalOpen(true);
   };
@@ -173,7 +173,7 @@ export default function ServiceCalendar() {
     refetchAllEvents();
   };
 
-  const handleViewHistory = (event) => {
+  const handleViewHistory = (event: any) => {
     setSelectedVehicle({
       id: event.vehicle_id,
       name: event.vehicle_name,
@@ -183,7 +183,7 @@ export default function ServiceCalendar() {
   };
 
   const handleDeleteEvent = useCallback(
-    (event) => {
+    (event: any) => {
       setDeleteTarget(event);
       setDeleteConfirmOpen(true);
     },
@@ -206,7 +206,7 @@ export default function ServiceCalendar() {
     setDeleteTarget(null);
   }, [deleteTarget, refetchEvents, refetchStats, refetchAllEvents]);
 
-  const isToday = (dateStr) => {
+  const isToday = (dateStr: string): boolean => {
     return dateStr === today.toISOString().split("T")[0];
   };
 
@@ -490,7 +490,7 @@ export default function ServiceCalendar() {
                 (
                   <span
                     key={`status-${event.id}`}
-                    className={cn("inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-2.5 py-1", SERVICE_STATUS_CLASSES[event.computed_status] || "bg-amber-50 text-amber-700")}
+                    className={cn("inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-2.5 py-1", SERVICE_STATUS_CLASSES[event.computed_status as keyof typeof SERVICE_STATUS_CLASSES] || "bg-amber-50 text-amber-700")}
                   >
                     {formatStatus(event.computed_status)}
                   </span>

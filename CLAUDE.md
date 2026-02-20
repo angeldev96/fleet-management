@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Entry is a fleet intelligence platform built with React 18 + Vite + Tailwind CSS v4 + shadcn/ui. It tracks vehicles in real-time, detects driving events, and displays OBD-II diagnostics. The backend is Supabase (PostgreSQL with RLS for multitenancy).
+Entry is a fleet intelligence platform built with React 18 + TypeScript + Vite + Tailwind CSS v4 + shadcn/ui. It tracks vehicles in real-time, detects driving events, and displays OBD-II diagnostics. The backend is Supabase (PostgreSQL with RLS for multitenancy).
 
 Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 
@@ -28,13 +28,14 @@ We are currently working on the **dev branch** (`qhsquyccwnmyxpgfigru`). All edg
 
 ```bash
 npm install --legacy-peer-deps     # Install dependencies (--legacy-peer-deps may be needed for some packages)
-npm run dev                        # Vite dev server on localhost:5173
+npm run dev                        # Vite dev server on localhost:3000
 npm start                          # Alias for npm run dev
-npm run build                      # Vite production build (output: dist/)
+npm run build                      # Vite production build (output: build/)
 npm run preview                    # Preview production build
 npm run lint:check                 # ESLint check
 npm run lint:fix                   # ESLint auto-fix
 npm run format                     # Prettier format
+npm run typecheck                  # TypeScript type checking (tsc --noEmit)
 npm run simulator                  # GPS/telemetry simulator for testing
 ```
 
@@ -42,6 +43,7 @@ npm run simulator                  # GPS/telemetry simulator for testing
 
 ### Tech Stack
 - **React 18** with Vite 6 (`@vitejs/plugin-react-swc`)
+- **TypeScript 5.9** with `strict: true` — entire codebase is TypeScript (`.ts`/`.tsx`)
 - **Tailwind CSS v4** with `@tailwindcss/vite` plugin
 - **shadcn/ui** (new-york style) — components in `src/components/ui/*.tsx`
 - **Lucide React** for icons
@@ -52,7 +54,7 @@ npm run simulator                  # GPS/telemetry simulator for testing
 
 ### Import Aliases
 `vite.config.mjs` and `tsconfig.json` set path aliases with `baseUrl: "src"`, so all imports are relative to `src/`:
-```javascript
+```typescript
 import { useAuth } from "context/AuthContext";
 import { supabase } from "lib/supabase";
 import { cn } from "lib/utils";
@@ -61,18 +63,18 @@ import { cn } from "lib/utils";
 ### Data Flow: Services → Hooks → Views
 
 ```
-src/lib/supabase.js          Supabase client singleton
-src/services/*Service.js      Thin wrappers for Supabase CRUD operations
-src/hooks/use*.js             Data fetching hooks with polling (30s default), pagination, error handling
+src/lib/supabase.ts          Supabase client singleton
+src/services/*Service.ts      Thin wrappers for Supabase CRUD operations
+src/hooks/use*.ts             Data fetching hooks with polling (30s default), pagination, error handling
 src/views/*/                  Page components that consume hooks
 src/components/*/             Reusable presentational components (Card, Table, Badge, etc.)
 ```
 
 ### State Management
 No Redux/Zustand. Uses **React Context + custom hooks**:
-- `context/AuthContext.js` — user session, profile (with fleet_id and role), auth methods
-- `context/NotificationContext.js` — toast notification system via Sonner (`showNotification({ title, subtitle, color })`)
-- `hooks/use*.js` — each returns `{ data, loading, error, refetch }` pattern
+- `context/AuthContext.tsx` — user session, profile (with fleet_id and role), auth methods
+- `context/NotificationContext.tsx` — toast notification system via Sonner (`showNotification({ title, subtitle, color })`)
+- `hooks/use*.ts` — each returns `{ data, loading, error, refetch }` pattern
 
 ### Authentication & Multitenancy
 - `AuthContext` provides: `user`, `userProfile`, `fleetId`, `isSuperAdmin`, `isAdmin`, `signIn`, `signOut`
@@ -82,15 +84,15 @@ No Redux/Zustand. Uses **React Context + custom hooks**:
 - All `/admin/*` routes are wrapped in `ProtectedRoute`
 
 ### Routing
-Routes defined in `src/routes.js` as a flat array. Each route has `{ path, component, layout, icon, hide }`. Layout is either `/admin` (dashboard shell) or `/auth` (login/register). Routes with `hide: true` don't appear in the sidebar.
+Routes defined in `src/routes.ts` with typed interfaces (`AppRoute`, `CollapsibleRoute`, `RouteConfig`). Each route has `{ path, component, layout, icon, hide }`. Layout is either `/admin` (dashboard shell) or `/auth` (login/register). Routes with `hide: true` don't appear in the sidebar.
 
 Layouts in `src/layouts/`:
-- `Admin.js` — sidebar + navbar + content area; also hosts real-time alert listener
-- `Auth.js` — login/register pages
+- `Admin.tsx` — sidebar + navbar + content area; also hosts real-time alert listener
+- `Auth.tsx` — login/register pages
 
 ### Custom Hooks Pattern
 All data hooks follow the same pattern:
-```javascript
+```typescript
 export function useHook({ fleetId, refreshInterval = 30000, page, pageSize, ...filters } = {}) {
   // useState for data, loading, error
   // useRef(true) for isMounted tracking (memory leak prevention)
@@ -111,8 +113,8 @@ fleets → user_profiles (auth user → fleet mapping)
 ```
 The `vehicles_with_status` view pre-calculates online/idle/offline status with `security_invoker = true` for RLS.
 
-### Key Constants
-`src/types/database.js` contains JSDoc types and shared constants: `EVENT_LABELS`, `PID_LABELS`, `SEVERITY_COLORS`, `STATUS_COLORS`, plus formatting utilities (`formatDateTime`, `formatRelativeTime`, `getVehicleStatus`).
+### Key Types & Constants
+`src/types/database.ts` contains TypeScript interfaces (`Vehicle`, `Device`, `TelemetryEvent`, `UserProfile`, `ServiceEvent`), union types (`EventType`, `Severity`, `VehicleStatus`), and shared constants: `EVENT_LABELS`, `PID_LABELS`, `SEVERITY_COLORS`, `STATUS_COLORS`, plus formatting utilities (`formatDateTime`, `formatRelativeTime`, `getVehicleStatus`).
 
 ## Environment Variables
 
@@ -125,11 +127,12 @@ VITE_MAPBOX_ACCESS_TOKEN_PUBLIC
 
 ## Conventions
 
+- **TypeScript strict mode**: `strict: true` in tsconfig.json. All new code must be type-safe. Use explicit type annotations for function parameters. Avoid `any` where possible (ESLint warns on `@typescript-eslint/no-explicit-any`).
 - **Supabase v1 API**: Do NOT use v2 patterns. Auth uses `.signIn()` / `.session()`, not `.signInWithPassword()` / `.getSession()`.
-- **Liability-safe wording**: Event labels use careful language (e.g., "Potential Collision Detected", "Speed Threshold Exceeded"). See `EVENT_LABELS` in `types/database.js`.
+- **Liability-safe wording**: Event labels use careful language (e.g., "Potential Collision Detected", "Speed Threshold Exceeded"). See `EVENT_LABELS` in `types/database.ts`.
 - **Excluded event types**: `location_update`, `device_offline`, `device_online`, `power_event` are filtered out of event/alert feeds.
 - **Prettier config**: 100 char width, double quotes, trailing commas (es5), no tabs.
-- **File naming**: PascalCase for components, camelCase for hooks/services/utils.
+- **File naming**: PascalCase for components (`.tsx`), camelCase for hooks/services/utils (`.ts`).
 - **Styling**: Use Tailwind CSS utility classes. Use `cn()` from `lib/utils` for conditional class merging. shadcn/ui components live in `src/components/ui/`. CSS custom properties for theming are in `src/index.css`.
 - **Icons**: Use Lucide React icons (`lucide-react`). Do NOT use `@material-ui/icons`.
 - **Modals/Dialogs**: Use shadcn `Dialog` for modals, `AlertDialog` for confirmation prompts (replaces SweetAlert).

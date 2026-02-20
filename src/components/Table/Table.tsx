@@ -1,6 +1,21 @@
 import React from "react";
 import { cn } from "lib/utils";
 
+interface CustomTableProps {
+  tableHead?: string[];
+  tableData: any[];
+  tableHeaderColor?: string;
+  hover?: boolean;
+  colorsColls?: string[];
+  coloredColls?: number[];
+  customCellClasses?: string[];
+  customClassesForCells?: number[];
+  striped?: boolean;
+  tableShopping?: boolean;
+  customHeadCellClasses?: string[];
+  customHeadClassesForCells?: number[];
+}
+
 export default function CustomTable({
   tableHead,
   tableData,
@@ -14,7 +29,7 @@ export default function CustomTable({
   tableShopping,
   customHeadCellClasses = [],
   customHeadClassesForCells = [],
-}) {
+}: CustomTableProps) {
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full caption-bottom text-sm border-separate border-spacing-0">
@@ -46,9 +61,9 @@ export default function CustomTable({
           </thead>
         ) : null}
         <tbody className="[&_tr:last-child]:border-0">
-          {tableData.map((prop, key) => {
-            var rowColor = "";
-            var rowColored = false;
+          {tableData.map((prop: any, key: number) => {
+            let rowColor = "";
+            let rowColored = false;
             if (prop.color !== undefined) {
               rowColor = prop.color;
               rowColored = true;
@@ -60,7 +75,7 @@ export default function CustomTable({
                   <td className="px-4 py-3.5" colSpan={prop.colspan} />
                   <td className="px-4 py-3.5 text-right">Total</td>
                   <td className="px-4 py-3.5">{prop.amount}</td>
-                  {tableHead.length - (prop.colspan - 0 + 2) > 0 ? (
+                  {tableHead && tableHead.length - (prop.colspan - 0 + 2) > 0 ? (
                     <td className="px-4 py-3.5" colSpan={tableHead.length - (prop.colspan - 0 + 2)} />
                   ) : null}
                 </tr>
@@ -85,7 +100,7 @@ export default function CustomTable({
                   striped && key % 2 === 0 && "bg-muted/20",
                 )}
               >
-                {prop.map((cellProp, cellKey) => {
+                {prop.map((cellProp: any, cellKey: number) => {
                   const extraCellClass =
                     customClassesForCells &&
                     customCellClasses &&
@@ -106,4 +121,3 @@ export default function CustomTable({
     </div>
   );
 }
-

@@ -4,9 +4,9 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { X, Search, Loader2 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Button from "components/CustomButtons/Button.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Button from "components/CustomButtons/Button";
 
 // shadcn ui
 import {
@@ -38,7 +38,14 @@ const inputClasses =
 const selectClasses =
   "flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none";
 
-export default function NewEventModal({ open, onClose, onSuccess }) {
+interface NewEventModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+  initialDate?: string;
+}
+
+export default function NewEventModal({ open, onClose, onSuccess }: NewEventModalProps) {
   const { user } = useAuth();
   const { vehicles, loading: vehiclesLoading } = useVehicles({ fetchAll: true });
 
@@ -65,11 +72,11 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
     notes: "",
   });
 
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
   const [vehicleSearch, setVehicleSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const searchInputRef = useRef(null);
-  const wrapperRef = useRef(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const filteredVehicles = useMemo(() => {
     if (!vehicleSearch.trim()) return vehicles;
@@ -95,8 +102,8 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
 
   // Close dropdown on outside click
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
       }
     };
@@ -104,7 +111,7 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelectVehicle = (vehicle) => {
+  const handleSelectVehicle = (vehicle: any) => {
     setFormData((prev) => ({ ...prev, vehicle_id: vehicle.id }));
     setVehicleSearch(
       `${vehicle.name}${vehicle.plate_number ? ` (${vehicle.plate_number})` : ""}${vehicle.make ? ` — ${vehicle.make} ${vehicle.model || ""}` : ""}`
@@ -119,7 +126,7 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
     setDropdownOpen(false);
   };
 
-  const handleChange = (field) => (event) => {
+  const handleChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [field]: event.target.value });
   };
 
@@ -220,7 +227,7 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
           : "The service event has been scheduled successfully."
       );
       setShowSuccess(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error creating service event:", err);
       setErrorMessage(err.message);
       setShowError(true);
@@ -496,7 +503,7 @@ export default function NewEventModal({ open, onClose, onSuccess }) {
               onClick={() => {
                 setShowSuccess(false);
                 resetForm();
-                onSuccess && onSuccess();
+                onSuccess?.();
                 onClose();
               }}
             >

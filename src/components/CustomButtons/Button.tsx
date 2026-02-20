@@ -1,7 +1,10 @@
 import React from "react";
 import { cn } from "lib/utils";
 
-const colorClasses = {
+type ButtonColor = "primary" | "info" | "success" | "warning" | "danger" | "rose" | "white" | "transparent";
+type ButtonSize = "sm" | "lg";
+
+const colorClasses: Record<ButtonColor, string> = {
   primary: "bg-primary text-primary-foreground hover:bg-primary/90",
   info: "bg-blue-500 text-white hover:bg-blue-600",
   success: "bg-emerald-500 text-white hover:bg-emerald-600",
@@ -12,7 +15,7 @@ const colorClasses = {
   transparent: "bg-transparent text-current hover:bg-black/5",
 };
 
-const simpleColorClasses = {
+const simpleColorClasses: Record<ButtonColor, string> = {
   primary: "text-primary hover:bg-primary/10",
   info: "text-blue-500 hover:bg-blue-500/10",
   success: "text-emerald-500 hover:bg-emerald-500/10",
@@ -23,12 +26,25 @@ const simpleColorClasses = {
   transparent: "text-current hover:bg-black/5",
 };
 
-const sizeClasses = {
+const sizeClasses: Record<ButtonSize, string> = {
   sm: "h-8 px-3 text-xs",
   lg: "h-12 px-8 text-base",
 };
 
-const RegularButton = React.forwardRef((props, ref) => {
+interface RegularButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  color?: ButtonColor;
+  round?: boolean;
+  children?: React.ReactNode;
+  fullWidth?: boolean;
+  simple?: boolean;
+  size?: ButtonSize;
+  block?: boolean;
+  link?: boolean;
+  justIcon?: boolean;
+  muiClasses?: any;
+}
+
+const RegularButton = React.forwardRef<HTMLButtonElement, RegularButtonProps>((props, ref) => {
   const {
     color,
     round,

@@ -3,27 +3,17 @@ import { supabase } from "lib/supabase";
 import { useAuth } from "context/AuthContext";
 import { useNotification } from "context/NotificationContext";
 
-/**
- * Subscribes to critical telemetry events via Supabase Realtime
- * and shows toast notifications when they occur.
- *
- * Listens for: power_event (physical connect/disconnect only)
- *
- * NOTE: Only physical device connect/disconnect triggers real-time notifications.
- * Non-physical power events (e.g. ignition on/off) are ignored.
- */
-export default function useRealtimeAlerts() {
+export default function useRealtimeAlerts(): void {
   const { isAuthenticated } = useAuth();
   const { showNotification } = useNotification();
-  const subscriptionsRef = useRef([]);
+  const subscriptionsRef = useRef<any[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Cache for vehicle names so we don't re-fetch on every event
-    const vehicleNameCache = {};
+    const vehicleNameCache: Record<string, string> = {};
 
-    const getVehicleName = async (vehicleId) => {
+    const getVehicleName = async (vehicleId: string): Promise<string> => {
       if (vehicleNameCache[vehicleId]) return vehicleNameCache[vehicleId];
       const { data } = await supabase
         .from("vehicles")
@@ -35,9 +25,9 @@ export default function useRealtimeAlerts() {
       return name;
     };
 
-    const normalize = (value) => (typeof value === "string" ? value.trim().toLowerCase() : "");
+    const normalize = (value: any): string => (typeof value === "string" ? value.trim().toLowerCase() : "");
 
-    const handleEvent = async (payload) => {
+    const handleEvent = async (payload: any) => {
       const event = payload.new;
       if (!event) return;
 
@@ -55,7 +45,6 @@ export default function useRealtimeAlerts() {
           const isPhysicalConnect =
             alarmName === "power on alarm" || alarmType === "0x09" || eventSubtype === "0x09";
 
-          // Ignore non-physical power transitions (ignition_on/off, low battery, etc.)
           if (!isPhysicalDisconnect && !isPhysicalConnect) break;
 
           if (isPhysicalDisconnect) {
@@ -79,19 +68,14 @@ export default function useRealtimeAlerts() {
       }
     };
 
-    // Subscribe only to power events. Handler filters to physical connect/disconnect alarms.
     const eventTypes = ["power_event"];
 
     const subs = eventTypes.map((eventType) => {
-      return supabase
-        .from(`events:event_type=eq.${eventType}`)
-        .on("INSERT", handleEvent)
-        .subscribe();
+      return supabase.from(`events:event_type=eq.${eventType}`).on("INSERT", handleEvent).subscribe();
     });
 
     subscriptionsRef.current = subs;
 
-    // Cleanup subscriptions on unmount
     return () => {
       subscriptionsRef.current.forEach((sub) => {
         supabase.removeSubscription(sub);

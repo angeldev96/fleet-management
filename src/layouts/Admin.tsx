@@ -2,16 +2,16 @@ import React from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import { cn } from "lib/utils";
 
-import AdminNavbar from "components/Navbars/AdminNavbar.js";
-import Sidebar from "components/Sidebar/Sidebar.js";
+import AdminNavbar from "components/Navbars/AdminNavbar";
+import Sidebar from "components/Sidebar/Sidebar";
 
-import routes from "routes.js";
+import routes from "routes";
+import { RouteConfig } from "routes";
 
 import { useAuth } from "context/AuthContext";
 import useRealtimeAlerts from "hooks/useRealtimeAlerts";
 
-export default function Dashboard(props) {
-  const { ...rest } = props;
+export default function Dashboard() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [miniActive, setMiniActive] = React.useState(false);
   const [color] = React.useState("blue");
@@ -22,41 +22,41 @@ export default function Dashboard(props) {
   // Subscribe to physical device connect/disconnect notifications
   useRealtimeAlerts();
 
-  const handleDrawerToggle = () => {
+  const handleDrawerToggle = (): void => {
     setMobileOpen(!mobileOpen);
   };
 
-  const getActiveRoute = (routes) => {
-    let activeRoute = "Entry";
+  const getActiveRoute = (routes: RouteConfig[]): string => {
+    const activeRoute = "Entry";
     for (let i = 0; i < routes.length; i++) {
-      if (routes[i].collapse) {
-        let collapseActiveRoute = getActiveRoute(routes[i].views);
+      const route = routes[i];
+      if ("views" in route) {
+        const collapseActiveRoute = getActiveRoute(route.views);
         if (collapseActiveRoute !== activeRoute) {
           return collapseActiveRoute;
         }
       } else {
-        if (window.location.href.indexOf(routes[i].layout + routes[i].path) !== -1) {
-          return routes[i].name;
+        if (window.location.href.indexOf(route.layout + route.path) !== -1) {
+          return route.name;
         }
       }
     }
     return activeRoute;
   };
 
-  const getRoutes = (routes) => {
+  const getRoutes = (routes: RouteConfig[]): (React.ReactNode | null)[] => {
     return routes.map((prop, key) => {
-      if (prop.collapse) {
+      if ("views" in prop) {
         return getRoutes(prop.views);
       }
       if (prop.layout === "/admin") {
         return <Route exact path={prop.layout + prop.path} component={prop.component} key={key} />;
-      } else {
-        return null;
       }
+      return null;
     });
   };
 
-  const sidebarMinimize = () => {
+  const sidebarMinimize = (): void => {
     setMiniActive(!miniActive);
   };
 
@@ -71,7 +71,6 @@ export default function Dashboard(props) {
         color={color}
         bgColor={bgColor}
         miniActive={miniActive}
-        {...rest}
       />
       <div
         className={cn(
@@ -84,7 +83,6 @@ export default function Dashboard(props) {
           miniActive={miniActive}
           brandText={getActiveRoute(routes)}
           handleDrawerToggle={handleDrawerToggle}
-          {...rest}
         />
         <main className="flex-1 overflow-y-auto bg-background">
           <div className="px-4 md:px-6 py-5 max-w-360 mx-auto w-full">

@@ -5,13 +5,13 @@ import { useHistory } from "react-router-dom";
 import { Car, Upload, CheckCircle2, CircleAlert, Download, ArrowLeft, Loader2 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import CardHeader from "components/Card/CardHeader.js";
-import CardIcon from "components/Card/CardIcon.js";
-import Button from "components/CustomButtons/Button.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
+import CardHeader from "components/Card/CardHeader";
+import CardIcon from "components/Card/CardIcon";
+import Button from "components/CustomButtons/Button";
 
 // shadcn
 import { Progress } from "components/ui/progress";
@@ -35,7 +35,7 @@ const VEHICLE_CSV_HEADERS = ["make", "model", "year", "plate_number", "driver_na
 export default function VehicleDataUpload() {
   const history = useHistory();
   const { userProfile } = useAuth();
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Alert dialog state
   const [alertOpen, setAlertOpen] = useState(false);
@@ -53,19 +53,19 @@ export default function VehicleDataUpload() {
   const [submitting, setSubmitting] = useState(false);
 
   // Batch upload states
-  const [uploadResult, setUploadResult] = useState(null);
+  const [uploadResult, setUploadResult] = useState<{ success: boolean; message: string; details?: string | null } | null>(null);
   const [uploadProgress, setUploadProgress] = useState({
     active: false,
     current: 0,
     total: 0,
   });
 
-  const showAlert = (title, message, type = "info") => {
+  const showAlert = (title: string, message: string, type: string = "info") => {
     setAlertConfig({ title, message, type });
     setAlertOpen(true);
   };
 
-  const handleTabChange = (newValue) => {
+  const handleTabChange = (newValue: number) => {
     setTabValue(newValue);
     setUploadResult(null);
   };
@@ -87,13 +87,13 @@ export default function VehicleDataUpload() {
       const { error } = await addVehicle(
         {
           name,
-          make,
-          model,
-          year: vehicleData.year || null,
+          make: make ?? undefined,
+          model: model ?? undefined,
+          year: vehicleData.year || undefined,
           plate_number: plate,
-          driver_name: vehicleData.driver_name.trim() || null,
+          driver_name: vehicleData.driver_name.trim() || undefined,
         },
-        userProfile?.fleet_id
+        userProfile?.fleet_id ?? ""
       );
 
       if (error) throw error;
@@ -106,7 +106,7 @@ export default function VehicleDataUpload() {
         plate_number: "",
         driver_name: "",
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error adding vehicle:", err);
       showAlert("Error", err.message || "Could not add vehicle.", "error");
     } finally {
@@ -114,7 +114,7 @@ export default function VehicleDataUpload() {
     }
   };
 
-  const parseCSV = (content) => {
+  const parseCSV = (content: string) => {
     const lines = content.trim().split("\n");
     if (lines.length < 2) return { headers: [], rows: [] };
 
@@ -125,7 +125,7 @@ export default function VehicleDataUpload() {
       const line = lines[i].trim();
       if (!line) continue;
 
-      const values = [];
+      const values: string[] = [];
       let current = "";
       let inQuotes = false;
 
@@ -142,7 +142,7 @@ export default function VehicleDataUpload() {
       values.push(current.trim());
 
       if (values.length === headers.length) {
-        const row = {};
+        const row: Record<string, any> = {};
         headers.forEach((header, idx) => {
           row[header] = values[idx];
         });
@@ -153,8 +153,8 @@ export default function VehicleDataUpload() {
     return { headers, rows };
   };
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
     event.target.value = "";
@@ -188,7 +188,7 @@ export default function VehicleDataUpload() {
       });
       setUploadResult(null);
 
-      const result = await batchAddVehicles(rows, userProfile?.fleet_id, (current) => {
+      const result = await batchAddVehicles(rows, userProfile?.fleet_id ?? "", (current) => {
         setUploadProgress((prev) => ({ ...prev, current }));
       });
       const { successCount, errorCount, errors } = result;
@@ -206,7 +206,7 @@ export default function VehicleDataUpload() {
               (errors.length > 5 ? `\n...and ${errors.length - 5} more` : "")
             : null,
       });
-    } catch (err) {
+    } catch (err: any) {
       setUploadProgress({ active: false, current: 0, total: 0 });
       setUploadResult({
         success: false,

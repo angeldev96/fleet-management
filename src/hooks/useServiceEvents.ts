@@ -1,18 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "lib/supabase";
 import { useAuth } from "context/AuthContext";
+import type { ServiceEvent, ServiceResult } from "types/database";
 
-/**
- * Hook to fetch service events with pagination and filters
- * @param {Object} options
- * @param {string} options.vehicleId - Filter by vehicle ID (optional)
- * @param {string} options.status - Filter by status (optional)
- * @param {number} options.month - Filter by month (1-12, optional)
- * @param {number} options.year - Filter by year (optional)
- * @param {number} options.page - Current page number (default: 1)
- * @param {number} options.pageSize - Items per page (default: 10)
- * @returns {{ events: Array, loading: boolean, error: Error | null, totalCount: number, refetch: Function }}
- */
+interface UseServiceEventsOptions {
+  vehicleId?: string | null;
+  status?: string | null;
+  month?: number | null;
+  year?: number | null;
+  page?: number;
+  pageSize?: number;
+}
+
 export function useServiceEvents({
   vehicleId = null,
   status = null,
@@ -20,13 +19,13 @@ export function useServiceEvents({
   year = null,
   page = 1,
   pageSize = 10,
-} = {}) {
+}: UseServiceEventsOptions = {}) {
   const { fleetId: authFleetId, isSuperAdmin, loading: authLoading } = useAuth();
   const effectiveFleetId = authFleetId;
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -88,7 +87,7 @@ export function useServiceEvents({
     } catch (err) {
       console.error("Error fetching service events:", err);
       if (isMounted.current) {
-        setError(err);
+        setError(err as Error);
       }
     } finally {
       if (isMounted.current) {
@@ -105,21 +104,24 @@ export function useServiceEvents({
   return { events, loading, error, totalCount, refetch: fetchEvents };
 }
 
-/**
- * Hook to fetch service stats for dashboard cards
- * @returns {{ stats: Object, loading: boolean, error: Error | null, refetch: Function }}
- */
+interface ServiceStats {
+  scheduledThisMonth: number;
+  upcoming7Days: number;
+  overdue: number;
+  completed: number;
+}
+
 export function useServiceStats() {
   const { fleetId: authFleetId, isSuperAdmin, loading: authLoading } = useAuth();
   const effectiveFleetId = authFleetId;
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<ServiceStats>({
     scheduledThisMonth: 0,
     upcoming7Days: 0,
     overdue: 0,
     completed: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -151,7 +153,9 @@ export function useServiceStats() {
       const today = now.toISOString().split("T")[0];
       const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-      let baseQuery = supabase.from("service_events_with_vehicle").select("id, service_date, computed_status");
+      let baseQuery = supabase
+        .from("service_events_with_vehicle")
+        .select("id, service_date, computed_status");
 
       if (!isSuperAdmin && effectiveFleetId) {
         baseQuery = baseQuery.eq("fleet_id", effectiveFleetId);
@@ -164,16 +168,16 @@ export function useServiceStats() {
       const events = data || [];
 
       const scheduledThisMonth = events.filter(
-        (e) => e.service_date >= startOfMonth && e.service_date <= endOfMonth
+        (e: any) => e.service_date >= startOfMonth && e.service_date <= endOfMonth,
       ).length;
 
       const upcoming7Days = events.filter(
-        (e) => e.service_date >= today && e.service_date <= in7Days && e.computed_status !== "completed"
+        (e: any) => e.service_date >= today && e.service_date <= in7Days && e.computed_status !== "completed",
       ).length;
 
-      const overdue = events.filter((e) => e.computed_status === "overdue").length;
+      const overdue = events.filter((e: any) => e.computed_status === "overdue").length;
 
-      const completed = events.filter((e) => e.computed_status === "completed").length;
+      const completed = events.filter((e: any) => e.computed_status === "completed").length;
 
       if (isMounted.current) {
         setStats({
@@ -187,7 +191,7 @@ export function useServiceStats() {
     } catch (err) {
       console.error("Error fetching service stats:", err);
       if (isMounted.current) {
-        setError(err);
+        setError(err as Error);
       }
     } finally {
       if (isMounted.current) {
@@ -204,17 +208,12 @@ export function useServiceStats() {
   return { stats, loading, error, refetch: fetchStats };
 }
 
-/**
- * Hook to fetch vehicle service history
- * @param {string} vehicleId
- * @returns {{ events: Array, loading: boolean, error: Error | null, refetch: Function }}
- */
-export function useVehicleServiceHistory(vehicleId) {
+export function useVehicleServiceHistory(vehicleId: string | undefined) {
   const { fleetId: authFleetId, isSuperAdmin, loading: authLoading } = useAuth();
   const effectiveFleetId = authFleetId;
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -261,7 +260,7 @@ export function useVehicleServiceHistory(vehicleId) {
     } catch (err) {
       console.error("Error fetching vehicle service history:", err);
       if (isMounted.current) {
-        setError(err);
+        setError(err as Error);
       }
     } finally {
       if (isMounted.current) {
@@ -278,34 +277,22 @@ export function useVehicleServiceHistory(vehicleId) {
   return { events, loading, error, refetch: fetchHistory };
 }
 
-/**
- * Function to create a new service event
- * @param {Object} eventData
- * @returns {Promise<{data: Object | null, error: Error | null}>}
- */
-export async function createServiceEvent(eventData) {
+export async function createServiceEvent(eventData: Record<string, any>): Promise<ServiceResult> {
   try {
-    const { data, error } = await supabase
-      .from("service_events")
-      .insert(eventData)
-      .select()
-      .single();
+    const { data, error } = await supabase.from("service_events").insert(eventData).select().single();
 
     if (error) throw error;
     return { data, error: null };
   } catch (err) {
     console.error("Error creating service event:", err);
-    return { data: null, error: err };
+    return { data: null, error: err as Error };
   }
 }
 
-/**
- * Function to update a service event
- * @param {string} eventId
- * @param {Object} updates
- * @returns {Promise<{data: Object | null, error: Error | null}>}
- */
-export async function updateServiceEvent(eventId, updates) {
+export async function updateServiceEvent(
+  eventId: string,
+  updates: Record<string, any>,
+): Promise<ServiceResult> {
   try {
     const { data, error } = await supabase
       .from("service_events")
@@ -318,16 +305,11 @@ export async function updateServiceEvent(eventId, updates) {
     return { data, error: null };
   } catch (err) {
     console.error("Error updating service event:", err);
-    return { data: null, error: err };
+    return { data: null, error: err as Error };
   }
 }
 
-/**
- * Function to delete a service event
- * @param {string} eventId
- * @returns {Promise<{error: Error | null}>}
- */
-export async function deleteServiceEvent(eventId) {
+export async function deleteServiceEvent(eventId: string): Promise<{ error: Error | null }> {
   try {
     const { error } = await supabase.from("service_events").delete().eq("id", eventId);
 
@@ -335,6 +317,6 @@ export async function deleteServiceEvent(eventId) {
     return { error: null };
   } catch (err) {
     console.error("Error deleting service event:", err);
-    return { error: err };
+    return { error: err as Error };
   }
 }

@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react";
 import { X, Loader2 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Button from "components/CustomButtons/Button.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Button from "components/CustomButtons/Button";
 
 // shadcn ui
 import {
@@ -37,7 +37,14 @@ const inputClasses =
 const selectClasses =
   "flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none";
 
-export default function EditEventModal({ open, onClose, onSuccess, event }) {
+interface EditEventModalProps {
+  open: boolean;
+  onClose: () => void;
+  event: any;
+  onSuccess?: () => void;
+}
+
+export default function EditEventModal({ open, onClose, onSuccess, event }: EditEventModalProps) {
   const { user } = useAuth();
 
   // AlertDialog states (replacing SweetAlert)
@@ -78,7 +85,7 @@ export default function EditEventModal({ open, onClose, onSuccess, event }) {
     }
   }, [event, open]);
 
-  const handleChange = (field) => (e) => {
+  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [field]: e.target.value });
   };
 
@@ -155,7 +162,7 @@ export default function EditEventModal({ open, onClose, onSuccess, event }) {
           : "The service event has been updated successfully."
       );
       setShowSuccess(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error updating service event:", err);
       setErrorMessage(err.message);
       setShowError(true);
@@ -371,7 +378,7 @@ export default function EditEventModal({ open, onClose, onSuccess, event }) {
             <AlertDialogAction
               onClick={() => {
                 setShowSuccess(false);
-                onSuccess && onSuccess();
+                onSuccess?.();
                 onClose();
               }}
             >

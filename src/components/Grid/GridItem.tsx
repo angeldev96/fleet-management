@@ -1,8 +1,10 @@
 import React from "react";
 import { cn } from "lib/utils";
 
+type ColSpan = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
 // Full string mappings required for Tailwind class detection (no dynamic interpolation)
-const colSpan = {
+const colSpan: Record<ColSpan, string> = {
   1: "col-span-1",
   2: "col-span-2",
   3: "col-span-3",
@@ -17,7 +19,7 @@ const colSpan = {
   12: "col-span-12",
 };
 
-const smColSpan = {
+const smColSpan: Record<ColSpan, string> = {
   1: "sm:col-span-1",
   2: "sm:col-span-2",
   3: "sm:col-span-3",
@@ -32,7 +34,7 @@ const smColSpan = {
   12: "sm:col-span-12",
 };
 
-const mdColSpan = {
+const mdColSpan: Record<ColSpan, string> = {
   1: "md:col-span-1",
   2: "md:col-span-2",
   3: "md:col-span-3",
@@ -47,7 +49,7 @@ const mdColSpan = {
   12: "md:col-span-12",
 };
 
-const lgColSpan = {
+const lgColSpan: Record<ColSpan, string> = {
   1: "lg:col-span-1",
   2: "lg:col-span-2",
   3: "lg:col-span-3",
@@ -62,7 +64,7 @@ const lgColSpan = {
   12: "lg:col-span-12",
 };
 
-const xlColSpan = {
+const xlColSpan: Record<ColSpan, string> = {
   1: "xl:col-span-1",
   2: "xl:col-span-2",
   3: "xl:col-span-3",
@@ -77,7 +79,17 @@ const xlColSpan = {
   12: "xl:col-span-12",
 };
 
-export default function GridItem({ children, className, xs, sm, md, lg, xl, ...rest }) {
+export interface GridItemProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
+  className?: string;
+  xs?: ColSpan;
+  sm?: ColSpan;
+  md?: ColSpan;
+  lg?: ColSpan;
+  xl?: ColSpan;
+}
+
+export default function GridItem({ children, className, xs, sm, md, lg, xl, ...rest }: GridItemProps) {
   return (
     <div
       className={cn(

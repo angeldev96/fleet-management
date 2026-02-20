@@ -27,23 +27,23 @@ const CLUSTER_RADIUS = 50;
 
 // Helper function to determine vehicle status and color
 // Uses the pre-calculated status from the vehicles_with_status view
-const getVehicleStatus = (vehicle) => {
+const getVehicleStatus = (vehicle: any) => {
   const STATUS_MAP = {
     online: { color: "#10B981", status: "online" },
     idle: { color: "#F59E0B", status: "idle" },
     offline: { color: "#9C27B0", status: "offline" },
   };
-  return STATUS_MAP[vehicle.status] || STATUS_MAP.offline;
+  return STATUS_MAP[vehicle.status as keyof typeof STATUS_MAP] || STATUS_MAP.offline;
 };
 
 // Convert vehicles array to GeoJSON FeatureCollection
-const vehiclesToGeoJSON = (vehicles) => {
+const vehiclesToGeoJSON = (vehicles: any) => {
   const features = vehicles
     .filter(
-      (v) =>
+      (v: any) =>
         v.last_latitude && v.last_longitude && !isNaN(v.last_latitude) && !isNaN(v.last_longitude)
     )
-    .map((vehicle) => {
+    .map((vehicle: any) => {
       const { color, status } = getVehicleStatus(vehicle);
       return {
         type: "Feature",
@@ -67,8 +67,8 @@ const vehiclesToGeoJSON = (vehicles) => {
 };
 
 export default function MapPreview() {
-  const mapContainer = useRef(null);
-  const map = useRef(null);
+  const mapContainer = useRef<HTMLDivElement | null>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [hasFitBounds, setHasFitBounds] = useState(false);
   const history = useHistory();
@@ -86,7 +86,7 @@ export default function MapPreview() {
     if (map.current) return;
 
     map.current = new mapboxgl.Map({
-      container: mapContainer.current,
+      container: mapContainer.current!,
       style: "mapbox://styles/mapbox/streets-v12",
       center: [JAMAICA_CENTER.lng, JAMAICA_CENTER.lat],
       zoom: JAMAICA_CENTER.zoom,
@@ -95,7 +95,7 @@ export default function MapPreview() {
 
     map.current.on("load", () => {
       // Add empty source initially
-      map.current.addSource(SOURCE_ID, {
+      map.current!.addSource(SOURCE_ID, {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
         cluster: true,
@@ -104,7 +104,7 @@ export default function MapPreview() {
       });
 
       // Layer 1: Cluster circles
-      map.current.addLayer({
+      map.current!.addLayer({
         id: CLUSTER_LAYER_ID,
         type: "circle",
         source: SOURCE_ID,
@@ -135,7 +135,7 @@ export default function MapPreview() {
       });
 
       // Layer 2: Cluster count text
-      map.current.addLayer({
+      map.current!.addLayer({
         id: CLUSTER_COUNT_LAYER_ID,
         type: "symbol",
         source: SOURCE_ID,
@@ -151,7 +151,7 @@ export default function MapPreview() {
       });
 
       // Layer 3: Unclustered vehicle points
-      map.current.addLayer({
+      map.current!.addLayer({
         id: UNCLUSTERED_LAYER_ID,
         type: "circle",
         source: SOURCE_ID,
@@ -184,13 +184,13 @@ export default function MapPreview() {
     if (!source) return;
 
     const geojson = vehiclesToGeoJSON(vehicles);
-    source.setData(geojson);
+    (source as any).setData(geojson);
 
     // Fit bounds on initial load
     if (!hasFitBounds && geojson.features.length > 0) {
       const bounds = new mapboxgl.LngLatBounds();
-      geojson.features.forEach((feature) => {
-        bounds.extend(feature.geometry.coordinates);
+      geojson.features.forEach((feature: any) => {
+        bounds.extend(feature.geometry.coordinates as [number, number]);
       });
 
       map.current.fitBounds(bounds, {

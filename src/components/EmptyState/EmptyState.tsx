@@ -1,8 +1,16 @@
 import React from "react";
 import { cn } from "lib/utils";
-import { Inbox } from "lucide-react";
+import { Inbox, LucideIcon } from "lucide-react";
 
-export default function EmptyState({ icon: Icon = Inbox, title, description, action, className }) {
+interface EmptyStateProps {
+  icon?: LucideIcon;
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+  className?: string;
+}
+
+export default function EmptyState({ icon: Icon = Inbox, title, description, action, className }: EmptyStateProps) {
   return (
     <div className={cn("flex flex-col items-center justify-center py-16 px-4 text-center", className)}>
       <div className="rounded-2xl bg-muted/50 p-5 mb-5 ring-1 ring-border/50">

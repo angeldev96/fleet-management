@@ -5,11 +5,11 @@ import { useHistory } from "react-router-dom";
 import { BarChart3, Car, TrendingUp, Clock, ArrowRight, Search, X, Loader2 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import Button from "components/CustomButtons/Button.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
+import Button from "components/CustomButtons/Button";
 
 // hooks
 import { useVehicles } from "hooks/useVehicles";
@@ -19,14 +19,14 @@ import { formatDateOnly } from "types/database";
 
 export default function ReportsHub() {
   const history = useHistory();
-  const searchRef = useRef(null);
+  const searchRef = useRef<HTMLDivElement | null>(null);
 
   // Search state
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
-  const [recentReports, setRecentReports] = useState([]);
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
+  const [recentReports, setRecentReports] = useState<any[]>([]);
 
   // Debounce search
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function ReportsHub() {
     history.push("/admin/reports/fleet");
   };
 
-  const handleSelectVehicle = (vehicle) => {
+  const handleSelectVehicle = (vehicle: any) => {
     setSelectedVehicle(vehicle);
     setSearchInput("");
     setShowDropdown(false);
@@ -90,7 +90,7 @@ export default function ReportsHub() {
         }
       }
 
-      const updatedRecent = [newReport, ...existing.filter((r) => r.vehicleId !== selectedVehicle.id)].slice(0, 5);
+      const updatedRecent = [newReport, ...existing.filter((r: any) => r.vehicleId !== selectedVehicle.id)].slice(0, 5);
       localStorage.setItem("recentVehicleReports", JSON.stringify(updatedRecent));
       setRecentReports(updatedRecent);
 
@@ -98,14 +98,14 @@ export default function ReportsHub() {
     }
   }, [selectedVehicle, history]);
 
-  const handleViewRecent = (vehicleId) => {
+  const handleViewRecent = (vehicleId: string) => {
     history.push(`/admin/vehicle/${vehicleId}/travel-report`);
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffMs = now - date;
+    const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
@@ -117,7 +117,7 @@ export default function ReportsHub() {
     return formatDateOnly(date);
   };
 
-  const getVehicleDisplayName = (vehicle) => {
+  const getVehicleDisplayName = (vehicle: any) => {
     if (vehicle.name) return vehicle.name;
     if (vehicle.make && vehicle.model) return `${vehicle.make} ${vehicle.model}`;
     if (vehicle.make) return vehicle.make;
@@ -126,8 +126,8 @@ export default function ReportsHub() {
 
   // Click-away handler for dropdown
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
     };

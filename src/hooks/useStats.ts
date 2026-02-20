@@ -2,22 +2,28 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "lib/supabase";
 import { useAuth } from "context/AuthContext";
 
-/**
- * Hook to fetch dashboard statistics
- * @param {Object} options
- * @param {number} options.refreshInterval - Polling interval in ms (default: 30000)
- * @returns {{ stats: Object, loading: boolean, error: Error | null, refetch: Function }}
- */
-export function useStats({ refreshInterval = 30000 } = {}) {
+interface DashboardStats {
+  vehiclesActive: number;
+  vehiclesWithIssues: number;
+  alertsToday: number;
+  harshEvents: number;
+  totalVehicles?: number;
+}
+
+interface UseStatsOptions {
+  refreshInterval?: number;
+}
+
+export function useStats({ refreshInterval = 30000 }: UseStatsOptions = {}) {
   const { fleetId, isSuperAdmin, loading: authLoading } = useAuth();
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     vehiclesActive: 0,
     vehiclesWithIssues: 0,
     alertsToday: 0,
     harshEvents: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -44,7 +50,6 @@ export function useStats({ refreshInterval = 30000 } = {}) {
         return;
       }
 
-      // Get vehicles with status
       let vehiclesQuery = supabase.from("vehicles_with_status").select("id, status");
 
       if (!isSuperAdmin && fleetId) {
@@ -55,8 +60,9 @@ export function useStats({ refreshInterval = 30000 } = {}) {
 
       if (vehiclesError) throw vehiclesError;
 
-      const vehicleIds = vehicles?.map((v) => v.id) || [];
-      const vehiclesActive = vehicles?.filter((v) => v.status === "online" || v.status === "idle").length || 0;
+      const vehicleIds = vehicles?.map((v: any) => v.id) || [];
+      const vehiclesActive =
+        vehicles?.filter((v: any) => v.status === "online" || v.status === "idle").length || 0;
 
       if (vehicleIds.length === 0) {
         if (isMounted.current) {
@@ -72,12 +78,13 @@ export function useStats({ refreshInterval = 30000 } = {}) {
         return;
       }
 
-      // Start of today in Jamaica timezone (America/Jamaica = UTC-5, no DST)
       const now = new Date();
       const jamaicaOffset = -5 * 60;
       const jamaicaTime = new Date(now.getTime() + (jamaicaOffset + now.getTimezoneOffset()) * 60000);
       const startOfDay = new Date(jamaicaTime.getFullYear(), jamaicaTime.getMonth(), jamaicaTime.getDate());
-      const startOfDayUTC = new Date(startOfDay.getTime() - (jamaicaOffset + now.getTimezoneOffset()) * 60000);
+      const startOfDayUTC = new Date(
+        startOfDay.getTime() - (jamaicaOffset + now.getTimezoneOffset()) * 60000,
+      );
       const sinceStartOfDay = startOfDayUTC.toISOString();
 
       const { data: alerts, error: alertsError } = await supabase
@@ -93,7 +100,6 @@ export function useStats({ refreshInterval = 30000 } = {}) {
 
       if (alertsError) throw alertsError;
 
-      // Get vehicles with DTCs or collisions today (issues = only DTCs + collisions)
       const { data: vehicleAlerts, error: vehicleAlertsError } = await supabase
         .from("events")
         .select("vehicle_id")
@@ -103,10 +109,10 @@ export function useStats({ refreshInterval = 30000 } = {}) {
 
       if (vehicleAlertsError) throw vehicleAlertsError;
 
-      const vehiclesWithIssues = new Set(vehicleAlerts?.map((e) => e.vehicle_id) || []).size;
+      const vehiclesWithIssues = new Set(vehicleAlerts?.map((e: any) => e.vehicle_id) || []).size;
 
       const harshEventTypes = ["harsh_braking", "harsh_acceleration", "harsh_cornering"];
-      const harshEvents = alerts?.filter((e) => harshEventTypes.includes(e.event_type)).length || 0;
+      const harshEvents = alerts?.filter((e: any) => harshEventTypes.includes(e.event_type)).length || 0;
 
       if (isMounted.current) {
         setStats({
@@ -122,7 +128,7 @@ export function useStats({ refreshInterval = 30000 } = {}) {
     } catch (err) {
       console.error("Error fetching stats:", err);
       if (isMounted.current) {
-        setError(err);
+        setError(err as Error);
       }
     } finally {
       if (isMounted.current) {

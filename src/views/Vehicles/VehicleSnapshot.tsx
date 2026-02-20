@@ -15,10 +15,10 @@ import {
 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
 
 // hooks
 import { useVehicleSnapshot } from "hooks/useVehicleSnapshot";
@@ -36,9 +36,9 @@ const colorMap = {
   teal: { bg: "bg-teal-500/10", text: "text-teal-600" },
 };
 
-const PIDCard = ({ icon: Icon, label, value, unit, color, noDataText = "--" }) => {
+const PIDCard = ({ icon: Icon, label, value, unit, color, noDataText = "--" }: { icon: any; label: any; value: any; unit: any; color: any; noDataText?: string }) => {
   const hasValue = value !== null && value !== undefined;
-  const colors = colorMap[color] || colorMap.blue;
+  const colors = (colorMap as Record<string, any>)[color] || colorMap.blue;
 
   return (
     <Card className="h-full mb-0">
@@ -62,7 +62,7 @@ const PIDCard = ({ icon: Icon, label, value, unit, color, noDataText = "--" }) =
 
 export default function VehicleSnapshot() {
   const history = useHistory();
-  const { vehicleId } = useParams();
+  const { vehicleId } = useParams<{ vehicleId: string }>();
 
   const handleBack = () => {
     history.push("/admin/vehicles");

@@ -1,16 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "lib/supabase";
 import { useAuth } from "context/AuthContext";
+import type { Vehicle } from "types/database";
 
-/**
- * Retry a function up to maxRetries times with exponential backoff.
- * Only retries on network-level errors (connection closed, timeout, etc).
- */
-async function withRetry(fn, maxRetries = 2) {
+async function withRetry<T>(fn: () => Promise<T>, maxRetries: number = 2): Promise<T> {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
-    } catch (err) {
+    } catch (err: any) {
       const isNetworkError =
         err?.message?.includes("Failed to fetch") ||
         err?.message?.includes("NetworkError") ||
@@ -20,19 +17,18 @@ async function withRetry(fn, maxRetries = 2) {
       await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
     }
   }
+  throw new Error("Unreachable");
 }
 
-/**
- * Hook to fetch vehicles with their status, with server-side pagination and search
- * @param {Object} options
- * @param {string} options.fleetId - Fleet ID to filter (optional, uses RLS)
- * @param {number} options.refreshInterval - Polling interval in ms (default: 30000)
- * @param {number} options.page - Current page number (default: 1)
- * @param {number} options.pageSize - Items per page (default: 10)
- * @param {string} options.searchTerm - Search term for filtering (default: "")
- * @param {boolean} options.fetchAll - If true, fetches all records without pagination (default: false)
- * @returns {{ vehicles: Array, loading: boolean, error: Error | null, totalCount: number, refetch: Function }}
- */
+interface UseVehiclesOptions {
+  fleetId?: string | null;
+  refreshInterval?: number;
+  page?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  fetchAll?: boolean;
+}
+
 export function useVehicles({
   fleetId = null,
   refreshInterval = 30000,
@@ -40,13 +36,13 @@ export function useVehicles({
   pageSize = 10,
   searchTerm = "",
   fetchAll = false,
-} = {}) {
+}: UseVehiclesOptions = {}) {
   const { fleetId: authFleetId, isSuperAdmin, loading: authLoading } = useAuth();
   const effectiveFleetId = fleetId ?? authFleetId;
-  const [vehicles, setVehicles] = useState([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const isMounted = useRef(true);
   const hasData = useRef(false);
 
@@ -68,11 +64,9 @@ export function useVehicles({
         }
         return;
       }
-      // Calculate range for pagination
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
-      // Query the vehicles_with_status view with count
       let query = supabase
         .from("vehicles_with_status")
         .select("*", { count: "exact", head: false })
@@ -82,27 +76,25 @@ export function useVehicles({
         query = query.eq("fleet_id", effectiveFleetId);
       }
 
-      // Add server-side search filter using .or() with .ilike()
       if (searchTerm) {
         query = query.or(
           `plate_number.ilike.%${searchTerm}%,` +
             `make.ilike.%${searchTerm}%,` +
             `model.ilike.%${searchTerm}%,` +
-            `name.ilike.%${searchTerm}%`
+            `name.ilike.%${searchTerm}%`,
         );
       }
 
-      // Add pagination with .range() unless fetchAll is true
       if (!fetchAll) {
         query = query.range(from, to);
       }
 
-      const { data, error: queryError, count } = await withRetry(() => query);
+      const { data, error: queryError, count }: any = await withRetry(() => query as any);
 
       if (queryError) throw queryError;
 
       if (isMounted.current) {
-        setVehicles(data || []);
+        setVehicles((data as Vehicle[]) || []);
         setTotalCount(count || 0);
         setError(null);
         hasData.current = true;
@@ -110,10 +102,8 @@ export function useVehicles({
     } catch (err) {
       console.error("Error fetching vehicles:", err);
       if (isMounted.current) {
-        // Only set error if we have no data yet (initial load).
-        // During polling, keep stale data visible instead of flashing an error.
         if (!hasData.current) {
-          setError(err);
+          setError(err as Error);
         }
       }
     } finally {
@@ -127,7 +117,6 @@ export function useVehicles({
     setLoading(true);
     fetchVehicles();
 
-    // Set up polling
     const interval = setInterval(fetchVehicles, refreshInterval);
 
     return () => clearInterval(interval);
@@ -136,17 +125,12 @@ export function useVehicles({
   return { vehicles, loading, error, totalCount, refetch: fetchVehicles };
 }
 
-/**
- * Hook to fetch a single vehicle with details
- * @param {string} vehicleId
- * @returns {{ vehicle: Object | null, loading: boolean, error: Error | null, refetch: Function }}
- */
-export function useVehicle(vehicleId) {
+export function useVehicle(vehicleId: string | undefined) {
   const { fleetId: authFleetId, isSuperAdmin, loading: authLoading } = useAuth();
   const effectiveFleetId = authFleetId;
-  const [vehicle, setVehicle] = useState(null);
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -182,13 +166,13 @@ export function useVehicle(vehicleId) {
       if (queryError) throw queryError;
 
       if (isMounted.current) {
-        setVehicle(data);
+        setVehicle(data as Vehicle);
         setError(null);
       }
     } catch (err) {
       console.error("Error fetching vehicle:", err);
       if (isMounted.current) {
-        setError(err);
+        setError(err as Error);
       }
     } finally {
       if (isMounted.current) {

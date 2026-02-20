@@ -5,13 +5,13 @@ import { useHistory } from "react-router-dom";
 import { ArrowLeft, Upload, Trash2, Building, Loader2 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import CardHeader from "components/Card/CardHeader.js";
-import CardIcon from "components/Card/CardIcon.js";
-import Button from "components/CustomButtons/Button.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
+import CardHeader from "components/Card/CardHeader";
+import CardIcon from "components/Card/CardIcon";
+import Button from "components/CustomButtons/Button";
 
 // shadcn
 import {
@@ -34,11 +34,11 @@ const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
 export default function FleetSettings() {
   const history = useHistory();
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { fleetId, fleetName, fleetLogoUrl, refreshProfile } = useAuth();
 
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
 
@@ -49,12 +49,12 @@ export default function FleetSettings() {
   // Remove confirmation dialog
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
 
-  const showAlert = (title, message, type = "info") => {
+  const showAlert = (title: string, message: string, type: string = "info") => {
     setAlertConfig({ title, message, type });
     setAlertOpen(true);
   };
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -96,7 +96,7 @@ export default function FleetSettings() {
   const handleRemoveConfirm = async () => {
     setRemoveConfirmOpen(false);
     setRemoving(true);
-    const { error } = await removeFleetLogo(fleetId);
+    const { error } = await removeFleetLogo(fleetId as string);
     setRemoving(false);
 
     if (error) {

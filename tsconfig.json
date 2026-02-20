@@ -14,9 +14,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Allow JS files */
-    "allowJs": true,
-    "checkJs": false,
+    /* No JS files */
+    "allowJs": false,
 
     /* Path aliases (match vite.config.mjs) */
     "baseUrl": "src",
@@ -30,11 +29,11 @@
       "services/*": ["services/*"],
       "types/*": ["types/*"],
       "views/*": ["views/*"],
-      "routes.js": ["routes.js"]
+      "routes": ["routes.ts"]
     },
 
     /* Linting */
-    "strict": false,
+    "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,

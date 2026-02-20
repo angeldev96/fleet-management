@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "lib/utils";
 import { Car, ChevronDown } from "lucide-react";
@@ -7,37 +6,46 @@ import {
   Sheet,
   SheetContent,
 } from "components/ui/sheet";
-import AdminNavbarLinks from "components/Navbars/AdminNavbarLinks.js";
+import AdminNavbarLinks from "components/Navbars/AdminNavbarLinks";
 
-function SidebarContent({ routes, color, miniActive, logo, logoText, onLinkClick }) {
+interface SidebarContentProps {
+  routes: any;
+  color: any;
+  miniActive: boolean;
+  logo: any;
+  logoText: any;
+  onLinkClick?: () => void;
+}
+
+function SidebarContent({ routes, color, miniActive, logo, logoText, onLinkClick }: SidebarContentProps) {
   const location = useLocation();
-  const [collapseState, setCollapseState] = React.useState({});
+  const [collapseState, setCollapseState] = React.useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
-    const initialState = {};
-    routes.forEach((route) => {
+    const initialState: Record<string, boolean> = {};
+    routes.forEach((route: any) => {
       if (route.collapse) {
         initialState[route.state] = route.views?.some(
-          (v) => location.pathname === v.layout + v.path
+          (v: any) => location.pathname === v.layout + v.path
         );
       }
     });
     setCollapseState(initialState);
   }, []);
 
-  const isActive = (routePath) => location.pathname === routePath;
+  const isActive = (routePath: string) => location.pathname === routePath;
 
-  const toggleCollapse = (stateKey) => {
+  const toggleCollapse = (stateKey: string) => {
     setCollapseState((prev) => ({ ...prev, [stateKey]: !prev[stateKey] }));
   };
 
-  const renderLinks = (routeList) => {
-    return routeList.map((route, index) => {
+  const renderLinks = (routeList: any[]) => {
+    return routeList.map((route: any, index: number) => {
       if (route.redirect || route.hide) return null;
 
       if (route.collapse) {
         const hasActiveChild = route.views?.some(
-          (v) => location.pathname === v.layout + v.path
+          (v: any) => location.pathname === v.layout + v.path
         );
         return (
           <div key={index}>
@@ -64,7 +72,7 @@ function SidebarContent({ routes, color, miniActive, logo, logoText, onLinkClick
             </button>
             {collapseState[route.state] && !miniActive && (
               <div className="ml-6 mt-1 space-y-1">
-                {route.views?.map((view, vIndex) => {
+                {route.views?.map((view: any, vIndex: number) => {
                   if (view.redirect || view.hide) return null;
                   const active = isActive(view.layout + view.path);
                   return (
@@ -145,6 +153,17 @@ function SidebarContent({ routes, color, miniActive, logo, logoText, onLinkClick
   );
 }
 
+interface SidebarProps {
+  routes: any;
+  logo?: string | null;
+  logoText?: string;
+  handleDrawerToggle?: () => void;
+  open?: boolean;
+  color?: string;
+  bgColor?: string;
+  miniActive?: boolean;
+}
+
 function Sidebar({
   routes,
   logo,
@@ -154,7 +173,7 @@ function Sidebar({
   color,
   bgColor = "blue",
   miniActive: propMiniActive,
-}) {
+}: SidebarProps) {
   const [hoverExpanded, setHoverExpanded] = React.useState(false);
   const miniActive = propMiniActive && !hoverExpanded;
 
@@ -189,7 +208,7 @@ function Sidebar({
         <SidebarContent
           routes={routes}
           color={color}
-          miniActive={miniActive}
+          miniActive={miniActive ?? false}
           logo={logo}
           logoText={logoText}
         />
@@ -197,16 +216,5 @@ function Sidebar({
     </>
   );
 }
-
-Sidebar.propTypes = {
-  bgColor: PropTypes.oneOf(["white", "black", "blue"]),
-  color: PropTypes.oneOf(["white", "red", "orange", "green", "blue", "purple", "rose"]),
-  logo: PropTypes.string,
-  logoText: PropTypes.string,
-  routes: PropTypes.arrayOf(PropTypes.object),
-  miniActive: PropTypes.bool,
-  open: PropTypes.bool,
-  handleDrawerToggle: PropTypes.func,
-};
 
 export default Sidebar;

@@ -1,35 +1,54 @@
-import Overview from "views/Overview/Overview.js";
-import LiveMap from "views/LiveMap/LiveMap.js";
-import Vehicles from "views/Vehicles/Vehicles.js";
-import VehicleDetails from "views/Vehicles/VehicleDetails.js";
-import VehicleSnapshot from "views/Vehicles/VehicleSnapshot.js";
-import VehicleTravelReport from "views/Vehicles/VehicleTravelReport.js";
-import Alerts from "views/Alerts/Alerts.js";
-import Devices from "views/Devices/Devices.js";
-import SettingsPage from "views/Settings/Settings.js";
-import DeviceManagement from "views/Settings/DeviceManagement.js";
-import VehicleDataUpload from "views/Settings/VehicleDataUpload.js";
-import UserManagement from "views/Settings/UserManagement.js";
-import FleetSettings from "views/Settings/FleetSettings.js";
-import ReportsHub from "views/Reports/ReportsHub.js";
-import FleetReport from "views/Reports/FleetReport.js";
-import ServiceCalendar from "views/ServiceCalendar/ServiceCalendar.js";
-import LoginPage from "views/Pages/LoginPage.js";
-import RegisterPage from "views/Pages/RegisterPage.js";
+import { ComponentType } from "react";
+import { LucideIcon } from "lucide-react";
 
-import {
-  Home,
-  MapPin,
-  Car,
-  Bell,
-  Tablet,
-  FileText,
-  CalendarDays,
-  Settings,
-  Image,
-} from "lucide-react";
+import Overview from "views/Overview/Overview";
+import LiveMap from "views/LiveMap/LiveMap";
+import Vehicles from "views/Vehicles/Vehicles";
+import VehicleDetails from "views/Vehicles/VehicleDetails";
+import VehicleSnapshot from "views/Vehicles/VehicleSnapshot";
+import VehicleTravelReport from "views/Vehicles/VehicleTravelReport";
+import Alerts from "views/Alerts/Alerts";
+import Devices from "views/Devices/Devices";
+import SettingsPage from "views/Settings/Settings";
+import DeviceManagement from "views/Settings/DeviceManagement";
+import VehicleDataUpload from "views/Settings/VehicleDataUpload";
+import UserManagement from "views/Settings/UserManagement";
+import FleetSettings from "views/Settings/FleetSettings";
+import ReportsHub from "views/Reports/ReportsHub";
+import FleetReport from "views/Reports/FleetReport";
+import ServiceCalendar from "views/ServiceCalendar/ServiceCalendar";
+import LoginPage from "views/Pages/LoginPage";
+import RegisterPage from "views/Pages/RegisterPage";
 
-var dashRoutes = [
+import { Home, MapPin, Car, Bell, Tablet, FileText, CalendarDays, Settings, Image } from "lucide-react";
+
+export interface AppRoute {
+  path: string;
+  name: string;
+  sidebarName?: string;
+  icon?: LucideIcon;
+  component: ComponentType<any>;
+  layout: string;
+  hide?: boolean;
+  mini?: string;
+  collapse?: false;
+  redirect?: boolean;
+}
+
+export interface CollapsibleRoute {
+  collapse: true;
+  name: string;
+  sidebarName?: string;
+  icon?: LucideIcon;
+  state: string;
+  hide?: boolean;
+  views: AppRoute[];
+  redirect?: boolean;
+}
+
+export type RouteConfig = AppRoute | CollapsibleRoute;
+
+const dashRoutes: RouteConfig[] = [
   {
     path: "/dashboard",
     name: "Overview",
@@ -167,4 +186,5 @@ var dashRoutes = [
     ],
   },
 ];
+
 export default dashRoutes;

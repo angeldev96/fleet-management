@@ -5,8 +5,8 @@ import { SERVICE_TYPE_LABELS } from "types/database";
 // SHARED HELPERS
 // ============================================================================
 
-function formatStatus(status) {
-  const statusMap = {
+function formatStatus(status: string): string {
+  const statusMap: Record<string, string> = {
     pending: "Pending",
     in_progress: "In Progress",
     completed: "Completed",
@@ -15,7 +15,7 @@ function formatStatus(status) {
   return statusMap[status] || status;
 }
 
-function escapeCSV(value) {
+function escapeCSV(value: any): string {
   if (value === null || value === undefined) return "";
   const s = String(value);
   if (s.includes(",") || s.includes('"') || s.includes("\n")) {
@@ -24,12 +24,12 @@ function escapeCSV(value) {
   return s;
 }
 
-function buildRows(events) {
+function buildRows(events: any[]): Record<string, string>[] {
   return events.map((e) => ({
     date: e.service_date || "",
     vehicle: e.vehicle_name || "",
     plate: e.plate_number || "",
-    type: SERVICE_TYPE_LABELS[e.service_type] || e.service_type || "",
+    type: SERVICE_TYPE_LABELS[e.service_type as keyof typeof SERVICE_TYPE_LABELS] || e.service_type || "",
     items: e.service_items || "",
     status: formatStatus(e.computed_status || e.status),
     mileage: e.mileage ? `${e.mileage} km` : "",
@@ -39,7 +39,7 @@ function buildRows(events) {
   }));
 }
 
-function downloadBlob(blob, filename) {
+function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
@@ -54,7 +54,7 @@ function downloadBlob(blob, filename) {
 // CSV EXPORT
 // ============================================================================
 
-export function exportToCSV(serviceEvents, vehicleName) {
+export function exportToCSV(serviceEvents: any[], vehicleName?: string | null): void {
   if (!serviceEvents || serviceEvents.length === 0) return;
 
   const headers = ["Date", "Vehicle", "Plate", "Service Type", "Service Items", "Status", "Mileage", "Location", "Cost (JMD)", "Notes"];
@@ -82,7 +82,7 @@ export function exportToCSV(serviceEvents, vehicleName) {
 // PDF EXPORT
 // ============================================================================
 
-export function exportToPDF(serviceEvents, vehicleName) {
+export function exportToPDF(serviceEvents: any[], vehicleName?: string | null): void {
   if (!serviceEvents || serviceEvents.length === 0) return;
 
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
@@ -137,7 +137,7 @@ export function exportToPDF(serviceEvents, vehicleName) {
     { label: "Notes", width: 36 },
   ];
 
-  const drawTableHeader = (startY) => {
+  const drawTableHeader = (startY: number): number => {
     doc.setFillColor(243, 244, 246); // #F3F4F6
     doc.rect(margin, startY, pageWidth - margin * 2, 8, "F");
     doc.setFontSize(7);
@@ -185,7 +185,7 @@ export function exportToPDF(serviceEvents, vehicleName) {
   });
 
   // --- Footer ---
-  const totalPages = doc.internal.getNumberOfPages();
+  const totalPages = (doc.internal as any).getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFontSize(7);

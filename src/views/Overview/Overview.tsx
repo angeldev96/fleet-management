@@ -18,11 +18,11 @@ import {
 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import MapPreview from "components/MapPreview/MapPreview.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
+import MapPreview from "components/MapPreview/MapPreview";
 
 // hooks
 import { useStats } from "hooks/useStats";
@@ -49,15 +49,15 @@ export default function Overview() {
     return "Good evening";
   };
 
-  const getEventLabel = (eventType, eventData) => {
+  const getEventLabel = (eventType: string, eventData: any) => {
     if (eventType === "dtc_detected" && eventData?.dtc_code) {
       return `Engine Fault Code ${eventData.dtc_code}`;
     }
-    return EVENT_LABELS[eventType] || eventType;
+    return (EVENT_LABELS as any)[eventType] || eventType;
   };
 
-  const activePercentage = stats.totalVehicles > 0
-    ? Math.round((stats.vehiclesActive / stats.totalVehicles) * 100)
+  const activePercentage = (stats.totalVehicles ?? 0) > 0
+    ? Math.round((stats.vehiclesActive / (stats.totalVehicles ?? 1)) * 100)
     : 0;
 
   const quickActions = [
@@ -166,12 +166,12 @@ export default function Overview() {
               <div className="mt-3.5">
                 <div className="flex justify-between text-[11px] text-muted-foreground/60 mb-1">
                   <span>Health status</span>
-                  <span className="font-medium tabular-nums">{stats.totalVehicles - stats.vehiclesWithIssues} healthy</span>
+                  <span className="font-medium tabular-nums">{(stats.totalVehicles ?? 0) - stats.vehiclesWithIssues} healthy</span>
                 </div>
                 <div className="h-1 rounded-full bg-border/50">
                   <div
                     className="h-1 rounded-full bg-emerald-500 transition-all duration-500"
-                    style={{ width: `${stats.totalVehicles > 0 ? ((stats.totalVehicles - stats.vehiclesWithIssues) / stats.totalVehicles) * 100 : 100}%` }}
+                    style={{ width: `${(stats.totalVehicles ?? 0) > 0 ? (((stats.totalVehicles ?? 0) - stats.vehiclesWithIssues) / (stats.totalVehicles ?? 1)) * 100 : 100}%` }}
                   />
                 </div>
               </div>

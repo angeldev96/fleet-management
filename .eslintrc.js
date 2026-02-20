@@ -1,23 +1,32 @@
 module.exports = {
-  parser: "babel-eslint",
+  root: true,
   env: {
     es6: true,
     node: true,
     browser: true,
   },
+  parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: 6,
+    ecmaVersion: 2020,
     sourceType: "module",
     ecmaFeatures: {
       jsx: true,
     },
   },
-  plugins: ["react"],
-  extends: ["eslint:recommended", "plugin:react/recommended"],
+  plugins: ["react", "react-hooks", "@typescript-eslint"],
+  extends: [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:@typescript-eslint/recommended",
+  ],
   rules: {
     "prettier/prettier": "off",
     "react/prop-types": "off",
-    "no-unused-vars": "warn",
+    "react/react-in-jsx-scope": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-require-imports": "off",
   },
   settings: {
     react: {

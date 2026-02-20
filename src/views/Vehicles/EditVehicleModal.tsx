@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import { X, Loader2 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
 
 // shadcn ui
 import {
@@ -28,7 +28,14 @@ import {
 // hooks & utils
 import { updateVehicle, deleteVehicle } from "services/vehicleService";
 
-export default function EditVehicleModal({ open, onClose, vehicle, onSuccess }) {
+interface EditVehicleModalProps {
+  open: boolean;
+  onClose: () => void;
+  vehicle: any;
+  onSuccess?: () => void;
+}
+
+export default function EditVehicleModal({ open, onClose, vehicle, onSuccess }: EditVehicleModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -37,7 +44,7 @@ export default function EditVehicleModal({ open, onClose, vehicle, onSuccess }) 
   const [warningMessage, setWarningMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const [successCallback, setSuccessCallback] = useState(null);
+  const [successCallback, setSuccessCallback] = useState<(() => void) | null>(null);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -76,24 +83,24 @@ export default function EditVehicleModal({ open, onClose, vehicle, onSuccess }) 
     try {
       const { error } = await updateVehicle(vehicle.id, {
         name: vehicleData.name,
-        plate_number: vehicleData.plate_number || null,
-        make: vehicleData.make || null,
-        model: vehicleData.model || null,
-        year: vehicleData.year ? parseInt(vehicleData.year) : null,
-        driver_name: vehicleData.driver_name || null,
+        plate_number: vehicleData.plate_number || undefined,
+        make: vehicleData.make || undefined,
+        model: vehicleData.model || undefined,
+        year: vehicleData.year ? parseInt(vehicleData.year) : undefined,
+        driver_name: vehicleData.driver_name || undefined,
       });
 
       if (error) throw error;
 
       setSuccessMessage("The vehicle has been successfully updated.");
       setSuccessCallback(() => () => {
-        onSuccess && onSuccess();
+        onSuccess?.();
         onClose();
       });
       setShowSuccess(true);
     } catch (err) {
       console.error("Error updating vehicle:", err);
-      setErrorMessage(err.message);
+      setErrorMessage((err as Error).message);
       setShowError(true);
     } finally {
       setSubmitting(false);
@@ -114,13 +121,13 @@ export default function EditVehicleModal({ open, onClose, vehicle, onSuccess }) 
 
       setSuccessMessage("The vehicle has been permanently deleted.");
       setSuccessCallback(() => () => {
-        onSuccess && onSuccess();
+        onSuccess?.();
         onClose();
       });
       setShowSuccess(true);
     } catch (err) {
       console.error("Error deleting vehicle:", err);
-      setErrorMessage(err.message);
+      setErrorMessage((err as Error).message);
       setShowError(true);
     } finally {
       setDeleting(false);
@@ -271,7 +278,7 @@ export default function EditVehicleModal({ open, onClose, vehicle, onSuccess }) 
             <AlertDialogAction
               onClick={() => {
                 setShowSuccess(false);
-                successCallback && successCallback();
+                successCallback?.();
               }}
             >
               Continue

@@ -1,7 +1,9 @@
 import React from "react";
 import { cn } from "lib/utils";
 
-const colorClasses = {
+type CardIconColor = "primary" | "info" | "success" | "warning" | "danger" | "rose";
+
+const colorClasses: Record<CardIconColor, string> = {
   primary: "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-primary/30",
   info: "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/30",
   success: "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/30",
@@ -10,7 +12,13 @@ const colorClasses = {
   rose: "bg-gradient-to-br from-pink-500 to-pink-600 text-white shadow-pink-500/30",
 };
 
-export default function CardIcon({ className, children, color, ...rest }) {
+interface CardIconProps extends React.HTMLAttributes<HTMLDivElement> {
+  className?: string;
+  children?: React.ReactNode;
+  color?: CardIconColor;
+}
+
+export default function CardIcon({ className, children, color, ...rest }: CardIconProps) {
   return (
     <div
       className={cn(

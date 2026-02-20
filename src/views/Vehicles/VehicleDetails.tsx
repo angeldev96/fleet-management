@@ -21,10 +21,10 @@ import {
 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
 
 // hooks
 import { useVehicle } from "hooks/useVehicles";
@@ -50,7 +50,7 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
 const DEFAULT_CENTER = { lng: -76.8099, lat: 18.0179 };
 
 // Event filter categories (same as Alerts page)
-const EVENT_FILTER_TYPES = {
+const EVENT_FILTER_TYPES: Record<string, string[] | null> = {
   All: null,
   DTCs: ["dtc_detected"],
   Collisions: ["collision_detected"],
@@ -59,10 +59,10 @@ const EVENT_FILTER_TYPES = {
 };
 
 export default function VehicleDetails() {
-  const { vehicleId } = useParams();
+  const { vehicleId } = useParams<{ vehicleId: string }>();
   const history = useHistory();
-  const map = useRef(null);
-  const marker = useRef(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const marker = useRef<mapboxgl.Marker | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [eventsPage, setEventsPage] = useState(1);
@@ -78,16 +78,16 @@ export default function VehicleDetails() {
   // Fetch vehicle events with server-side filtering
   const { events, loading: eventsLoading } = useVehicleEvents(vehicleId, {
     limit: 100,
-    eventTypes: EVENT_FILTER_TYPES[eventsFilter],
+    eventTypes: EVENT_FILTER_TYPES[eventsFilter] as any,
   });
 
   // Parse coordinates - NUMERIC from Postgres can come as string
-  const lat = vehicle?.last_latitude ? parseFloat(vehicle.last_latitude) : null;
-  const lng = vehicle?.last_longitude ? parseFloat(vehicle.last_longitude) : null;
+  const lat = vehicle?.last_latitude ? parseFloat(String(vehicle.last_latitude)) : null;
+  const lng = vehicle?.last_longitude ? parseFloat(String(vehicle.last_longitude)) : null;
   const hasLocation = lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng);
 
   // Callback ref to initialize map when container element is available
-  const mapContainerRef = useCallback((node) => {
+  const mapContainerRef = useCallback((node: HTMLDivElement | null) => {
     if (!node) return; // Element unmounted
     if (map.current) return; // Already initialized
 
@@ -192,7 +192,7 @@ export default function VehicleDetails() {
     );
   };
 
-  const getSignalInfo = (signalStrength) => {
+  const getSignalInfo = (signalStrength: any) => {
     if (signalStrength === null || signalStrength === undefined) {
       return { text: "--", color: "text-muted-foreground", quality: "Unknown" };
     }
@@ -212,7 +212,7 @@ export default function VehicleDetails() {
     }
   };
 
-  const getEventTitle = (event) => {
+  const getEventTitle = (event: any) => {
     if (event.event_type === "dtc_detected" && event.event_subtype) {
       return `Engine Fault Code ${event.event_subtype}`;
     }
@@ -222,10 +222,10 @@ export default function VehicleDetails() {
     if (event.event_type === "pid_reading" && event.event_subtype) {
       return PID_LABELS[event.event_subtype] || event.event_subtype;
     }
-    return EVENT_LABELS[event.event_type] || event.event_type;
+    return (EVENT_LABELS as Record<string, string>)[event.event_type] || event.event_type;
   };
 
-  const getEventLinkText = (eventType) => {
+  const getEventLinkText = (eventType: any) => {
     switch (eventType) {
       case "dtc_detected":
         return "Check Engine Diagnostics";
@@ -244,7 +244,7 @@ export default function VehicleDetails() {
     }
   };
 
-  const handleEventNavigate = (event) => {
+  const handleEventNavigate = (event: any) => {
     switch (event.event_type) {
       case "pid_reading":
         history.push(`/admin/vehicle/${vehicleId}/snapshot`);
@@ -359,7 +359,7 @@ export default function VehicleDetails() {
             <div className="flex-1">
               <div className="text-lg font-semibold text-foreground tabular-nums">
                 {vehicle.last_speed !== null && vehicle.last_speed !== undefined
-                  ? `${Math.round(parseFloat(vehicle.last_speed))} km/h`
+                  ? `${Math.round(parseFloat(String(vehicle.last_speed)))} km/h`
                   : "N/A"}
               </div>
               <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">Current Speed</div>
@@ -373,7 +373,7 @@ export default function VehicleDetails() {
               <Crosshair className="h-5 w-5 text-emerald-600" />
             </div>
             <div className="flex-1">
-              <div className="text-lg font-semibold text-foreground">{formatRelativeTime(vehicle.last_seen_at)}</div>
+              <div className="text-lg font-semibold text-foreground">{formatRelativeTime(vehicle.last_seen_at ?? null)}</div>
               <div className="text-xs text-muted-foreground/70 font-medium mt-0.5">Last Seen</div>
             </div>
           </CardBody>
@@ -624,7 +624,7 @@ export default function VehicleDetails() {
 }
 
 // Helper function to extract event details
-function getEventDetails(event) {
+function getEventDetails(event: any) {
   const data = event.event_data || {};
 
   switch (event.event_type) {

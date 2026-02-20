@@ -1,7 +1,9 @@
 import React from "react";
 import { cn } from "lib/utils";
 
-const colorClasses = {
+type CardColor = "primary" | "info" | "success" | "warning" | "danger" | "rose";
+
+const colorClasses: Record<CardColor, string> = {
   primary: "bg-primary text-primary-foreground",
   info: "bg-blue-500 text-white",
   success: "bg-emerald-500 text-white",
@@ -9,6 +11,22 @@ const colorClasses = {
   danger: "bg-red-500 text-white",
   rose: "bg-pink-500 text-white",
 };
+
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  className?: string;
+  children?: React.ReactNode;
+  plain?: boolean;
+  profile?: boolean;
+  blog?: boolean;
+  raised?: boolean;
+  background?: boolean;
+  pricing?: boolean;
+  color?: CardColor;
+  product?: boolean;
+  testimonial?: boolean;
+  chart?: boolean;
+  login?: boolean;
+}
 
 export default function Card({
   className,
@@ -25,7 +43,7 @@ export default function Card({
   chart,
   login,
   ...rest
-}) {
+}: CardProps) {
   return (
     <div
       className={cn(

@@ -4,14 +4,14 @@ import React, { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import Table from "components/Table/Table.js";
-import Pagination from "components/Pagination/Pagination.js";
-import FilterBar from "components/FilterBar/FilterBar.js";
-import SearchBar from "components/SearchBar/SearchBar.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
+import Table from "components/Table/Table";
+import Pagination from "components/Pagination/Pagination";
+import FilterBar from "components/FilterBar/FilterBar";
+import SearchBar from "components/SearchBar/SearchBar";
 
 // hooks
 import { useDevices } from "hooks/useDevices";
@@ -30,7 +30,7 @@ export default function Devices() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState(null);
+  const [selectedDevice, setSelectedDevice] = useState<any>(null);
 
   // Debounce search term to avoid excessive API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -48,11 +48,11 @@ export default function Devices() {
   const hasNextPage = page < totalPages;
   const hasPrevPage = page > 1;
 
-  const goToPage = (newPage) => {
+  const goToPage = (newPage: number) => {
     setPage(Math.max(1, Math.min(newPage, totalPages)));
   };
 
-  const handlePageSizeChange = (newSize) => {
+  const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize);
     setPage(1);
   };
@@ -62,7 +62,7 @@ export default function Devices() {
     setPage(1);
   }, [debouncedSearchTerm]);
 
-  const getStatusClasses = (status) => {
+  const getStatusClasses = (status: string) => {
     switch (status) {
       case "online":
         return { badge: "bg-emerald-50 text-emerald-700", dot: "bg-emerald-500" };
@@ -75,7 +75,7 @@ export default function Devices() {
     }
   };
 
-  const getStatusLabel = (status) => {
+  const getStatusLabel = (status: string) => {
     switch (status) {
       case "online":
         return "Online";

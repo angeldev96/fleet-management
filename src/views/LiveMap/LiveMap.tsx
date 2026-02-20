@@ -26,12 +26,12 @@ const CLUSTER_MAX_ZOOM = 14;
 const CLUSTER_RADIUS = 50;
 
 // Helper function to format relative time
-const formatRelativeTime = (dateString) => {
+const formatRelativeTime = (dateString: string) => {
   if (!dateString) return "Unknown";
 
   const date = new Date(dateString);
   const now = new Date();
-  const diffMs = now - date;
+  const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
@@ -44,17 +44,17 @@ const formatRelativeTime = (dateString) => {
 
 // Helper function to determine vehicle status and color
 // Uses the pre-calculated status from the vehicles_with_status view
-const getVehicleStatus = (vehicle) => {
+const getVehicleStatus = (vehicle: any) => {
   const STATUS_MAP = {
     online: { color: "#10B981", status: "online" },
     idle: { color: "#F59E0B", status: "idle" },
     offline: { color: "#9C27B0", status: "offline" },
   };
-  return STATUS_MAP[vehicle.status] || STATUS_MAP.offline;
+  return STATUS_MAP[vehicle.status as keyof typeof STATUS_MAP] || STATUS_MAP.offline;
 };
 
 // Convert vehicles array to GeoJSON FeatureCollection
-const vehiclesToGeoJSON = (vehicles) => {
+const vehiclesToGeoJSON = (vehicles: any[]) => {
   const features = vehicles
     .filter(
       (v) =>
@@ -92,7 +92,7 @@ const vehiclesToGeoJSON = (vehicles) => {
 };
 
 // Helper function to create popup content with View Details button
-function createPopupContent(properties) {
+function createPopupContent(properties: any) {
   const title =
     properties.make && properties.model
       ? `${properties.make} ${properties.model}${properties.year ? ` (${properties.year})` : ""}`
@@ -129,9 +129,9 @@ function createPopupContent(properties) {
 }
 
 export default function LiveMap() {
-  const mapContainer = useRef(null);
-  const map = useRef(null);
-  const popupRef = useRef(null);
+  const mapContainer = useRef<HTMLDivElement | null>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const popupRef = useRef<mapboxgl.Popup | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [hasFitBounds, setHasFitBounds] = useState(false);
   const history = useHistory();
@@ -141,7 +141,7 @@ export default function LiveMap() {
 
   // Navigate to vehicle details
   const handleViewDetails = useCallback(
-    (vehicleId) => {
+    (vehicleId: any) => {
       history.push(`/admin/vehicle/${vehicleId}`);
     },
     [history]
@@ -152,7 +152,7 @@ export default function LiveMap() {
     if (map.current) return;
 
     map.current = new mapboxgl.Map({
-      container: mapContainer.current,
+      container: mapContainer.current!,
       style: "mapbox://styles/mapbox/streets-v12",
       center: [JAMAICA_CENTER.lng, JAMAICA_CENTER.lat],
       zoom: JAMAICA_CENTER.zoom,
@@ -163,7 +163,7 @@ export default function LiveMap() {
 
     map.current.on("load", () => {
       // Add empty source initially
-      map.current.addSource(SOURCE_ID, {
+      map.current!.addSource(SOURCE_ID, {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
         cluster: true,
@@ -172,7 +172,7 @@ export default function LiveMap() {
       });
 
       // Layer 1: Cluster circles
-      map.current.addLayer({
+      map.current!.addLayer({
         id: CLUSTER_LAYER_ID,
         type: "circle",
         source: SOURCE_ID,
@@ -203,7 +203,7 @@ export default function LiveMap() {
       });
 
       // Layer 2: Cluster count text
-      map.current.addLayer({
+      map.current!.addLayer({
         id: CLUSTER_COUNT_LAYER_ID,
         type: "symbol",
         source: SOURCE_ID,
@@ -219,7 +219,7 @@ export default function LiveMap() {
       });
 
       // Layer 3: Unclustered vehicle points (Simple dots)
-      map.current.addLayer({
+      map.current!.addLayer({
         id: UNCLUSTERED_LAYER_ID,
         type: "circle",
         source: SOURCE_ID,
@@ -237,14 +237,14 @@ export default function LiveMap() {
 
     // Click on cluster -> zoom in
     map.current.on("click", CLUSTER_LAYER_ID, (e) => {
-      const features = map.current.queryRenderedFeatures(e.point, {
+      const features = map.current!.queryRenderedFeatures(e.point, {
         layers: [CLUSTER_LAYER_ID],
       });
-      const clusterId = features[0].properties.cluster_id;
-      map.current.getSource(SOURCE_ID).getClusterExpansionZoom(clusterId, (err, zoom) => {
+      const clusterId = features[0].properties!.cluster_id;
+      (map.current!.getSource(SOURCE_ID) as any).getClusterExpansionZoom(clusterId, (err: any, zoom: any) => {
         if (err) return;
-        map.current.easeTo({
-          center: features[0].geometry.coordinates,
+        map.current!.easeTo({
+          center: (features[0].geometry as any).coordinates,
           zoom: zoom,
         });
       });
@@ -252,8 +252,8 @@ export default function LiveMap() {
 
     // Click on unclustered vehicle -> show popup
     map.current.on("click", UNCLUSTERED_LAYER_ID, (e) => {
-      const coordinates = e.features[0].geometry.coordinates.slice();
-      const properties = e.features[0].properties;
+      const coordinates = (e.features![0].geometry as any).coordinates.slice();
+      const properties = e.features![0].properties;
 
       // Ensure that if the map is zoomed out, popup appears at correct location
       while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
@@ -273,14 +273,14 @@ export default function LiveMap() {
       })
         .setLngLat(coordinates)
         .setHTML(createPopupContent(properties))
-        .addTo(map.current);
+        .addTo(map.current!);
 
       // Add click listener for View Details button after popup is added
       setTimeout(() => {
-        const btn = document.querySelector(`[data-vehicle-id="${properties.id}"]`);
+        const btn = document.querySelector(`[data-vehicle-id="${properties!.id}"]`);
         if (btn) {
           btn.addEventListener("click", () => {
-            handleViewDetails(properties.id);
+            handleViewDetails(properties!.id);
           });
         }
       }, 0);
@@ -288,16 +288,16 @@ export default function LiveMap() {
 
     // Change cursor on hover
     map.current.on("mouseenter", CLUSTER_LAYER_ID, () => {
-      map.current.getCanvas().style.cursor = "pointer";
+      map.current!.getCanvas().style.cursor = "pointer";
     });
     map.current.on("mouseleave", CLUSTER_LAYER_ID, () => {
-      map.current.getCanvas().style.cursor = "";
+      map.current!.getCanvas().style.cursor = "";
     });
     map.current.on("mouseenter", UNCLUSTERED_LAYER_ID, () => {
-      map.current.getCanvas().style.cursor = "pointer";
+      map.current!.getCanvas().style.cursor = "pointer";
     });
     map.current.on("mouseleave", UNCLUSTERED_LAYER_ID, () => {
-      map.current.getCanvas().style.cursor = "";
+      map.current!.getCanvas().style.cursor = "";
     });
 
     // Cleanup on unmount
@@ -320,13 +320,13 @@ export default function LiveMap() {
     if (!source) return;
 
     const geojson = vehiclesToGeoJSON(vehicles);
-    source.setData(geojson);
+    (source as any).setData(geojson);
 
     // Fit bounds on initial load
     if (!hasFitBounds && geojson.features.length > 0) {
       const bounds = new mapboxgl.LngLatBounds();
       geojson.features.forEach((feature) => {
-        bounds.extend(feature.geometry.coordinates);
+        bounds.extend(feature.geometry.coordinates as [number, number]);
       });
 
       map.current.fitBounds(bounds, {

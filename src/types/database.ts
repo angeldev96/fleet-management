@@ -1,42 +1,130 @@
-/**
- * @typedef {'superadmin' | 'admin' | 'user' | 'viewer'} UserRole
- */
+// ── Union types ──────────────────────────────────────────────────────────────
 
-/**
- * @typedef {Object} Role
- * @property {number} id
- * @property {string} name
- * @property {string} [description]
- * @property {string} created_at
- */
+export type UserRole = "superadmin" | "admin" | "user" | "viewer";
 
-/**
- * @typedef {Object} UserProfile
- * @property {string} id
- * @property {string} [fleet_id]
- * @property {number} role_id
- * @property {string} [full_name]
- * @property {string} created_at
- * @property {Role} [role] - Joined role data
- * @property {Object} [fleet] - Joined fleet data
- */
+export type EventType =
+  | "location_update"
+  | "overspeed"
+  | "harsh_braking"
+  | "harsh_acceleration"
+  | "harsh_cornering"
+  | "collision_detected"
+  | "dtc_detected"
+  | "device_online"
+  | "device_offline"
+  | "power_event"
+  | "pid_reading";
 
-/**
- * @typedef {'location_update' | 'overspeed' | 'harsh_braking' | 'harsh_acceleration' | 'harsh_cornering' | 'collision_detected' | 'dtc_detected' | 'device_online' | 'device_offline' | 'power_event' | 'pid_reading'} EventType
- */
+export type Severity = "info" | "warning" | "critical";
 
-/**
- * @typedef {'info' | 'warning' | 'critical'} Severity
- */
+export type VehicleStatus = "online" | "idle" | "offline";
 
-/**
- * @typedef {'online' | 'idle' | 'offline'} VehicleStatus
- */
+export type ServiceStatus = "pending" | "in_progress" | "completed" | "overdue";
 
-/**
- * Event labels for UI display (liability-safe wording)
- */
-export const EVENT_LABELS = {
+export type ServiceType = "scheduled_maintenance" | "repair";
+
+// ── Interfaces ───────────────────────────────────────────────────────────────
+
+export interface Role {
+  id: number;
+  name: string;
+  description?: string;
+  created_at: string;
+}
+
+export interface Fleet {
+  id: string;
+  name: string;
+  logo_url?: string;
+}
+
+export interface UserProfile {
+  id: string;
+  fleet_id?: string;
+  role_id: number;
+  full_name?: string;
+  created_at: string;
+  role?: Role;
+  fleet?: Fleet;
+}
+
+export interface Vehicle {
+  id: string;
+  fleet_id: string;
+  name: string;
+  plate_number?: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  driver_name?: string;
+  created_at: string;
+  status?: VehicleStatus;
+  last_latitude?: number;
+  last_longitude?: number;
+  last_speed?: number;
+  last_heading?: number;
+  last_seen_at?: string;
+  /** Joined from devices table */
+  imei?: string;
+}
+
+export interface Device {
+  id: string;
+  vehicle_id: string;
+  imei: string;
+  serial_number?: string;
+  firmware_version?: string;
+  last_heartbeat_at?: string;
+  created_at: string;
+}
+
+export interface TelemetryEvent {
+  id: string;
+  vehicle_id: string;
+  event_type: EventType;
+  event_subtype?: string;
+  event_data?: Record<string, any>;
+  severity: Severity;
+  latitude?: number;
+  longitude?: number;
+  speed?: number;
+  heading?: number;
+  event_at: string;
+  created_at: string;
+  vehicles?: Vehicle;
+}
+
+export interface ServiceEvent {
+  id: string;
+  vehicle_id: string;
+  service_type: ServiceType;
+  service_date: string;
+  service_items?: string;
+  status?: string;
+  computed_status?: ServiceStatus;
+  mileage?: number;
+  location?: string;
+  cost?: number;
+  notes?: string;
+  vehicle_name?: string;
+  plate_number?: string;
+  fleet_id?: string;
+}
+
+export interface ServiceResult<T = any> {
+  data: T | null;
+  error: Error | null;
+}
+
+export interface BatchResult {
+  successCount: number;
+  errorCount: number;
+  errors: string[];
+}
+
+// ── Constants ────────────────────────────────────────────────────────────────
+
+export const EVENT_LABELS: Record<EventType, string> = {
   location_update: "Location Update",
   overspeed: "Speed Threshold Exceeded",
   harsh_braking: "Harsh Braking Detected",
@@ -50,10 +138,7 @@ export const EVENT_LABELS = {
   pid_reading: "Vehicle Telemetry",
 };
 
-/**
- * PID subtype labels for UI display
- */
-export const PID_LABELS = {
+export const PID_LABELS: Record<string, string> = {
   battery_voltage: "Battery Voltage",
   rpm: "Engine RPM",
   speed: "Vehicle Speed",
@@ -63,29 +148,29 @@ export const PID_LABELS = {
   throttle_position: "Throttle Position",
 };
 
-
-/**
- * Service type labels for UI display
- */
-export const SERVICE_TYPE_LABELS = {
+export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
   scheduled_maintenance: "Scheduled Maintenance",
   repair: "Repair/Incident",
 };
 
-
-/**
- * Tailwind class-based service status styles
- */
-export const SERVICE_STATUS_CLASSES = {
+export const SERVICE_STATUS_CLASSES: Record<ServiceStatus, string> = {
   pending: "bg-amber-50 text-amber-700",
   in_progress: "bg-blue-50 text-blue-700",
   completed: "bg-emerald-50 text-emerald-700",
   overdue: "bg-red-50 text-red-700",
 };
 
+// ── Utilities ────────────────────────────────────────────────────────────────
+
 const JAMAICA_TIMEZONE = "America/Jamaica";
 
-function getDatePartsInTimeZone(date, timeZone) {
+interface DateParts {
+  year: string;
+  month: string;
+  day: string;
+}
+
+function getDatePartsInTimeZone(date: Date, timeZone: string): DateParts {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
     year: "numeric",
@@ -93,12 +178,15 @@ function getDatePartsInTimeZone(date, timeZone) {
     day: "2-digit",
   }).formatToParts(date);
 
-  const mapped = parts.reduce((acc, part) => {
-    if (part.type !== "literal") {
-      acc[part.type] = part.value;
-    }
-    return acc;
-  }, {});
+  const mapped = parts.reduce(
+    (acc, part) => {
+      if (part.type !== "literal") {
+        acc[part.type] = part.value;
+      }
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
 
   return {
     year: mapped.year,
@@ -107,21 +195,16 @@ function getDatePartsInTimeZone(date, timeZone) {
   };
 }
 
-function isSameDateParts(a, b) {
+function isSameDateParts(a: DateParts, b: DateParts): boolean {
   return a.year === b.year && a.month === b.month && a.day === b.day;
 }
 
-/**
- * Format relative time (e.g., "2 min ago", "3 hours ago")
- * @param {string | Date} date
- * @returns {string}
- */
-export function formatRelativeTime(date) {
+export function formatRelativeTime(date: string | Date | null): string {
   if (!date) return "Unknown";
 
   const now = new Date();
   const then = new Date(date);
-  const diffMs = now - then;
+  const diffMs = now.getTime() - then.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
@@ -133,12 +216,7 @@ export function formatRelativeTime(date) {
   return `${diffDays} days ago`;
 }
 
-/**
- * Format date for display
- * @param {string | Date} date
- * @returns {string}
- */
-export function formatDateTime(date) {
+export function formatDateTime(date: string | Date | null): string {
   if (!date) return "Unknown";
   const d = new Date(date);
   const today = new Date();
@@ -171,12 +249,7 @@ export function formatDateTime(date) {
   }
 }
 
-/**
- * Format date only for display (Jamaica timezone)
- * @param {string | Date} date
- * @returns {string}
- */
-export function formatDateOnly(date) {
+export function formatDateOnly(date: string | Date | null): string {
   if (!date) return "Unknown";
   const d = new Date(date);
   return d.toLocaleDateString("en-US", {

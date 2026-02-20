@@ -1,52 +1,51 @@
 import React from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 
-import AuthNavbar from "components/Navbars/AuthNavbar.js";
+import AuthNavbar from "components/Navbars/AuthNavbar";
 
-import routes from "routes.js";
+import routes from "routes";
+import { RouteConfig, AppRoute } from "routes";
 
 import register from "assets/img/register.jpeg";
 import login from "assets/img/login.jpeg";
 
-export default function Pages(props) {
-  const { ...rest } = props;
-
+export default function Pages() {
   React.useEffect(() => {
     document.body.style.overflow = "unset";
     return function cleanup() {};
   });
 
-  const getRoutes = (routes) => {
+  const getRoutes = (routes: RouteConfig[]): (React.ReactNode | null)[] => {
     return routes.map((prop, key) => {
-      if (prop.collapse) {
+      if ("views" in prop) {
         return getRoutes(prop.views);
       }
       if (prop.layout === "/auth") {
         return <Route path={prop.layout + prop.path} component={prop.component} key={key} />;
-      } else {
-        return null;
       }
+      return null;
     });
   };
 
-  const getBgImage = () => {
+  const getBgImage = (): string => {
     if (window.location.pathname.indexOf("/auth/register-page") !== -1) {
       return register;
     }
     return login;
   };
 
-  const getActiveRoute = (routes) => {
-    let activeRoute = "Entry";
+  const getActiveRoute = (routes: RouteConfig[]): string => {
+    const activeRoute = "Entry";
     for (let i = 0; i < routes.length; i++) {
-      if (routes[i].collapse) {
-        let collapseActiveRoute = getActiveRoute(routes[i].views);
+      const route = routes[i];
+      if ("views" in route) {
+        const collapseActiveRoute = getActiveRoute(route.views);
         if (collapseActiveRoute !== activeRoute) {
           return collapseActiveRoute;
         }
       } else {
-        if (window.location.href.indexOf(routes[i].layout + routes[i].path) !== -1) {
-          return routes[i].name;
+        if (window.location.href.indexOf(route.layout + route.path) !== -1) {
+          return route.name;
         }
       }
     }
@@ -55,7 +54,7 @@ export default function Pages(props) {
 
   return (
     <div className="min-h-screen">
-      <AuthNavbar brandText={getActiveRoute(routes)} {...rest} />
+      <AuthNavbar brandText={getActiveRoute(routes)} />
       <div
         className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url(" + getBgImage() + ")" }}

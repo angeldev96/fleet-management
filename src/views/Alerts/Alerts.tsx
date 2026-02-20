@@ -6,12 +6,12 @@ import { useLocation } from "react-router-dom";
 import { AlertTriangle, CircleAlert, Info, ChevronRight, Loader2 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import FilterBar from "components/FilterBar/FilterBar.js";
-import EmptyState from "components/EmptyState/EmptyState.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
+import FilterBar from "components/FilterBar/FilterBar";
+import EmptyState from "components/EmptyState/EmptyState";
 
 // hooks
 import { useEvents } from "hooks/useEvents";
@@ -20,7 +20,7 @@ import { useEvents } from "hooks/useEvents";
 import { EVENT_LABELS, PID_LABELS, formatDateTime } from "types/database";
 import { cn } from "lib/utils";
 
-const FILTER_TYPES = {
+const FILTER_TYPES: Record<string, string[] | null> = {
   All: null,
   DTCs: ["dtc_detected"],
   Collisions: ["collision_detected"],
@@ -28,7 +28,7 @@ const FILTER_TYPES = {
   PIDs: ["pid_reading"],
 };
 
-const TIME_FILTERS = {
+const TIME_FILTERS: Record<string, number> = {
   Now: 1,
   Today: 24,
   Week: 168,
@@ -55,8 +55,8 @@ export default function Alerts() {
   };
 
   const { events, loading, error } = useEvents({
-    severity: getSeverityFilter(),
-    eventTypes: FILTER_TYPES[activeFilter],
+    severity: getSeverityFilter() as any,
+    eventTypes: FILTER_TYPES[activeFilter] as any,
     hoursAgo,
     limit: 200,
     refreshInterval: 30000,
@@ -68,12 +68,12 @@ export default function Alerts() {
     page * alertsPerPage
   );
 
-  const handleTimeChange = (event) => {
+  const handleTimeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setTimeFilter(event.target.value);
     setPage(1);
   };
 
-  const handleFilterChange = (filter) => {
+  const handleFilterChange = (filter: string) => {
     setActiveFilter(filter);
     setPage(1);
   };
@@ -96,7 +96,7 @@ export default function Alerts() {
     }
   }, [location.search]);
 
-  const getAlertTitle = (event) => {
+  const getAlertTitle = (event: any) => {
     if (event.event_type === "dtc_detected" && event.event_subtype) {
       return `Engine Fault Code ${event.event_subtype}`;
     }
@@ -106,10 +106,10 @@ export default function Alerts() {
     if (event.event_type === "pid_reading" && event.event_subtype) {
       return PID_LABELS[event.event_subtype] || event.event_subtype;
     }
-    return EVENT_LABELS[event.event_type] || event.event_type;
+    return EVENT_LABELS[event.event_type as keyof typeof EVENT_LABELS] || event.event_type;
   };
 
-  const getAlertLinkText = (eventType) => {
+  const getAlertLinkText = (eventType: string) => {
     switch (eventType) {
       case "dtc_detected":
         return "Check Engine Diagnostics";
@@ -128,7 +128,7 @@ export default function Alerts() {
     }
   };
 
-  const getAlertDetails = (event) => {
+  const getAlertDetails = (event: any) => {
     const data = event.event_data || {};
 
     switch (event.event_type) {
@@ -157,7 +157,7 @@ export default function Alerts() {
     }
   };
 
-  const handleAlertNavigate = (event) => {
+  const handleAlertNavigate = (event: any) => {
     const vehicleId = event.vehicle_id || event.vehicles?.id;
     if (!vehicleId) return;
 

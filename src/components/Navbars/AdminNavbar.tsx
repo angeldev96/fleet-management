@@ -4,7 +4,14 @@ import { Menu, MoreVertical, List } from "lucide-react";
 
 import AdminNavbarLinks from "./AdminNavbarLinks";
 
-export default function AdminNavbar({ brandText, miniActive, sidebarMinimize, handleDrawerToggle }) {
+interface AdminNavbarProps {
+  brandText: any;
+  miniActive: any;
+  sidebarMinimize: any;
+  handleDrawerToggle: any;
+}
+
+export default function AdminNavbar({ brandText, miniActive, sidebarMinimize, handleDrawerToggle }: AdminNavbarProps) {
   return (
     <header className="sticky top-0 z-30 flex items-center h-14 px-5 bg-background/80 backdrop-blur-xl border-b border-border/40">
       {/* Sidebar toggle - desktop only */}

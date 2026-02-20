@@ -5,13 +5,13 @@ import { useHistory } from "react-router-dom";
 import { Router, Upload, CheckCircle2, CircleAlert, Download, ArrowLeft, Loader2 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import CardHeader from "components/Card/CardHeader.js";
-import CardIcon from "components/Card/CardIcon.js";
-import Button from "components/CustomButtons/Button.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
+import CardHeader from "components/Card/CardHeader";
+import CardIcon from "components/Card/CardIcon";
+import Button from "components/CustomButtons/Button";
 
 // shadcn
 import { Progress } from "components/ui/progress";
@@ -35,7 +35,7 @@ const DEVICE_CSV_HEADERS = ["imei", "serial_number"];
 export default function DeviceManagement() {
   const history = useHistory();
   const { vehicles, refetch } = useVehicles({ refreshInterval: 60000, fetchAll: true });
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Alert dialog state
   const [alertOpen, setAlertOpen] = useState(false);
@@ -51,7 +51,7 @@ export default function DeviceManagement() {
   const [deviceSubmitting, setDeviceSubmitting] = useState(false);
 
   // Batch upload states
-  const [uploadResult, setUploadResult] = useState(null);
+  const [uploadResult, setUploadResult] = useState<{ success: boolean; message: string; details?: string | null } | null>(null);
   const [uploadProgress, setUploadProgress] = useState({
     active: false,
     current: 0,
@@ -60,12 +60,12 @@ export default function DeviceManagement() {
 
   const availableVehicles = vehicles.filter((vehicle) => !vehicle.imei);
 
-  const showAlert = (title, message, type = "info") => {
+  const showAlert = (title: string, message: string, type: string = "info") => {
     setAlertConfig({ title, message, type });
     setAlertOpen(true);
   };
 
-  const handleTabChange = (newValue) => {
+  const handleTabChange = (newValue: number) => {
     setTabValue(newValue);
     setUploadResult(null);
   };
@@ -90,7 +90,7 @@ export default function DeviceManagement() {
         serial_number: "",
       });
       refetch();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error adding device:", err);
       showAlert("Error", err.message || "Could not link device. IMEI may already exist.", "error");
     } finally {
@@ -99,7 +99,7 @@ export default function DeviceManagement() {
   };
 
   // Parse CSV content
-  const parseCSV = (content) => {
+  const parseCSV = (content: string) => {
     const lines = content.trim().split("\n");
     if (lines.length < 2) return { headers: [], rows: [] };
 
@@ -110,7 +110,7 @@ export default function DeviceManagement() {
       const line = lines[i].trim();
       if (!line) continue;
 
-      const values = [];
+      const values: string[] = [];
       let current = "";
       let inQuotes = false;
 
@@ -127,7 +127,7 @@ export default function DeviceManagement() {
       values.push(current.trim());
 
       if (values.length === headers.length) {
-        const row = {};
+        const row: Record<string, any> = {};
         headers.forEach((header, idx) => {
           row[header] = values[idx];
         });
@@ -139,8 +139,8 @@ export default function DeviceManagement() {
   };
 
   // Handle device CSV upload
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
     event.target.value = "";
@@ -174,7 +174,7 @@ export default function DeviceManagement() {
       });
       setUploadResult(null);
 
-      const result = await batchAddDevices(rows, vehicles, (current) => {
+      const result = await batchAddDevices(rows as any, vehicles, (current) => {
         setUploadProgress((prev) => ({ ...prev, current }));
       });
       const { successCount, errorCount, errors } = result;
@@ -198,7 +198,7 @@ export default function DeviceManagement() {
       setUploadResult({
         success: false,
         message: "Failed to process CSV file",
-        details: err.message,
+        details: (err as any).message,
       });
     }
   };

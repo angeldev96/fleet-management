@@ -2,6 +2,18 @@ import React from "react";
 import { cn } from "lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+interface PaginationProps {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  pageSizeOptions?: number[];
+}
+
 export default function Pagination({
   page,
   pageSize,
@@ -12,12 +24,12 @@ export default function Pagination({
   hasNextPage,
   hasPrevPage,
   pageSizeOptions = [10, 25, 50, 100],
-}) {
-  const startItem = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
-  const endItem = Math.min(page * pageSize, totalCount);
+}: PaginationProps) {
+  const startItem: number = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endItem: number = Math.min(page * pageSize, totalCount);
 
-  const getPageNumbers = () => {
-    const pages = [];
+  const getPageNumbers = (): (number | string)[] => {
+    const pages: (number | string)[] = [];
     const maxVisible = 5;
 
     if (totalPages <= maxVisible + 2) {
@@ -108,7 +120,7 @@ export default function Pagination({
         <span className="text-sm text-muted-foreground hidden sm:inline">Items per page:</span>
         <select
           value={pageSize}
-          onChange={(e) => onPageSizeChange(Number(e.target.value))}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onPageSizeChange(Number(e.target.value))}
           className="h-8 md:h-9 rounded-lg border border-border/60 bg-background px-2 md:px-3 text-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/10 focus-visible:border-primary/40"
         >
           {pageSizeOptions.map((size) => (

@@ -4,8 +4,8 @@ import React, { useState, useRef } from "react";
 import { X, Upload, CheckCircle, CircleAlert, Download, Loader2 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
 
 // shadcn ui
 import {
@@ -32,16 +32,22 @@ import { useAuth } from "context/AuthContext";
 
 const VEHICLE_CSV_HEADERS = ["name", "plate_number", "make", "model", "year", "driver_name"];
 
-export default function AddVehicleModal({ open, onClose, onSuccess }) {
+interface AddVehicleModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+}
+
+export default function AddVehicleModal({ open, onClose, onSuccess }: AddVehicleModalProps) {
   const { userProfile } = useAuth();
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // AlertDialog states
   const [showWarning, setShowWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const [successCallback, setSuccessCallback] = useState(null);
+  const [successCallback, setSuccessCallback] = useState<(() => void) | null>(null);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -59,14 +65,14 @@ export default function AddVehicleModal({ open, onClose, onSuccess }) {
   const [submitting, setSubmitting] = useState(false);
 
   // Batch upload states
-  const [uploadResult, setUploadResult] = useState(null);
+  const [uploadResult, setUploadResult] = useState<{ success: boolean; message: string; details?: string | null } | null>(null);
   const [uploadProgress, setUploadProgress] = useState({
     active: false,
     current: 0,
     total: 0,
   });
 
-  const handleTabChange = (newValue) => {
+  const handleTabChange = (newValue: any) => {
     setTabValue(newValue);
     setUploadResult(null);
   };
@@ -97,13 +103,13 @@ export default function AddVehicleModal({ open, onClose, onSuccess }) {
           year: "",
           driver_name: "",
         });
-        onSuccess && onSuccess();
+        onSuccess?.();
         onClose();
       });
       setShowSuccess(true);
     } catch (err) {
       console.error("Error adding vehicle:", err);
-      setErrorMessage(err.message);
+      setErrorMessage((err as Error).message);
       setShowError(true);
     } finally {
       setSubmitting(false);
@@ -111,18 +117,18 @@ export default function AddVehicleModal({ open, onClose, onSuccess }) {
   };
 
   // Parse CSV content
-  const parseCSV = (content) => {
+  const parseCSV = (content: any) => {
     const lines = content.trim().split("\n");
     if (lines.length < 2) return { headers: [], rows: [] };
 
-    const headers = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/"/g, ""));
+    const headers = lines[0].split(",").map((h: any) => h.trim().toLowerCase().replace(/"/g, ""));
     const rows = [];
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
 
-      const values = [];
+      const values: string[] = [];
       let current = "";
       let inQuotes = false;
 
@@ -139,8 +145,8 @@ export default function AddVehicleModal({ open, onClose, onSuccess }) {
       values.push(current.trim());
 
       if (values.length === headers.length) {
-        const row = {};
-        headers.forEach((header, idx) => {
+        const row: Record<string, any> = {};
+        headers.forEach((header: any, idx: any) => {
           row[header] = values[idx];
         });
         rows.push(row);
@@ -151,7 +157,7 @@ export default function AddVehicleModal({ open, onClose, onSuccess }) {
   };
 
   // Handle CSV upload
-  const handleFileUpload = async (event) => {
+  const handleFileUpload = async (event: any) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -187,7 +193,7 @@ export default function AddVehicleModal({ open, onClose, onSuccess }) {
       });
       setUploadResult(null);
 
-      const result = await batchAddVehicles(rows, userProfile?.fleet_id, (current) => {
+      const result = await batchAddVehicles(rows, userProfile?.fleet_id ?? "", (current) => {
         setUploadProgress((prev) => ({ ...prev, current }));
       });
       const { successCount, errorCount, errors } = result;
@@ -208,7 +214,7 @@ export default function AddVehicleModal({ open, onClose, onSuccess }) {
 
       if (errorCount === 0) {
         setTimeout(() => {
-          onSuccess && onSuccess();
+          onSuccess?.();
           onClose();
         }, 2000);
       }
@@ -217,7 +223,7 @@ export default function AddVehicleModal({ open, onClose, onSuccess }) {
       setUploadResult({
         success: false,
         message: "Failed to process CSV file",
-        details: err.message,
+        details: (err as Error).message,
       });
     }
   };
@@ -445,7 +451,7 @@ export default function AddVehicleModal({ open, onClose, onSuccess }) {
             <AlertDialogAction
               onClick={() => {
                 setShowSuccess(false);
-                successCallback && successCallback();
+                successCallback?.();
               }}
             >
               Continue

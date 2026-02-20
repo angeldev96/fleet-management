@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { X, BarChart3, Search, Loader2 } from "lucide-react";
 
 // core components
-import Button from "components/CustomButtons/Button.js";
+import Button from "components/CustomButtons/Button";
 
 // shadcn ui
 import {
@@ -28,7 +28,14 @@ const inputClasses =
 const selectClasses =
   "flex h-9 w-full rounded-md border border-border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none";
 
-export default function ExportReportModal({ open, onClose, fleetEvents, fleetEventsLoading }) {
+interface ExportReportModalProps {
+  open: boolean;
+  onClose: () => void;
+  fleetEvents: any[];
+  fleetEventsLoading: boolean;
+}
+
+export default function ExportReportModal({ open, onClose, fleetEvents, fleetEventsLoading }: ExportReportModalProps) {
   const [scope, setScope] = useState("fleet");
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
   const [format, setFormat] = useState("pdf");
@@ -37,7 +44,7 @@ export default function ExportReportModal({ open, onClose, fleetEvents, fleetEve
   const { vehicles, loading: vehiclesLoading } = useVehicles({ fetchAll: true });
 
   const { events: vehicleEvents, loading: vehicleEventsLoading } = useVehicleServiceHistory(
-    scope === "vehicle" ? selectedVehicleId : null
+    scope === "vehicle" ? selectedVehicleId || undefined : undefined
   );
 
   const filteredVehicles = useMemo(() => {
@@ -201,35 +208,35 @@ export default function ExportReportModal({ open, onClose, fleetEvents, fleetEve
             ) : (
               <>
                 <div className="text-[22px] font-bold text-foreground mb-2.5">
-                  {statusBreakdown.total} service event{statusBreakdown.total !== 1 ? "s" : ""}
+                  {statusBreakdown!.total} service event{statusBreakdown!.total !== 1 ? "s" : ""}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {statusBreakdown.completed > 0 && (
+                  {statusBreakdown!.completed > 0 && (
                     <span
                       className={`text-[11px] font-semibold rounded-full px-2.5 py-1 inline-flex items-center ${SERVICE_STATUS_CLASSES.completed}`}
                     >
-                      {statusBreakdown.completed} Completed
+                      {statusBreakdown!.completed} Completed
                     </span>
                   )}
-                  {statusBreakdown.pending > 0 && (
+                  {statusBreakdown!.pending > 0 && (
                     <span
                       className={`text-[11px] font-semibold rounded-full px-2.5 py-1 inline-flex items-center ${SERVICE_STATUS_CLASSES.pending}`}
                     >
-                      {statusBreakdown.pending} Pending
+                      {statusBreakdown!.pending} Pending
                     </span>
                   )}
-                  {statusBreakdown.in_progress > 0 && (
+                  {statusBreakdown!.in_progress > 0 && (
                     <span
                       className={`text-[11px] font-semibold rounded-full px-2.5 py-1 inline-flex items-center ${SERVICE_STATUS_CLASSES.in_progress}`}
                     >
-                      {statusBreakdown.in_progress} In Progress
+                      {statusBreakdown!.in_progress} In Progress
                     </span>
                   )}
-                  {statusBreakdown.overdue > 0 && (
+                  {statusBreakdown!.overdue > 0 && (
                     <span
                       className={`text-[11px] font-semibold rounded-full px-2.5 py-1 inline-flex items-center ${SERVICE_STATUS_CLASSES.overdue}`}
                     >
-                      {statusBreakdown.overdue} Overdue
+                      {statusBreakdown!.overdue} Overdue
                     </span>
                   )}
                 </div>

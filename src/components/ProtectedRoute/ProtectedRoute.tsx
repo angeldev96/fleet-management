@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { Route, Redirect } from "react-router-dom";
 import { useAuth } from "context/AuthContext";
 import { Loader2 } from "lucide-react";
@@ -13,7 +12,12 @@ function LoadingScreen() {
   );
 }
 
-function ProtectedRoute({ component: Component, ...rest }) {
+interface ProtectedRouteProps {
+  component: React.ComponentType<any>;
+  [key: string]: any;
+}
+
+function ProtectedRoute({ component: Component, ...rest }: ProtectedRouteProps) {
   const { isAuthenticated, loading } = useAuth();
 
   return (
@@ -41,9 +45,5 @@ function ProtectedRoute({ component: Component, ...rest }) {
     />
   );
 }
-
-ProtectedRoute.propTypes = {
-  component: PropTypes.elementType.isRequired,
-};
 
 export default ProtectedRoute;

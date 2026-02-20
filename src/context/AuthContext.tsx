@@ -1,14 +1,35 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import PropTypes from "prop-types";
 import { supabase } from "lib/supabase";
+import type { UserProfile } from "types/database";
 
-const AuthContext = createContext({});
+interface AuthContextValue {
+  user: any;
+  userProfile: UserProfile | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<any>;
+  signUp: (email: string, password: string, fleetId: string) => Promise<any>;
+  signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  roleName: string | undefined;
+  fleetId: string | undefined;
+  fleetName: string | undefined;
+  fleetLogoUrl: string | undefined;
+}
 
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext<AuthContextValue>({} as AuthContextValue);
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
+export const useAuth = (): AuthContextValue => useContext(AuthContext);
+
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +42,7 @@ export function AuthProvider({ children }) {
     setLoading(false);
 
     // Listen for auth changes (v1.x API)
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setUser(session.user);
         await fetchUserProfile(session.user.id);
@@ -37,7 +58,7 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const fetchUserProfile = async (userId) => {
+  const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from("user_profiles")
       .select(
@@ -45,7 +66,7 @@ export function AuthProvider({ children }) {
         *,
         role:roles(id, name, description),
         fleet:fleets(id, name, logo_url)
-      `
+      `,
       )
       .eq("id", userId)
       .single();
@@ -59,7 +80,7 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  const signIn = async (email, password) => {
+  const signIn = async (email: string, password: string) => {
     // v1.x API uses signIn instead of signInWithPassword
     const { user, error } = await supabase.auth.signIn({
       email,
@@ -73,7 +94,7 @@ export function AuthProvider({ children }) {
     return user;
   };
 
-  const signUp = async (email, password, fleetId) => {
+  const signUp = async (email: string, password: string, fleetId: string) => {
     const { user, error } = await supabase.auth.signUp({
       email,
       password,
@@ -122,7 +143,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const value = {
+  const value: AuthContextValue = {
     user,
     userProfile,
     loading,
@@ -141,7 +162,3 @@ export function AuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
-AuthProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-};

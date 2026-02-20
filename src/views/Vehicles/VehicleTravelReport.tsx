@@ -17,10 +17,10 @@ import {
 } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
 
 // hooks & utils
 import { useVehicle } from "hooks/useVehicles";
@@ -34,11 +34,11 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
 const DEFAULT_CENTER = { lng: -76.8099, lat: 18.0179 };
 
 export default function VehicleTravelReport() {
-  const { vehicleId } = useParams();
+  const { vehicleId } = useParams<{ vehicleId: string }>();
   const history = useHistory();
-  const map = useRef(null);
-  const startMarkerRef = useRef(null);
-  const endMarkerRef = useRef(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const startMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const endMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -55,7 +55,7 @@ export default function VehicleTravelReport() {
   const { stats, loading } = useTravelData(vehicleId, startDate, endDate);
 
   // Map initialization
-  const mapContainerRef = useCallback((node) => {
+  const mapContainerRef = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
     if (map.current) return;
 
@@ -186,14 +186,14 @@ export default function VehicleTravelReport() {
 
         // Start marker (green)
         startMarkerRef.current = new mapboxgl.Marker({ color: "#10B981" })
-          .setLngLat(coordinates[0])
+          .setLngLat(coordinates[0] as [number, number])
           .setPopup(new mapboxgl.Popup().setHTML("<strong>Start</strong>"))
           .addTo(map.current);
 
         // End marker (red)
         if (coordinates.length > 1) {
           endMarkerRef.current = new mapboxgl.Marker({ color: "#EF4444" })
-            .setLngLat(coordinates[coordinates.length - 1])
+            .setLngLat(coordinates[coordinates.length - 1] as [number, number])
             .setPopup(new mapboxgl.Popup().setHTML("<strong>End</strong>"))
             .addTo(map.current);
         }
@@ -205,7 +205,7 @@ export default function VehicleTravelReport() {
 
   const handleExportCSV = () => {
     const vehicleName = vehicle?.name || "Vehicle";
-    const formatJamaicaDateTime = (dateValue) => {
+    const formatJamaicaDateTime = (dateValue: any) => {
       if (!dateValue) return "";
       const formatter = new Intl.DateTimeFormat("en-CA", {
         timeZone: "America/Jamaica",
@@ -218,13 +218,13 @@ export default function VehicleTravelReport() {
         hour12: false,
       });
       const parts = formatter.formatToParts(new Date(dateValue));
-      const get = (type) => parts.find((p) => p.type === type)?.value || "";
+      const get = (type: any) => parts.find((p) => p.type === type)?.value || "";
       return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get(
         "minute"
       )}:${get("second")}`;
     };
 
-    const toCsvValue = (value) => {
+    const toCsvValue = (value: any) => {
       if (value === null || value === undefined) return "";
       const stringValue = String(value);
       if (stringValue.includes("\"") || stringValue.includes(",") || stringValue.includes("\n")) {
@@ -279,9 +279,9 @@ export default function VehicleTravelReport() {
     let yPosition = margin;
 
     // Colors
-    const primaryColor = [31, 41, 55]; // #1f2937
-    const secondaryColor = [107, 114, 128]; // #6b7280
-    const accentColor = [59, 130, 246]; // #3B82F6
+    const primaryColor: [number, number, number] = [31, 41, 55]; // #1f2937
+    const secondaryColor: [number, number, number] = [107, 114, 128]; // #6b7280
+    const accentColor: [number, number, number] = [59, 130, 246]; // #3B82F6
 
     // === HEADER SECTION ===
     pdf.setFillColor(59, 130, 246);
@@ -297,7 +297,7 @@ export default function VehicleTravelReport() {
     pdf.text(vehicleDisplayTitle, margin, 28);
 
     // Helper: format date in Jamaica timezone
-    const formatJamaicaDate = (dateStr) => {
+    const formatJamaicaDate = (dateStr: any) => {
       return new Date(dateStr + "T12:00:00").toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -305,7 +305,7 @@ export default function VehicleTravelReport() {
         timeZone: "America/Jamaica",
       });
     };
-    const formatJamaicaDateTime = (date) => {
+    const formatJamaicaDateTime = (date: any) => {
       return date.toLocaleString("en-US", {
         month: "short",
         day: "numeric",
@@ -363,7 +363,7 @@ export default function VehicleTravelReport() {
     yPosition += 10;
 
     // Stats boxes
-    const statsData = [
+    const statsData: { label: string; value: string; color: [number, number, number] }[] = [
       { label: "Total Distance", value: `${stats.totalDistance.toLocaleString()} km`, color: [5, 150, 105] },
       { label: "Total Alerts", value: stats.totalAlerts.toString(), color: [220, 38, 38] },
       { label: "Major Stops", value: stats.majorStops.toString(), color: [79, 70, 229] },
@@ -421,7 +421,7 @@ export default function VehicleTravelReport() {
         pdf.setLineWidth(0.5);
         pdf.rect(margin, yPosition, mapWidth, mapHeight);
 
-        pdf.addImage(mapImage, "PNG", margin, yPosition, mapWidth, mapHeight);
+        pdf.addImage(mapImage as string, "PNG", margin, yPosition, mapWidth, mapHeight);
 
         // Add legend below map
         yPosition += mapHeight + 5;
@@ -519,7 +519,7 @@ export default function VehicleTravelReport() {
       const collisionCount = alertEvents.filter((e) => e.event_type === "collision_detected").length;
       const overspeedCount = alertEvents.filter((e) => e.event_type === "overspeed").length;
 
-      const summaryBoxes = [
+      const summaryBoxes: { label: string; value: string; color: [number, number, number] }[] = [
         { label: "Critical", value: criticalCount.toString(), color: [244, 67, 54] },
         { label: "Warning", value: warningCount.toString(), color: [251, 140, 0] },
         { label: "Harsh Events", value: harshCount.toString(), color: [79, 70, 229] },
@@ -549,7 +549,7 @@ export default function VehicleTravelReport() {
 
       // Behavior score
       let behaviorLabel = "Good";
-      let behaviorColor = [5, 150, 105]; // green
+      let behaviorColor: [number, number, number] = [5, 150, 105]; // green
       if (harshCount >= 3) {
         behaviorLabel = "Poor";
         behaviorColor = [220, 38, 38]; // red
@@ -594,7 +594,7 @@ export default function VehicleTravelReport() {
       };
 
       // Helper: format alert detail string
-      const getAlertDetail = (event) => {
+      const getAlertDetail = (event: any) => {
         const data = event.event_data || {};
         switch (event.event_type) {
           case "harsh_braking":
@@ -621,7 +621,7 @@ export default function VehicleTravelReport() {
       };
 
       // Helper: format time for table
-      const formatAlertTime = (dateStr) => {
+      const formatAlertTime = (dateStr: any) => {
         const d = new Date(dateStr);
         return d.toLocaleString("en-US", {
           month: "short",
@@ -667,7 +667,7 @@ export default function VehicleTravelReport() {
 
         // Event Type column
         pdf.setTextColor(...primaryColor);
-        const typeLabel = EVENT_LABELS[event.event_type] || event.event_type;
+        const typeLabel = (EVENT_LABELS as any)[event.event_type] || event.event_type;
         pdf.text(typeLabel.substring(0, 28), xOff, yPosition + 5);
         xOff += colWidths[2];
 
@@ -697,7 +697,7 @@ export default function VehicleTravelReport() {
     }
 
     // === FOOTERS ON ALL PAGES ===
-    const totalPages = pdf.internal.getNumberOfPages();
+    const totalPages = (pdf.internal as any).getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
       pdf.setFontSize(8);
@@ -715,14 +715,14 @@ export default function VehicleTravelReport() {
   };
 
   // Helper function to generate Mapbox Static Image URL
-  const generateMapboxStaticUrl = (points) => {
+  const generateMapboxStaticUrl = (points: any) => {
     if (points.length === 0) return null;
 
     const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
 
     // Calculate bounds with padding
     let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
-    points.forEach(p => {
+    points.forEach((p: any) => {
       minLng = Math.min(minLng, p.lng);
       maxLng = Math.max(maxLng, p.lng);
       minLat = Math.min(minLat, p.lat);
@@ -759,7 +759,7 @@ export default function VehicleTravelReport() {
   };
 
   // Polyline encoding algorithm (Google's format, used by Mapbox)
-  const encodePolyline = (points) => {
+  const encodePolyline = (points: any) => {
     let encoded = '';
     let prevLat = 0;
     let prevLng = 0;
@@ -778,7 +778,7 @@ export default function VehicleTravelReport() {
     return encoded;
   };
 
-  const encodeNumber = (num) => {
+  const encodeNumber = (num: any) => {
     let encoded = '';
     let value = num < 0 ? ~(num << 1) : (num << 1);
 
@@ -792,7 +792,7 @@ export default function VehicleTravelReport() {
   };
 
   // Helper function to simplify path (reduce number of points)
-  const simplifyPath = (points, maxPoints) => {
+  const simplifyPath = (points: any, maxPoints: any) => {
     if (points.length <= maxPoints) return points;
 
     const step = Math.ceil(points.length / maxPoints);
@@ -811,7 +811,7 @@ export default function VehicleTravelReport() {
   };
 
   // Helper function to load image as base64
-  const loadImage = (url) => {
+  const loadImage = (url: any) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = "Anonymous";
@@ -820,7 +820,7 @@ export default function VehicleTravelReport() {
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
+        ctx!.drawImage(img, 0, 0);
         resolve(canvas.toDataURL("image/png"));
       };
       img.onerror = reject;

@@ -2,16 +2,16 @@ import React from "react";
 import { TrendingUp, Code, Users, User, Mail, Lock, Check } from "lucide-react";
 
 // core components
-import GridContainer from "components/Grid/GridContainer.js";
-import GridItem from "components/Grid/GridItem.js";
-import Button from "components/CustomButtons/Button.js";
-import InfoArea from "components/InfoArea/InfoArea.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
+import Button from "components/CustomButtons/Button";
+import InfoArea from "components/InfoArea/InfoArea";
+import Card from "components/Card/Card";
+import CardBody from "components/Card/CardBody";
 
 export default function RegisterPage() {
-  const [checked, setChecked] = React.useState([]);
-  const handleToggle = (value) => {
+  const [checked, setChecked] = React.useState<number[]>([]);
+  const handleToggle = (value: number) => {
     const currentIndex = checked.indexOf(value);
     const newChecked = [...checked];
 
