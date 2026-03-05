@@ -19,9 +19,10 @@
     "react-router-dom": "5.2.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.1",
-    "tailwindcss": "^4.2.0",
-    "@tailwindcss/oxide-linux-x64-musl": "^4.0.0",
-    "@tailwindcss/oxide-linux-x64-gnu": "^4.0.0"
+    "tailwindcss": "^4.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "scripts": {
     "dev": "vite",
