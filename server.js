@@ -5,6 +5,11 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const buildDir = path.join(__dirname, 'build');
+const publicEnvKeys = [
+  'VITE_SUPABASE_URL',
+  'VITE_SUPABASE_ANON_KEY',
+  'VITE_MAPBOX_ACCESS_TOKEN_PUBLIC',
+];
 
 function log(...args) {
   console.log(new Date().toISOString(), ...args);
@@ -30,6 +35,16 @@ try {
 app.use((req, res, next) => {
   log('REQ', req.method, req.url);
   next();
+});
+
+app.get('/env.js', (req, res) => {
+  const publicEnv = publicEnvKeys.reduce((acc, key) => {
+    acc[key] = process.env[key] || '';
+    return acc;
+  }, {});
+
+  res.type('application/javascript');
+  res.send(`window.__APP_CONFIG__ = ${JSON.stringify(publicEnv)};`);
 });
 
 // Serve static assets

@@ -3,10 +3,11 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useVehicles } from "hooks/useVehicles";
 import { useHistory } from "react-router-dom";
+import { getPublicEnv } from "lib/env";
 import "./LiveMap.css";
 
 // Mapbox Public Access Token
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
+mapboxgl.accessToken = getPublicEnv("VITE_MAPBOX_ACCESS_TOKEN_PUBLIC");
 
 // Kingston, Jamaica center coordinates
 const JAMAICA_CENTER = {

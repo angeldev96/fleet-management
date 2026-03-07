@@ -1,0 +1,13 @@
+.git
+.gitignore
+node_modules
+build
+.env
+.env.*
+npm-debug.log*
+docs
+supabase
+.claude
+.agents
+.vscode
+.DS_Store

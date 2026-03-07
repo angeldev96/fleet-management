@@ -102,6 +102,30 @@ After running `npm run build`, the `build/` folder will contain:
 
 ## Deployment Platforms
 
+### Dokploy
+
+Use the repository's `Dockerfile` and let Dokploy build the image directly.
+
+#### Dokploy Configuration
+
+- **Build Type**: `Dockerfile`
+- **Docker File**: `Dockerfile`
+- **Docker Context Path**: `.`
+- **Docker Build Stage**: leave empty
+- **Port**: `3001` (unless you set a different `PORT` environment variable)
+
+#### Required Environment Variables
+
+These variables must be available in Dokploy as normal environment variables. The container serves `/env.js` at runtime so you do not need special Docker build args for public frontend config:
+
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_MAPBOX_ACCESS_TOKEN_PUBLIC=
+```
+
+At runtime, the container starts with `npm start`, which serves the compiled `build/` directory through `server.js`.
+
 ### Vercel
 
 #### Option 1: Connect Git Repository (Recommended)

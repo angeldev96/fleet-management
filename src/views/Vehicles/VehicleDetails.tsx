@@ -42,9 +42,10 @@ import {
 } from "types/database";
 import { useVehicleSnapshot } from "hooks/useVehicleSnapshot";
 import { cn } from "lib/utils";
+import { getPublicEnv } from "lib/env";
 
 // Mapbox Public Access Token
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
+mapboxgl.accessToken = getPublicEnv("VITE_MAPBOX_ACCESS_TOKEN_PUBLIC");
 
 // Default center (Jamaica) - same as LiveMap
 const DEFAULT_CENTER = { lng: -76.8099, lat: 18.0179 };

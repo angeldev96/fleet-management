@@ -1,7 +1,8 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { getPublicEnv } from "lib/env";
 
-let supabaseUrl: string = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey: string = import.meta.env.VITE_SUPABASE_ANON_KEY;
+let supabaseUrl: string = getPublicEnv("VITE_SUPABASE_URL");
+const supabaseAnonKey: string = getPublicEnv("VITE_SUPABASE_ANON_KEY");
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error("Missing Supabase environment variables");

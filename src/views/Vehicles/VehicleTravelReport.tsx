@@ -26,9 +26,10 @@ import CardBody from "components/Card/CardBody";
 import { useVehicle } from "hooks/useVehicles";
 import { useTravelData } from "hooks/useTravelData";
 import { formatDateOnly, EVENT_LABELS } from "types/database";
+import { getPublicEnv } from "lib/env";
 
 // Mapbox
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
+mapboxgl.accessToken = getPublicEnv("VITE_MAPBOX_ACCESS_TOKEN_PUBLIC");
 
 // Default center (Jamaica)
 const DEFAULT_CENTER = { lng: -76.8099, lat: 18.0179 };
@@ -719,7 +720,7 @@ export default function VehicleTravelReport() {
   const generateMapboxStaticUrl = (points: any) => {
     if (points.length === 0) return null;
 
-    const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN_PUBLIC;
+    const accessToken = getPublicEnv("VITE_MAPBOX_ACCESS_TOKEN_PUBLIC");
 
     // Calculate bounds with padding
     let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
