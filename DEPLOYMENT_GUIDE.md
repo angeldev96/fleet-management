@@ -20,7 +20,7 @@ This guide covers how to install, build, and deploy the Entry Fleet Management D
 - **Node.js**: v16.x or higher (tested with v24.x)
 - **npm**: v8.x or higher
 
-> **Note**: This project uses Create React App with `react-scripts@4.0.3`, which requires the `--openssl-legacy-provider` flag for Node.js 17+. This is already configured in the npm scripts.
+> **Note**: This project uses Vite for local development and build output, plus `server.js` to serve the compiled `build/` directory in production.
 
 ---
 
@@ -30,11 +30,11 @@ Create a `.env` file in the project root with the following variables:
 
 ```env
 # Supabase Configuration
-REACT_APP_SUPABASE_URL=https://your-project.supabase.co
-REACT_APP_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 # Mapbox Configuration
-REACT_APP_MAPBOX_ACCESS_TOKEN_PUBLIC=your-mapbox-public-token
+VITE_MAPBOX_ACCESS_TOKEN_PUBLIC=your-mapbox-public-token
 ```
 
 ### Getting the Keys
@@ -57,7 +57,7 @@ npm install --legacy-peer-deps
 ### 2. Start Development Server
 
 ```bash
-npm start
+npm run dev
 ```
 
 This will start the development server at `http://localhost:3000`.
@@ -85,18 +85,26 @@ This command will:
 ### 2. Preview Production Build Locally
 
 ```bash
-npx serve -s build
+npm run preview
 ```
 
-This will serve the production build at `http://localhost:3000` for testing.
+This will serve the Vite production build locally for testing.
+
+### 3. Run The Production Server Locally
+
+```bash
+npm start
+```
+
+This command runs `server.js`, which serves the compiled `build/` directory and exposes `/env.js` so public environment variables can be injected at runtime.
 
 ### Build Output
 
 After running `npm run build`, the `build/` folder will contain:
 - `index.html` - Main HTML file
-- `static/js/` - Compiled JavaScript chunks
-- `static/css/` - Compiled CSS files
-- `static/media/` - Images and fonts
+- `assets/` - Compiled JavaScript and CSS assets
+- `env.js` - Runtime config bootstrap file
+- `manifest.json` - Web app manifest
 
 ---
 
@@ -104,27 +112,42 @@ After running `npm run build`, the `build/` folder will contain:
 
 ### Dokploy
 
-Use the repository's `Dockerfile` and let Dokploy build the image directly.
+Use `Nixpacks`. This repository already includes a `nixpacks.toml` file and the production runtime is `npm start`.
 
 #### Dokploy Configuration
 
-- **Build Type**: `Dockerfile`
-- **Docker File**: `Dockerfile`
-- **Docker Context Path**: `.`
-- **Docker Build Stage**: leave empty
-- **Port**: `3001` (unless you set a different `PORT` environment variable)
+- **Build Type**: `Nixpacks`
+- **Port**: `3001` or the value you assign to `PORT`
+- **Publish Directory**: leave empty
+
+Dokploy can infer the Node app automatically, but this repo now makes the flow explicit through `nixpacks.toml`:
+
+- Install: `npm ci`
+- Build: `npm run build`
+- Start: `npm start`
+
+`npm start` runs `server.js`, which is required because the app reads public runtime variables from `/env.js`.
 
 #### Required Environment Variables
 
-These variables must be available in Dokploy as normal environment variables. The container serves `/env.js` at runtime so you do not need special Docker build args for public frontend config:
+These variables must be available in Dokploy as normal environment variables. `server.js` serves `/env.js` at runtime, so you do not need build-time args for public frontend config:
 
 ```env
+PORT=3001
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 VITE_MAPBOX_ACCESS_TOKEN_PUBLIC=
 ```
 
-At runtime, the container starts with `npm start`, which serves the compiled `build/` directory through `server.js`.
+#### Why Not `Static`
+
+Do not use `Static` for this repository.
+
+- Dokploy `Static` serves the repository root with NGINX.
+- This repository root contains source files, not a prebuilt static site entry for NGINX.
+- The production app expects `server.js` to serve `/env.js` dynamically.
+
+If you use `Static`, the runtime environment injection path will not exist and the root `index.html` will point at `/src/index.tsx` instead of compiled assets.
 
 ### Vercel
 
